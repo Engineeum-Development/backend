@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <module name="presentation" />
+        <module name="models" />
+        <module name="security" />
+        <module name="data" />
+        <module name="challenges" />
+        <module name="learn" />
+        <module name="persistence" />
+        <module name="service-implementation" />
+        <module name="dataset" />
+        <module name="research" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="backendNG" options="" />
+      <module name="challenges" options="-parameters" />
+      <module name="data" options="-parameters" />
+      <module name="dataset" options="-parameters" />
+      <module name="learn" options="-parameters" />
+      <module name="models" options="-parameters" />
+      <module name="persistence" options="-parameters" />
+      <module name="presentation" options="-parameters" />
+      <module name="research" options="-parameters" />
+      <module name="security" options="-parameters" />
+      <module name="service-implementation" options="-parameters" />
+    </option>
+  </component>
+</project>

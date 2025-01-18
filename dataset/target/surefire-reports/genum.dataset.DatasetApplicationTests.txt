@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: genum.dataset.DatasetApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.916 s - in genum.dataset.DatasetApplicationTests
