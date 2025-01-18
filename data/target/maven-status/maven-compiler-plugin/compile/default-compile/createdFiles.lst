@@ -1,7 +1,0 @@
-genum/data/constant/Role.class
-genum/data/DTO/response/ResponseDTO.class
-genumUser/GenumUser.class
-genum/data/DTO/response/UnsuccessfulLoginDTO.class
-genum/data/DTO/request/LoginDTO.class
-genum/data/DataApplication.class
-genum/data/constant/Gender.class

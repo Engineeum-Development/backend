@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: genum.learn.LearnApplicationTests
--------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.276 s - in genum.learn.LearnApplicationTests
