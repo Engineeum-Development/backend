@@ -1,11 +1,9 @@
 package genum.security.jwt;
 
 import genum.data.constant.Role;
-import genum.data.genumUser.GenumUser;
+import genumUser.GenumUser;
 import genum.persistence.genumUserRepository.GenumUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import genum.data.DTO.request.LoginDTO;
 import genum.data.DTO.response.ResponseDTO;
 import genum.data.DTO.response.UnsuccessfulLoginDTO;
-import genum.data.genumUser.GenumUser;
+import genumUser.GenumUser;
 import genum.persistence.genumUserRepository.GenumUserRepository;
 import genum.serviceimplementation.exception.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;

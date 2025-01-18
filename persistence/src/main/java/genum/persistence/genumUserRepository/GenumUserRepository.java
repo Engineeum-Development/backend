@@ -1,6 +1,6 @@
 package genum.persistence.genumUserRepository;
 
-import genum.data.genumUser.GenumUser;
+import genumUser.GenumUser;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
