@@ -21,6 +21,8 @@
         <module>service-implementation</module>
         <module>data</module>
         <module>shared</module>
+        <module>genumUser</module>
+        <module>app</module>
     </modules>
 
     <groupId>genum</groupId>
@@ -30,7 +32,43 @@
     <properties>
         <java.version>17</java.version>
     </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>genum</groupId>
+                <artifactId>models</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>genum</groupId>
+                <artifactId>payment</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>genum</groupId>
+                <artifactId>shared</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>genum</groupId>
+                <artifactId>data</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>genum</groupId>
+                <artifactId>dataset</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>genum</groupId>
+                <artifactId>app</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+        </dependencies>
+
+    </dependencyManagement>
     <dependencies>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
