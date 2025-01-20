@@ -17,11 +17,8 @@
         <module>presentation</module>
         <module>research</module>
         <module>learn</module>
-        <module>security</module>
         <module>models</module>
         <module>service-implementation</module>
-        <module>data</module>
-        <module>persistence</module>
         <module>shared</module>
     </modules>
 
@@ -30,7 +27,7 @@
     <version>0.0.1-SNAPSHOT</version>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>17</java.version>
     </properties>
     <dependencies>
         <dependency>

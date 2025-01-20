@@ -1,15 +1,16 @@
 package genum.shared.data.data.DTO.response;
 
-import genum.shared.data.genumUser.GenumUser;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResponseDTO {
-
-    private GenumUser genumUser;
-    private String token;
+public class ResponseDetails {
+    private LocalDateTime timestamp;
+    private String message;
+    private String status;
 }
