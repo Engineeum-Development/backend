@@ -1,10 +1,7 @@
 package genum.payment.controller;
 
-import genum.payment.domain.ProductRequest;
-import genum.payment.model.Product;
+import genum.shared.payment.domain.ProductRequest;
 import genum.payment.service.PaymentService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;

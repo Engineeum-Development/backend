@@ -1,14 +1,13 @@
 package genum.payment.controller;
 
-import genum.payment.domain.ProductRequest;
+import genum.shared.payment.domain.PaymentResponse;
+import genum.shared.payment.domain.ProductRequest;
 import genum.payment.service.PaymentService;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
+
 
 /**
  * These endpoints will only be called from within the applications
@@ -24,14 +23,12 @@ public class FlutterWaveController {
     }
 
     @PostMapping("initialize")
-    @Async
-    public Future<?> initializeTransaction(@RequestBody ProductRequest productRequest) {
-        return CompletableFuture.completedFuture(paymentService.initializePayment(productRequest));
+    public PaymentResponse initializeTransaction(@RequestBody ProductRequest productRequest) {
+        return paymentService.initializePayment(productRequest);
     }
     @GetMapping(value = "verify", params = {"reference","payment_id"})
-    @Async
-    public Future<?> verifyTransaction(@RequestParam("reference") String reference,
+    public PaymentResponse verifyTransaction(@RequestParam("reference") String reference,
                                        @RequestParam("payment_id") String paymentId){
-        return CompletableFuture.completedFuture(paymentService.verifyPayment(reference, paymentId));
+        return paymentService.verifyPayment(reference, paymentId);
     }
 }

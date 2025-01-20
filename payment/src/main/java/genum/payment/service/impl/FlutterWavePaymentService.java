@@ -1,7 +1,7 @@
 package genum.payment.service.impl;
 
-import genum.payment.domain.PaymentResponse;
-import genum.payment.domain.ProductRequest;
+import genum.shared.payment.domain.PaymentResponse;
+import genum.shared.payment.domain.ProductRequest;
 import genum.payment.service.PaymentService;
 import org.springframework.stereotype.Service;
 

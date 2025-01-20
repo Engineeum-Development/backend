@@ -1,6 +1,6 @@
 package genum.payment.repository;
 
-import genum.payment.model.Payment;
+import genum.shared.payment.model.Payment;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
