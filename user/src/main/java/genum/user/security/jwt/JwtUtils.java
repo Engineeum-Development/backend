@@ -1,6 +1,6 @@
 package genum.user.security.jwt;
 
-import genum.persistence.genumUser.GenumUserRepository;
+import genum.user.repository.GenumUserRepository;
 import genum.user.security.domain.TokenData;
 import genum.shared.security.CustomUserDetails;
 import io.jsonwebtoken.Claims;

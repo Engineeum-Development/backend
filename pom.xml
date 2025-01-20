@@ -17,11 +17,9 @@
         <module>presentation</module>
         <module>research</module>
         <module>learn</module>
-        <module>security</module>
         <module>models</module>
         <module>service-implementation</module>
         <module>data</module>
-        <module>persistence</module>
         <module>shared</module>
     </modules>
 
@@ -58,16 +56,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>compile</scope>
-            <optional>true</optional>
         </dependency>
 
     </dependencies>
