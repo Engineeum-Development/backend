@@ -8,6 +8,7 @@
         <artifactId>backendNG</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
+    <packaging>pom</packaging>
 
     <artifactId>app</artifactId>
 
@@ -17,8 +18,46 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <dependencies>
-
+        <dependency>
+            <groupId>genum</groupId>
+            <artifactId>product</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>genum</groupId>
+            <artifactId>learn</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>genum</groupId>
+            <artifactId>models</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>genum</groupId>
+            <artifactId>data</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>genum</groupId>
+            <artifactId>dataset</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>genum</groupId>
+            <artifactId>payment</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>genum</groupId>
+            <artifactId>challenges</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+        </plugins>
+    </build>
 
 
 </project>
