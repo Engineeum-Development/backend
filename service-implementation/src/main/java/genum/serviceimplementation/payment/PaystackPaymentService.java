@@ -1,4 +1,4 @@
-package genum.payment.service.impl;
+package genum.serviceimplementation.payment;
 
 import genum.shared.payment.domain.PaymentResponse;
 import genum.shared.payment.domain.ProductRequest;

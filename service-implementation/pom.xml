@@ -9,7 +9,16 @@
     </parent>
     <artifactId>service-implementation</artifactId>
     <dependencies>
-
+        <dependency>
+            <groupId>genum</groupId>
+            <artifactId>payment</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>genum</groupId>
+            <artifactId>shared</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>

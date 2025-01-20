@@ -1,4 +1,4 @@
-package genum.shared.data.genumUser;
+package genum.shared.genumUser;
 
 import genum.shared.data.data.constant.Gender;
 

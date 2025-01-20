@@ -1,6 +1,6 @@
 package genum.shared.data.data.DTO.response;
 
-import genum.shared.data.genumUser.GenumUser;
+import genum.shared.genumUser.GenumUser;
 
 
 public class ResponseDTO {

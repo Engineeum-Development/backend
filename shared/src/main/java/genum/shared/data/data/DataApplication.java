@@ -1,6 +1,6 @@
 package genum.shared.data.data;
 
-import genum.shared.data.genumUser.GenumUser;
+import genum.shared.genumUser.GenumUser;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

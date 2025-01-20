@@ -1,8 +1,8 @@
 package genum.payment.config;
 
 import genum.payment.service.PaymentService;
-import genum.payment.service.impl.FlutterWavePaymentService;
-import genum.payment.service.impl.PaystackPaymentService;
+import genum.serviceimplementation.payment.FlutterWavePaymentService;
+import genum.serviceimplementation.payment.PaystackPaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
