@@ -9,6 +9,11 @@
     </parent>
     <artifactId>service-implementation</artifactId>
     <dependencies>
+        <dependency>
+            <groupId>genum</groupId>
+            <artifactId>dataset</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
 
     </dependencies>
 
