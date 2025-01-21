@@ -1,26 +1,26 @@
 package genum.shared.DTO.response;
 
-import genum.shared.genumUser.GenumUser;
 
+import genum.shared.genumUser.GenumUserDTO;
 
 public class ResponseDTO {
 
-    private GenumUser genumUser;
+    private GenumUserDTO genumUser;
     private String token;
 
     public ResponseDTO() {
     }
 
-    public ResponseDTO(GenumUser genumUser, String token) {
+    public ResponseDTO(GenumUserDTO genumUser, String token) {
         this.genumUser = genumUser;
         this.token = token;
     }
 
-    public GenumUser getGenumUser() {
+    public GenumUserDTO getGenumUser() {
         return genumUser;
     }
 
-    public void setGenumUser(GenumUser genumUser) {
+    public void setGenumUser(GenumUserDTO genumUser) {
         this.genumUser = genumUser;
     }
 

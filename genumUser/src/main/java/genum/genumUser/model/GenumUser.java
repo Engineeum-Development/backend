@@ -1,6 +1,6 @@
 package genum.genumUser.model;
 
-import genum.shared.data.constant.Gender;
+import genum.shared.constant.Gender;
 
 import genum.shared.security.CustomUserDetails;
 import lombok.Getter;
