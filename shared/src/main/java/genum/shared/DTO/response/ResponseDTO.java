@@ -1,6 +1,6 @@
-package genum.shared.data.data.DTO.response;
+package genum.shared.DTO.response;
 
-import genum.shared.data.genumUser.GenumUser;
+import genum.shared.genumUser.GenumUserDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ResponseDTO {
 
-    private GenumUser genumUser;
+    private GenumUserDTO genumUser;
     private String token;
 }

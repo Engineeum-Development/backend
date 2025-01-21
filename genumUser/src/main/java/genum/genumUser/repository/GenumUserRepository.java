@@ -1,6 +1,6 @@
 package genum.genumUser.repository;
 
-import genum.shared.genumUser.GenumUser;
+import genum.genumUser.model.GenumUser;
 import genum.shared.security.CustomUserDetails;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
