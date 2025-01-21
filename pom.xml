@@ -125,7 +125,7 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
-                    <mainClass>genum.data.app.GenumApplication</mainClass>
+                    <mainClass>genum.app.GenumApplication</mainClass>
                 </configuration>
             </plugin>
         </plugins>

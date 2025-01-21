@@ -8,9 +8,6 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>learn</artifactId>
-    <dependencies>
-
-    </dependencies>
 
     <build>
         <plugins>

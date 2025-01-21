@@ -1,9 +1,10 @@
 package genum.payment.config;
 
-import genum.payment.repository.ProductRepository;
+import genum.payment.repository.PaymentRepository;
 import genum.payment.service.PaymentService;
-import genum.serviceimplementation.payment.FlutterWavePaymentService;
-import genum.serviceimplementation.payment.PaystackPaymentService;
+import genum.payment.service.FlutterWavePaymentService;
+import genum.payment.service.PaystackPaymentService;
+import genum.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +20,7 @@ public class PaymentConfiguration {
     }
 
     @Bean(name = "paystack")
-    public PaymentService paystack(ProductRepository productRepository, RestTemplate restTemplate) {
-        return new PaystackPaymentService(productRepository, restTemplate);
+    public PaymentService paystack(RestTemplate restTemplate, ProductService productService, PaymentRepository paymentRepository) {
+        return new PaystackPaymentService(restTemplate, productService,paymentRepository);
     }
 }

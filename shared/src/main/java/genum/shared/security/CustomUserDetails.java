@@ -1,6 +1,6 @@
 package genum.shared.security;
 
-import genum.shared.data.constant.Role;
+import genum.shared.constant.Role;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;

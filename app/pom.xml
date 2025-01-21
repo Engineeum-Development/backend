@@ -21,31 +21,42 @@
         <dependency>
             <groupId>genum</groupId>
             <artifactId>product</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>genum</groupId>
             <artifactId>learn</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>genum</groupId>
             <artifactId>models</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>genum</groupId>
             <artifactId>data</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>genum</groupId>
             <artifactId>dataset</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>genum</groupId>
             <artifactId>payment</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>genum</groupId>
             <artifactId>challenges</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>genum</groupId>
+            <artifactId>genumUser</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

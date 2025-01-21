@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import genum.genumUser.security.GenumAuthentication;
 import genum.genumUser.security.constant.SecurityConstants;
 import genum.shared.security.LoginResponse;
-import genum.shared.data.DTO.request.LoginRequest;
+import genum.shared.DTO.request.LoginRequest;
 import genum.shared.security.CustomUserDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;

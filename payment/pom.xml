@@ -16,8 +16,7 @@
         </dependency>
         <dependency>
             <groupId>genum</groupId>
-            <artifactId>service-implementation</artifactId>
-            <version>${project.version}</version>
+            <artifactId>product</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
