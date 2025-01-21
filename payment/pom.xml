@@ -17,6 +17,7 @@
         <dependency>
             <groupId>genum</groupId>
             <artifactId>product</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

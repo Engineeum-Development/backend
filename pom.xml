@@ -20,6 +20,8 @@
         <module>models</module>
         <module>service-implementation</module>
         <module>shared</module>
+        <module>app</module>
+        <module>data</module>
     </modules>
 
     <groupId>genum</groupId>
@@ -28,7 +30,7 @@
 
     <properties>
         <java.version>17</java.version>
-        <maven.compiler.version>3.14.0</maven.compiler.version>
+        <maven.compiler.version>3.13.0</maven.compiler.version>
     </properties>
     <dependencies>
         <dependency>
