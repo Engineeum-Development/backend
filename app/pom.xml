@@ -35,11 +35,6 @@
         </dependency>
         <dependency>
             <groupId>genum</groupId>
-            <artifactId>data</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>genum</groupId>
             <artifactId>dataset</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -61,11 +56,6 @@
         <dependency>
             <groupId>genum</groupId>
             <artifactId>research</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>genum</groupId>
-            <artifactId>presentation</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

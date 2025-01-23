@@ -21,7 +21,6 @@ import org.springframework.web.client.RestTemplate;
         "genum.genumUser",
         "genum.learn",
         "genum.models",
-        "genum.presentation",
         "genum.research",
         "genum.shared",})
 @EnableMongoRepositories(basePackages = {

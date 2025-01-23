@@ -13,14 +13,11 @@
 
     <modules>
         <module>challenges</module>
-        <module>presentation</module>
         <module>research</module>
         <module>learn</module>
         <module>models</module>
-        <module>service-implementation</module>
         <module>shared</module>
         <module>app</module>
-        <module>data</module>
         <module>dataset</module>
         <module>payment</module>
         <module>product</module>
