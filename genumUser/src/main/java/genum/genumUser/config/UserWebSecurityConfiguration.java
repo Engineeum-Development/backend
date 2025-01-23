@@ -64,7 +64,6 @@ public class UserWebSecurityConfiguration {
     }
 
 
-
     @Bean
     public AuthenticationManager authenticationManager(GenumUserRepository userRepository) {
         var authManager = new GenumAuthProvider(userRepository, passwordEncoder());

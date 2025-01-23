@@ -58,6 +58,16 @@
             <artifactId>genumUser</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>genum</groupId>
+            <artifactId>research</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>genum</groupId>
+            <artifactId>presentation</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

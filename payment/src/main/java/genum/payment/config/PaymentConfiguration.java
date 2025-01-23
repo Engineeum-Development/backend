@@ -20,7 +20,10 @@ public class PaymentConfiguration {
     }
 
     @Bean(name = "paystack")
-    public PaymentService paystack(RestTemplate restTemplate, ProductService productService, PaymentRepository paymentRepository) {
-        return new PaystackPaymentService(restTemplate, productService,paymentRepository);
+    public PaymentService paystack(RestTemplate restTemplate, ProductService productService, PaymentRepository paymentRepository, PaymentProperties paymentProperties) {
+        return new PaystackPaymentService(restTemplate, productService,paymentRepository, paymentProperties);
     }
+
 }
+
+

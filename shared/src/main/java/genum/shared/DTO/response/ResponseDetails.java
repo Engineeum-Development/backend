@@ -1,4 +1,4 @@
-package genum.shared.data.data.DTO.response;
+package genum.shared.DTO.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

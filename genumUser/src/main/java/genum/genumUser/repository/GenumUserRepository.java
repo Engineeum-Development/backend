@@ -5,7 +5,6 @@ import genum.shared.security.CustomUserDetails;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
-
 @Repository
 public interface GenumUserRepository extends MongoRepository<GenumUser, String> {
     Boolean existsByEmail(String email);

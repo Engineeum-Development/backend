@@ -1,8 +1,9 @@
-package genum.serviceimplementation.datasets;
+package genum.dataset.service;
 
 import genum.dataset.DTO.CreateDatasetDTO;
 import genum.dataset.model.Datasets;
 import genum.dataset.repository.DatasetRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +16,12 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class DatasetsServiceImpl implements DatasetsService {
     private final ModelMapper modelMapper = new ModelMapper();
 
-    @Autowired
-    private DatasetRepository datasetsRepository;
+    private final DatasetRepository datasetsRepository;
+
 
     @Override
     public Datasets createDataset(CreateDatasetDTO createNewDatasetDTO) {

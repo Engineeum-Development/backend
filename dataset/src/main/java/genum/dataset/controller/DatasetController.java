@@ -1,26 +1,27 @@
-package genum.presentation.dataset;
+package genum.dataset.controller;
 import genum.dataset.DTO.CreateDatasetDTO;
 import genum.dataset.model.Datasets;
-import genum.serviceimplementation.datasets.DatasetsServiceImpl;
-import genum.shared.data.data.DTO.response.ResponseDetails;
+import genum.dataset.service.DatasetsServiceImpl;
+import genum.shared.DTO.response.ResponseDetails;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/datasets")
 @Slf4j
-
+@RequiredArgsConstructor
 public class DatasetController {
 
-    @Autowired
-    private DatasetsServiceImpl datasetsService;
+
+    private final DatasetsServiceImpl datasetsService;
 
     @PostMapping("/create")
     public ResponseEntity<?> createDataset(@Valid @RequestBody CreateDatasetDTO createDatasetDTO) {

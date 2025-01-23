@@ -23,10 +23,13 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Component
-@RequiredArgsConstructor
 public class JwtUtils {
 
     private final GenumUserRepository genumUserRepository;
+
+    public JwtUtils(GenumUserRepository genumUserRepository) {
+        this.genumUserRepository = genumUserRepository;
+    }
 
     private final Supplier<SecretKey> keySupplier = () -> Keys
             .hmacShaKeyFor(

@@ -1,5 +1,6 @@
 package genum.payment.service;
 
+import genum.payment.config.PaymentProperties;
 import genum.payment.constant.PaymentPlatform;
 import genum.payment.model.CoursePayment;
 import genum.payment.repository.PaymentRepository;
@@ -37,8 +38,8 @@ public class PaystackPaymentService implements PaymentService {
     private final RestTemplate restTemplate;
     private final ProductService productService;
     private final PaymentRepository paymentRepository;
-    @Value("${paystack.api.key}")
-    private String paystackAPIKey;
+
+    private final PaymentProperties paymentProperties;
 
     @Override
     @Transactional
@@ -60,7 +61,7 @@ public class PaystackPaymentService implements PaymentService {
                 .currency("USD")
                 .build();
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "");
+        headers.set("Authorization", paymentProperties.getApiKey());
         headers.set("Content-Type", "application/json");
         var response = restTemplate.postForEntity(INITIALIZE_TRANSACTION_URL, initializeTransaction, InitializeTransactionResponse.class);
         String paymentId = null;
