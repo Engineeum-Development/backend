@@ -25,7 +25,7 @@ public class GenumAuthProvider implements AuthenticationProvider {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         var userAuth = (GenumAuthentication) authentication;
-        var user = genumUserRepository.findByEmail(((GenumAuthentication) authentication).getEmail());
+        var user = genumUserRepository.findByCustomUserDetailsEmail(((GenumAuthentication) authentication).getEmail());
         if (Objects.nonNull(user)) {
 
             if (passwordEncoder.matches(userAuth.getPassword(), user.getCustomUserDetails().getPassword())) {

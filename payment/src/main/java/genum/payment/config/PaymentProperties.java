@@ -12,4 +12,5 @@ import org.springframework.stereotype.Component;
 public class PaymentProperties {
     private String apiKey;
     private String gatewayUrl;
+    private String paymentImpl;
 }

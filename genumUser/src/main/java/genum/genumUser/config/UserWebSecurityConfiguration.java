@@ -5,9 +5,11 @@ import genum.genumUser.security.CustomUserDetailService;
 import genum.genumUser.security.jwt.JWTAuthorizationFilter;
 import genum.genumUser.security.jwt.JwtUtils;
 import genum.genumUser.security.jwt.LoginAuthenticationFilter;
+import genum.genumUser.security.jwt.LogoutHandlingFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -37,7 +39,8 @@ public class UserWebSecurityConfiguration {
 
     public SecurityFilterChain securityFilterChain (HttpSecurity http,
                                                     LoginAuthenticationFilter loginAuthenticationFilter,
-                                                    JWTAuthorizationFilter jwtAuthorizationFilter) throws Exception {
+                                                    JWTAuthorizationFilter jwtAuthorizationFilter,
+                                                    LogoutHandlingFilter logoutHandlingFilter) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -46,6 +49,7 @@ public class UserWebSecurityConfiguration {
                         .anyRequest().authenticated())
                 .addFilterBefore(loginAuthenticationFilter, AuthorizationFilter.class)
                 .addFilterBefore(jwtAuthorizationFilter, AuthorizationFilter.class)
+                .addFilterAfter(logoutHandlingFilter, AuthorizationFilter.class)
                 .build();
     }
 
@@ -59,6 +63,7 @@ public class UserWebSecurityConfiguration {
         return new JWTAuthorizationFilter(jwtUtils, userDetailsService);
     }
     @Bean
+    @Primary
     public UserDetailsService userDetailsService(GenumUserRepository userRepository) {
         return new CustomUserDetailService(userRepository);
     }
@@ -68,6 +73,10 @@ public class UserWebSecurityConfiguration {
     public AuthenticationManager authenticationManager(GenumUserRepository userRepository) {
         var authManager = new GenumAuthProvider(userRepository, passwordEncoder());
         return new ProviderManager(authManager);
+    }
+    @Bean
+    public LogoutHandlingFilter logoutHandlingFilter() {
+        return new LogoutHandlingFilter();
     }
 
 
