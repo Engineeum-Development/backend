@@ -8,18 +8,6 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>models</artifactId>
-    <dependencies>
-
-    </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.version}</version>
-            </plugin>
-        </plugins>
-    </build>
+    <packaging>jar</packaging>
 
 </project>

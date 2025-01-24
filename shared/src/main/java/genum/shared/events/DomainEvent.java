@@ -1,8 +1,7 @@
-package genum.shared;
+package genum.shared.events;
 
 import java.time.LocalDateTime;
 
 public interface DomainEvent {
-    String getEventType();
     LocalDateTime getTimeStamp();
 }

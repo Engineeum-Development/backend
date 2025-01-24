@@ -1,5 +1,6 @@
 package genum.payment.controller;
 
+import genum.shared.payment.constants.PaymentStatus;
 import genum.shared.payment.domain.PaymentResponse;
 import genum.shared.payment.domain.ProductRequest;
 import genum.payment.service.PaymentService;
@@ -7,6 +8,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.Map;
 
 
 /**
@@ -26,9 +29,14 @@ public class FlutterWaveController {
     public PaymentResponse initializeTransaction(@RequestBody ProductRequest productRequest) {
         return paymentService.initializePayment(productRequest);
     }
-    @GetMapping(value = "verify", params = {"reference","payment_id"})
-    public PaymentResponse verifyTransaction(@RequestParam("reference") String reference,
-                                       @RequestParam("payment_id") String paymentId){
-        return paymentService.verifyPayment(reference, paymentId);
+    @GetMapping(value = "verify-callback")
+    public PaymentResponse verifyTransaction(@RequestParam("status") String status,
+                                       @RequestParam("tx_ref") String reference,
+                                             @RequestParam("transaction_id") String transactionId){
+        if (status.equals("successful")) {
+            return paymentService.verifyPayment(reference, transactionId);
+        } else {
+            return new PaymentResponse(LocalDateTime.now(), PaymentStatus.FAILED, Map.of("message", "Payment failed, please try again"));
+        }
     }
 }

@@ -1,5 +1,6 @@
 package genum.product.model;
 
+import genum.shared.product.DTO.CourseDTO;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -19,6 +20,10 @@ public class Course {
     @Field("number_of_enrolled_users")
     private int numberOfEnrolledUsers;
     private int price;
+
+    public CourseDTO toDTO() {
+        return new CourseDTO(this.referenceId, this.name, this.numberOfEnrolledUsers, this.price);
+    }
 
 
 }

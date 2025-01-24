@@ -1,6 +1,7 @@
 package genum.genumUser.security;
 
 import genum.shared.security.CustomUserDetails;
+import lombok.Getter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -14,7 +15,9 @@ public class GenumAuthentication extends AbstractAuthenticationToken {
     public static final String EMAIL_PROTECTED = "[EMAIL_PROTECTED]";
 
     private UserDetails user;
+    @Getter
     private final String email;
+    @Getter
     private final String password;
 
     private GenumAuthentication (CustomUserDetails userDetails, Collection<? extends GrantedAuthority> authorities) {
@@ -49,11 +52,4 @@ public class GenumAuthentication extends AbstractAuthenticationToken {
         return user;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
 }

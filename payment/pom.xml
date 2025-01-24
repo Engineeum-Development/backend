@@ -8,27 +8,22 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>payment</artifactId>
+    <packaging>jar</packaging>
+
     <dependencies>
         <dependency>
             <groupId>genum</groupId>
             <artifactId>shared</artifactId>
             <version>${project.version}</version>
+            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>genum</groupId>
             <artifactId>product</artifactId>
             <version>${project.version}</version>
+            <type>jar</type>
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.version}</version>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>
