@@ -3,7 +3,7 @@ package genum.genumUser.service;
 import genum.genumUser.controller.UserCreationRequest;
 import genum.genumUser.model.GenumUser;
 import genum.genumUser.repository.GenumUserRepository;
-import genum.shared.ResponseDetails;
+import genum.shared.DTO.response.ResponseDetails;
 import genum.shared.constant.Gender;
 import genum.shared.genumUser.GenumUserDTO;
 import genum.shared.security.CustomUserDetails;

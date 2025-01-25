@@ -12,11 +12,8 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 
-/**
- * These endpoints will only be called from within the applications
- */
 @Controller
-@RequestMapping("api/internal/payment/flutter_wave")
+@RequestMapping("api/payment/flutter_wave")
 public class FlutterWaveController {
 
     private final PaymentService paymentService;
@@ -36,7 +33,10 @@ public class FlutterWaveController {
         if (status.equals("successful")) {
             return paymentService.verifyPayment(reference, transactionId);
         } else {
-            return new PaymentResponse(LocalDateTime.now(), PaymentStatus.FAILED, Map.of("message", "Payment failed, please try again"));
+            return new PaymentResponse(LocalDateTime.now(),
+                    PaymentStatus.FAILED, Map.of(
+                    "message", "Payment failed, please try again",
+                    "status", "failed"));
         }
     }
 }

@@ -21,6 +21,11 @@
             <artifactId>product</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>genum</groupId>
+            <artifactId>email</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

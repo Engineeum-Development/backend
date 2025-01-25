@@ -34,6 +34,11 @@
             <artifactId>jjwt-impl</artifactId>
             <version>0.12.5</version>
         </dependency>
+        <dependency>
+            <groupId>genum</groupId>
+            <artifactId>email</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

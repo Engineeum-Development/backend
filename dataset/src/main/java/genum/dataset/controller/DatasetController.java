@@ -2,7 +2,7 @@ package genum.dataset.controller;
 import genum.dataset.DTO.CreateDatasetDTO;
 import genum.dataset.model.Datasets;
 import genum.dataset.service.DatasetsServiceImpl;
-import genum.shared.ResponseDetails;
+import genum.shared.DTO.response.ResponseDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

@@ -2,3 +2,4 @@
 *.env
 *target
 *.iml
+application-dev.properties

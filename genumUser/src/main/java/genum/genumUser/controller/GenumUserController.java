@@ -1,7 +1,7 @@
 package genum.genumUser.controller;
 
 import genum.genumUser.service.GenumUserService;
-import genum.shared.ResponseDetails;
+import genum.shared.DTO.response.ResponseDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

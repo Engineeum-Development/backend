@@ -10,6 +10,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
@@ -33,6 +34,7 @@ public class PaymentConfiguration {
 
 
     @Bean(name = "paystack")
+    @Primary
     public PaymentService paystack(RestTemplate restTemplate,
                                    ProductService productService,
                                    PaymentRepository paymentRepository,

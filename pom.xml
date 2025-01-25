@@ -22,6 +22,7 @@
         <module>genumUser</module>
         <module>shared</module>
         <module>app</module>
+        <module>email</module>
     </modules>
 
     <groupId>genum</groupId>

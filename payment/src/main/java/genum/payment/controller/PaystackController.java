@@ -1,5 +1,6 @@
 package genum.payment.controller;
 
+import genum.shared.payment.domain.PaymentResponse;
 import genum.shared.payment.domain.ProductRequest;
 import genum.payment.service.PaymentService;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -11,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 @Controller
-@RequestMapping("api/internal/payment/paystack")
+@RequestMapping("api/payment/paystack")
 public class PaystackController {
 
 
@@ -22,14 +23,12 @@ public class PaystackController {
     }
 
     @PostMapping("initialize")
-    @Async
-    public Future<?> initializeTransaction(@RequestBody ProductRequest productRequest) {
-        return CompletableFuture.completedFuture(paymentService.initializePayment(productRequest));
+    public PaymentResponse initializeTransaction(@RequestBody ProductRequest productRequest) {
+        return paymentService.initializePayment(productRequest);
     }
-    @GetMapping(value = "verify", params = {"reference","payment_id"})
-    @Async
-    public Future<?> verifyTransaction(@RequestParam("reference") String reference,
+    @GetMapping(value = "verify")
+    public PaymentResponse verifyTransaction(@RequestParam("reference") String reference,
                                                      @RequestParam("payment_id") String paymentId){
-        return CompletableFuture.completedFuture(paymentService.verifyPayment(reference, paymentId));
+        return paymentService.verifyPayment(reference, paymentId);
     }
 }
