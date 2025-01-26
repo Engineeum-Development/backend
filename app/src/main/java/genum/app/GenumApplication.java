@@ -15,12 +15,12 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
         "genum.product.repository",
         "genum.dataset.repository",
         "genum.genumUser.repository",
-        "genum.payment.repository"})
+        "genum.payment.repository", "genum.email.repository"})
 @ComponentScan(basePackages = {"genum.product",
         "genum.shared",
         "genum.dataset",
         "genum.genumUser",
-        "genum.payment"})
+        "genum.payment","genum.email"})
 @Import({genum.genumUser.config.UserWebSecurityConfiguration.class, genum.payment.config.PaymentConfiguration.class})
 public class GenumApplication
 {

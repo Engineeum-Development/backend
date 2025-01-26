@@ -1,23 +1,27 @@
 package genum.email.unit;
 
 
+import genum.email.repository.EmailRepository;
 import genum.email.service.EmailService;
 import jakarta.mail.MessagingException;
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
+import static org.mockito.Mockito.when;
+
 public class EmailServiceUnitTest {
 
     private EmailService emailService;
+    @Mock
+    private EmailRepository emailRepository;
 
     @BeforeEach
     void setUp() {
-        this.emailService = new EmailService();
+        this.emailService = new EmailService(emailRepository);
     }
     @Test
     void shouldSendMail() throws MessagingException, GeneralSecurityException, IOException {
