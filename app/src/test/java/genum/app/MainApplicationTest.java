@@ -1,13 +1,13 @@
-package genum.genumUser;
+package genum.app;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class UserApplicationTests {
+public class MainApplicationTest {
 
     @Test
     void contextLoads() {
-    }
 
+    }
 }
