@@ -2,6 +2,7 @@ package genum.genumUser.model;
 
 import genum.shared.constant.Gender;
 
+import genum.shared.genumUser.GenumUserDTO;
 import genum.shared.security.CustomUserDetails;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,5 +28,10 @@ public class GenumUser implements Serializable {
     private String dateOfBirth;
     private Gender gender;
     private CustomUserDetails customUserDetails;
+
+
+    public GenumUserDTO toUserDTO() {
+        return new GenumUserDTO(this.customUserDetails.getEmail(), this.getFirstName(), this.getLastName(), this.getGender().name());
+    }
 
 }

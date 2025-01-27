@@ -8,6 +8,7 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>genumUser</artifactId>
+    <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>genum</groupId>
@@ -33,16 +34,28 @@
             <artifactId>jjwt-impl</artifactId>
             <version>0.12.5</version>
         </dependency>
+        <dependency>
+            <groupId>genum</groupId>
+            <artifactId>email</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.version}</version>
+
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+            </plugin>
+
         </plugins>
+
     </build>
 
 </project>

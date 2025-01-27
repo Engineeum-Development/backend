@@ -2,3 +2,5 @@
 *.env
 *target
 *.iml
+application-dev.properties
+compose.yaml

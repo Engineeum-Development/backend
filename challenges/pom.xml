@@ -8,18 +8,24 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>challenges</artifactId>
-    <dependencies>
-
-    </dependencies>
-
+    <packaging>jar</packaging>
     <build>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.version}</version>
+
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+            </plugin>
+
         </plugins>
+
     </build>
+
+
 
 </project>

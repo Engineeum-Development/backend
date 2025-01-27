@@ -1,36 +1,32 @@
 package genum.app;
 
+import genum.product.model.Course;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
-@EnableConfigurationProperties
-@EnableTransactionManagement
 @EnableAsync
-@ComponentScan(basePackages = {
-        "genum.payment",
-        "genum.product",
+@EnableMongoRepositories(basePackages = {
+        "genum.product.repository",
+        "genum.dataset.repository",
+        "genum.genumUser.repository",
+        "genum.payment.repository", "genum.email.repository"})
+@ComponentScan(basePackages = {"genum.product",
+        "genum.shared",
         "genum.dataset",
         "genum.genumUser",
-        "genum.learn",
-        "genum.models",
-        "genum.research",
-        "genum.shared",})
-@EnableMongoRepositories(basePackages = {
-        "genum.genumUser.repository",
-        "genum.payment.repository",
-        "genum.product.repository",
-        "genum.dataset.repository"})
-@Import(RestTemplate.class)
-public class GenumApplication {
-    public static void main(String[] args) {
+        "genum.payment","genum.email"})
+@Import({genum.genumUser.config.UserWebSecurityConfiguration.class, genum.payment.config.PaymentConfiguration.class})
+public class GenumApplication
+{
+    public static void main( String[] args )
+    {
+
         SpringApplication.run(GenumApplication.class, args);
     }
 }

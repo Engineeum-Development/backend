@@ -4,6 +4,8 @@ import genum.payment.config.PaymentProperties;
 import genum.payment.constant.PaymentPlatform;
 import genum.payment.model.CoursePayment;
 import genum.payment.repository.PaymentRepository;
+import genum.product.event.EventType;
+import genum.product.event.ProductEvent;
 import genum.product.service.ProductService;
 import genum.shared.payment.constants.PaymentStatus;
 import genum.shared.payment.domain.PaymentResponse;
@@ -14,9 +16,10 @@ import genum.shared.product.DTO.CourseDTO;
 import genum.shared.security.CustomUserDetails;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.mongodb.core.aggregation.VariableOperators;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -40,6 +43,7 @@ public class PaystackPaymentService implements PaymentService {
     private final PaymentRepository paymentRepository;
 
     private final PaymentProperties paymentProperties;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     @Transactional
@@ -61,9 +65,11 @@ public class PaystackPaymentService implements PaymentService {
                 .currency("USD")
                 .build();
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", paymentProperties.getApiKey());
+        headers.set("Authorization", paymentProperties.getPaystack_apiKey());
         headers.set("Content-Type", "application/json");
-        var response = restTemplate.postForEntity(INITIALIZE_TRANSACTION_URL, initializeTransaction, InitializeTransactionResponse.class);
+
+        HttpEntity<InitializeTransaction> initializeTransactionHttpEntity = new HttpEntity<>(initializeTransaction, headers);
+        var response = restTemplate.exchange(INITIALIZE_TRANSACTION_URL, HttpMethod.POST, initializeTransactionHttpEntity, InitializeTransactionResponse.class);
         String paymentId = null;
         if (response.getStatusCode().is2xxSuccessful()){
             if (response.getBody().status.equals("true")) {
@@ -81,10 +87,10 @@ public class PaystackPaymentService implements PaymentService {
                         PaymentStatus.PENDING,
                         Map.of("message","Payment initialization was a success",
                                 "authorization_url", response.getBody().data.authorizationUrl,
-                                "access_code", response.getBody().data.accessCode,
-                                "reference", response.getBody().data.reference));
+                                "access_code", response.getBody().data().accessCode(),
+                                "reference", response.getBody().data().reference()));
             } else {
-                return new PaymentResponse(LocalDateTime.now(), PaymentStatus.FAILED, Map.of("message","The payment initialization failed please try again"));
+                return new PaymentResponse(LocalDateTime.now(), PaymentStatus.FAILED, Map.of("message","The payment of %s initialization failed please try again".formatted(paymentId)));
             }
 
         } else {
@@ -102,17 +108,33 @@ public class PaystackPaymentService implements PaymentService {
         }
 
         var user = (CustomUserDetails) authentication.getPrincipal();
-        var payment = paymentRepository.findById(paymentId).orElseThrow(PaymentNotFoundException::new);
+        var payment = paymentRepository
+                .findById(paymentId)
+                .orElseThrow(PaymentNotFoundException::new);
+        var courseRefId = payment.getCourseId();
+        var courseDTO = productService.findCourseByReference(courseRefId);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "");
+        headers.set("Authorization", paymentProperties.getPaystack_apiKey());
         headers.set("Content-Type", "application/json");
-        var response = restTemplate.getForEntity(VERIFY_TRANSACTION_URL+reference, VerifyTransactionResponse.class);
+
+        var initializeTransactionHttpEntity = new HttpEntity<>(headers);
+        var response = restTemplate.exchange(VERIFY_TRANSACTION_URL+reference,HttpMethod.GET,initializeTransactionHttpEntity, VerifyTransactionResponse.class);
         if (response.getStatusCode().is2xxSuccessful()){
             var responseData = response.getBody();
             if (responseData.status.equals("success")) {
                 payment.setPaymentStatus(PaymentStatus.COMPLETED);
                 payment = paymentRepository.save(payment);
+
+                var courseEvent = new ProductEvent(
+                        courseDTO,
+                        EventType.ENROLLED,
+                        LocalDateTime.now(),
+                        null
+                );
+                applicationEventPublisher.publishEvent(courseEvent);
+
+
                 return new PaymentResponse(LocalDateTime.now(), payment.getPaymentStatus(), Map.of("message", "Payment Success: Congratulations you can now access the course"));
 
             } else if (responseData.status.equals("failed")) {

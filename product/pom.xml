@@ -7,6 +7,8 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>product</artifactId>
+    <packaging>jar</packaging>
+
     <dependencies>
         <dependency>
             <groupId>genum</groupId>
@@ -15,14 +17,22 @@
         </dependency>
     </dependencies>
 
-
     <build>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.version}</version>
+
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+            </plugin>
+
         </plugins>
+
     </build>
+
+
 </project>
