@@ -56,31 +56,33 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        var optionalToken = jwtUtils.extractToken(request);
+        if (!request.getRequestURI().equals("/api/user/create")){
+            var optionalToken = jwtUtils.extractToken(request);
 
-        if (optionalToken.isEmpty()){
-            throw new TokenNotFoundException();
-        } else {
-            var jwtToken = optionalToken.get();
-            var email = jwtUtils.getClaimsValue(jwtToken, Claims::getSubject);
+            if (optionalToken.isEmpty()){
+                throw new TokenNotFoundException();
+            } else {
+                var jwtToken = optionalToken.get();
+                var email = jwtUtils.getClaimsValue(jwtToken, Claims::getSubject);
 
-            if (email!= null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                var userDetails = userDetailService.loadUserByUsername(email);
-                if (jwtUtils.validateToken(request)) {
-                    var authorities = jwtUtils.getTokenData(jwtToken, TokenData::getGrantedAuthorities);
-                    var genumAuthenticationToken = GenumAuthentication.authenticated(userDetails, authorities);
-                    genumAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(genumAuthenticationToken);
+                if (email!= null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    var userDetails = userDetailService.loadUserByUsername(email);
+                    if (jwtUtils.validateToken(request)) {
+                        var authorities = jwtUtils.getTokenData(jwtToken, TokenData::getGrantedAuthorities);
+                        var genumAuthenticationToken = GenumAuthentication.authenticated(userDetails, authorities);
+                        genumAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(genumAuthenticationToken);
+                    } else {
+                        throw new InvalidTokenException();
+                    }
                 } else {
                     throw new InvalidTokenException();
                 }
-            } else {
-                throw new InvalidTokenException();
+                filterChain.doFilter(request,response);
             }
+        }else {
             filterChain.doFilter(request,response);
         }
-
-
 
     }
 }

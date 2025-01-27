@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -37,7 +38,7 @@ public class UserWebSecurityConfiguration {
 
     private final JwtUtils jwtUtils;
 
-
+    @Bean
     public SecurityFilterChain securityFilterChain (HttpSecurity http,
                                                     LoginAuthenticationFilter loginAuthenticationFilter,
                                                     JWTAuthorizationFilter jwtAuthorizationFilter,
@@ -49,6 +50,9 @@ public class UserWebSecurityConfiguration {
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api-docs","/api-docs/*", "/api-docs.yaml","swagger-ui/*").permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/error")).permitAll()
+                        .requestMatchers("/api/user/create").permitAll()
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers(new AntPathRequestMatcher(HttpMethod.POST.toString(), "/error")).permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(loginAuthenticationFilter, AuthorizationFilter.class)
                 .addFilterBefore(jwtAuthorizationFilter, AuthorizationFilter.class)

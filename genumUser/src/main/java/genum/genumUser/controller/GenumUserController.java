@@ -17,16 +17,21 @@ import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("api/user")
+@RequestMapping("/api/user")
 public class GenumUserController {
 
     private final GenumUserService userService;
 
 
+<<<<<<< HEAD
     @PostMapping("create")
     public ResponseEntity<ResponseDetails<GenumUserDTO>> createUser(@Valid @RequestBody UserCreationRequest userCreationRequest) {
+=======
+    @PostMapping("/create")
+    public ResponseEntity<ResponseDetails> createUser(@Valid @RequestBody UserCreationRequest userCreationRequest) {
+>>>>>>> 0c377a6e5cc5b5c346164755b76b9f68360fd79f
         var response =  userService.createNewUser(userCreationRequest);
-        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
     @PostMapping("waitlist")
     public ResponseEntity<ResponseDetails<String>> addToWaitList(@RequestParam(name = "email") String email) {
