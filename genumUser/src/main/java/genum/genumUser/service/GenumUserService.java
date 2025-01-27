@@ -5,17 +5,23 @@ import genum.genumUser.event.UserEvent;
 import genum.genumUser.event.UserEventType;
 import genum.genumUser.model.GenumUser;
 import genum.genumUser.model.OneTimeToken;
+import genum.genumUser.model.WaitListEmail;
 import genum.genumUser.repository.GenumUserRepository;
+import genum.genumUser.repository.GenumUserWaitListRepository;
 import genum.genumUser.repository.OneTimeTokenRepository;
 import genum.shared.DTO.response.ResponseDetails;
 import genum.shared.constant.Gender;
 import genum.shared.genumUser.GenumUserDTO;
+import genum.shared.genumUser.WaitListEmailDTO;
 import genum.shared.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
@@ -31,6 +37,7 @@ public class GenumUserService {
     private final TransactionTemplate transactionTemplate;
     private final OneTimeTokenRepository oneTimeTokenRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final GenumUserWaitListRepository waitListRepository;
 
 
     public ResponseDetails<GenumUserDTO> createNewUser(UserCreationRequest userCreationRequest) {
@@ -63,4 +70,17 @@ public class GenumUserService {
 
     }
 
+    @Transactional
+    public ResponseDetails<String> addEmailToWaitingList(String email) {
+        if (waitListRepository.existsByEmail(email)) {
+            return new ResponseDetails<>(LocalDateTime.now(), "Email alresdy exists in waitlist", HttpStatus.OK.toString());
+        }else {
+            waitListRepository.save(new WaitListEmail(email));
+            return new ResponseDetails<>(LocalDateTime.now(), "Email successfully added to waitlist", HttpStatus.CREATED.toString());
+        }
+    }
+    @Transactional(readOnly = true)
+    public Page<WaitListEmailDTO> getWaitListEmails(Pageable pageable) {
+        return waitListRepository.findAllProjectedBy(pageable);
+    }
 }

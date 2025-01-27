@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -84,8 +86,8 @@ public class DatasetsServiceImpl implements DatasetsService {
     }
 
     @Override
-    public List<Datasets> getAllDatasets() {
-        return datasetsRepository.findAll();
+    public Page<Datasets> getAllDatasets(Pageable pageable) {
+        return datasetsRepository.findAll(pageable);
     }
 
     @Override

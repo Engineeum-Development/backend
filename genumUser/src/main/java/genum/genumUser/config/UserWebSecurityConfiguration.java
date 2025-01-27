@@ -46,6 +46,8 @@ public class UserWebSecurityConfiguration {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api-docs","/api-docs/*", "/api-docs.yaml","swagger-ui/*").permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/error")).permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(loginAuthenticationFilter, AuthorizationFilter.class)
