@@ -38,20 +38,24 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+        log.trace("Entering attempt authentication");
         try {
             LoginRequest credential = new ObjectMapper()
                     .configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, true)
                     .readValue(request.getInputStream(), LoginRequest.class);
             return authenticationManager.authenticate(GenumAuthentication.unAuthenticated(credential.email(), credential.password()));
         } catch (IOException exception) {
+            log.trace("Authentication failed because of IOException");
             throw new RuntimeException("Authentication failed");
         } catch (AuthenticationException exception) {
+            log.trace("Authentication failed because of Invalid email or password");
             throw new BadCredentialsException("Invalid email or password");
         }
     }
 
 
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException {
+        log.trace("Successful login");
         ObjectMapper mapper = new ObjectMapper();
         LoginResponse loginResponse = new LoginResponse(LocalDateTime.now(), "Login successful");
 
@@ -60,6 +64,7 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
         jwtUtils.addHeader(response, (CustomUserDetails) authResult.getPrincipal());
         try (var out = response.getOutputStream()) {
             mapper.writeValue(out, loginResponse);
+            log.trace("Output written");
         }
     }
 }

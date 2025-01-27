@@ -4,3 +4,4 @@
 *.iml
 application-dev.properties
 compose.yaml
+Dockerfile
