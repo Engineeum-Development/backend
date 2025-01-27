@@ -13,15 +13,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("api/user")
+@RequestMapping("/api/user")
 public class GenumUserController {
 
     private final GenumUserService userService;
 
 
-    @PostMapping("create")
+    @PostMapping("/create")
     public ResponseEntity<ResponseDetails> createUser(@Valid @RequestBody UserCreationRequest userCreationRequest) {
         var response =  userService.createNewUser(userCreationRequest);
-        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 }
