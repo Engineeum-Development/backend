@@ -22,6 +22,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -48,12 +49,11 @@ public class UserWebSecurityConfiguration {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/user/create").permitAll()
-                        .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers(new AntPathRequestMatcher(HttpMethod.POST.toString(), "/error")).permitAll()
                         .anyRequest().authenticated())
-                .addFilterBefore(loginAuthenticationFilter, AuthorizationFilter.class)
-                .addFilterBefore(jwtAuthorizationFilter, AuthorizationFilter.class)
-                .addFilterAfter(logoutHandlingFilter, AuthorizationFilter.class)
+                .addFilterBefore(loginAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(logoutHandlingFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 

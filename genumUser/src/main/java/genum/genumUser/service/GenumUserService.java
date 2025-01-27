@@ -1,14 +1,14 @@
 package genum.genumUser.service;
 
 import genum.genumUser.controller.UserCreationRequest;
+import genum.genumUser.exception.BadRequestException;
+import genum.genumUser.exception.UserAlreadyExistsException;
 import genum.genumUser.model.GenumUser;
 import genum.genumUser.repository.GenumUserRepository;
-import genum.shared.DTO.response.ResponseDetails;
 import genum.shared.constant.Gender;
 import genum.shared.genumUser.GenumUserDTO;
 import genum.shared.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -24,9 +24,9 @@ public class GenumUserService {
     private final TransactionTemplate transactionTemplate;
 
 
-    public ResponseDetails<GenumUserDTO> createNewUser(UserCreationRequest userCreationRequest) {
+    public GenumUserDTO createNewUser(UserCreationRequest userCreationRequest) {
         if (genumUserRepository.existsByCustomUserDetailsEmail(userCreationRequest.email())){
-            return new ResponseDetails<>(LocalDateTime.now(), "Invalid email, please choose another one", HttpStatus.CONFLICT.toString(),null);
+            throw new UserAlreadyExistsException();
         }
         try {
             final GenumUser user = GenumUser.builder()
@@ -39,9 +39,9 @@ public class GenumUserService {
                     .build();
 
             var registeredUser = transactionTemplate.execute((action) -> genumUserRepository.save(user));
-            return new ResponseDetails<>(LocalDateTime.now(), "User was successful created", HttpStatus.CREATED.toString(), registeredUser.toUserDTO());
+            return registeredUser.toUserDTO();
         } catch (IllegalArgumentException illegalArgumentException) {
-            return new ResponseDetails<>(LocalDateTime.now(), "something happened while parsing gender", HttpStatus.BAD_REQUEST.toString());
+            throw new BadRequestException();
         }
 
     }
