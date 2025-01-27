@@ -15,4 +15,4 @@ WORKDIR /opt/genum
 EXPOSE 8080
 COPY --from=BUILDER /opt/genum/**/target/*.jar /opt/genum/*.jar
 
-ENTRYPOINT ["java", "-jar", "/opt/genum/*.jar"]
+ENTRYPOINT ["java", "-jar", "/opt/genum/app-0.0.1-SNAPSHOT.jar"]
