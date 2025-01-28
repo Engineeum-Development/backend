@@ -47,52 +47,58 @@ public class EmailService {
 
     @Async
     @Transactional
-    public void sendEmail(String subject, String message, String to) throws GeneralSecurityException, IOException, MessagingException {
-        var HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        Gmail service = new Gmail.Builder(HTTP_TRANSPORT,
-                GsonFactory.getDefaultInstance(),
-                getCredential(HTTP_TRANSPORT))
-                .setApplicationName("genum")
-                .build();
-        Properties properties = new Properties();
-        Session session = Session.getDefaultInstance(properties, null);
-        MimeMessage email = new MimeMessage(session);
-        MimeMessageHelper helper = new MimeMessageHelper(email);
-        helper.setTo(to);
-        helper.setFrom("me");
-        helper.setText(message, true);
-        helper.setSubject(subject);
-
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        helper.getMimeMessage().writeTo(buffer);
-        byte[] rawMessageBytes = buffer.toByteArray();
-        String encodedEmail = Base64.encodeBase64URLSafeString(rawMessageBytes);
-
-        Message msg = new Message();
-        msg.setRaw(encodedEmail);
+    public void sendEmail(String subject, String message, String to){
         Email emailEntity = Email.builder()
                 .body(message)
                 .subject(subject)
                 .to(to)
                 .build();
-
         try {
-            msg = service.users().messages().send("me", msg).execute();
-            log.info("Email sent: {}", msg.getId());
-            emailEntity.setStatus(EmailStatus.SUCCESS);
-        } catch (GoogleJsonResponseException e) {
-            GoogleJsonError error = e.getDetails();
-            if (error.getCode() == 403) {
-                log.error("Unable to send email message: {}", e.getDetails());
-                emailEntity.setStatus(EmailStatus.FAILED);
-            } else {
-                log.error(String.valueOf(e.getDetails()));
-                emailEntity.setStatus(EmailStatus.FAILED);
+            var HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+            Gmail service = new Gmail.Builder(HTTP_TRANSPORT,
+                    GsonFactory.getDefaultInstance(),
+                    getCredential(HTTP_TRANSPORT))
+                    .setApplicationName("genum")
+                    .build();
+            Properties properties = new Properties();
+            Session session = Session.getDefaultInstance(properties, null);
+            MimeMessage email = new MimeMessage(session);
+            MimeMessageHelper helper = new MimeMessageHelper(email);
+            helper.setTo(to);
+            helper.setFrom("me");
+            helper.setText(message, true);
+            helper.setSubject(subject);
+
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            helper.getMimeMessage().writeTo(buffer);
+            byte[] rawMessageBytes = buffer.toByteArray();
+            String encodedEmail = Base64.encodeBase64URLSafeString(rawMessageBytes);
+
+            Message msg = new Message();
+            msg.setRaw(encodedEmail);
+            try {
+                msg = service.users().messages().send("me", msg).execute();
+                log.info("Email sent: {}", msg.getId());
+                emailEntity.setStatus(EmailStatus.SUCCESS);
+            } catch (GoogleJsonResponseException e) {
+                GoogleJsonError error = e.getDetails();
+                if (error.getCode() == 403) {
+                    log.error("Unable to send email message: {}", e.getDetails());
+                    emailEntity.setStatus(EmailStatus.FAILED);
+                } else {
+                    log.error(String.valueOf(e.getDetails()));
+                    emailEntity.setStatus(EmailStatus.FAILED);
+                }
+            } finally {
+                emailEntity.setEmailTryAttempts(emailEntity.getEmailTryAttempts()+1);
+                emailRepository.save(emailEntity);
             }
-        } finally {
-            emailEntity.setEmailTryAttempts(emailEntity.getEmailTryAttempts()+1);
+        } catch (GeneralSecurityException| IOException |  MessagingException e) {
+            emailEntity.setStatus(EmailStatus.FAILED);
             emailRepository.save(emailEntity);
+            log.error("Unable to build email: {}", e.getMessage());
         }
+
 
     }
 

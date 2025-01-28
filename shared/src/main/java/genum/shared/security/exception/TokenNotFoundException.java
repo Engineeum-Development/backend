@@ -1,4 +1,4 @@
-package genum.genumUser.security.exception;
+package genum.shared.security.exception;
 
 public class TokenNotFoundException extends RuntimeException{
 

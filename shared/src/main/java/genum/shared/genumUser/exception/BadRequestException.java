@@ -1,4 +1,4 @@
-package genum.genumUser.exception;
+package genum.shared.genumUser.exception;
 
 public class BadRequestException extends RuntimeException{
     public static final String MESSAGE = "Invalid parameters found";

@@ -9,7 +9,7 @@ public record UserCreationRequest(
         @NotNull String lastName,
         @NotNull @Email String email,
         @Length(min = 8) String password,
-        @NotNull String dateOfBirth,
+        @NotNull String country,
         @NotNull String gender
 ) {
 }
