@@ -1,18 +1,17 @@
 package genum.genumUser.config;
-import genum.genumUser.security.GenumAuthProvider;
 import genum.genumUser.repository.GenumUserRepository;
 import genum.genumUser.security.CustomUserDetailService;
 import genum.genumUser.security.jwt.JWTAuthorizationFilter;
 import genum.genumUser.security.jwt.JwtUtils;
-import genum.genumUser.security.jwt.LoginAuthenticationFilter;
 import genum.genumUser.security.jwt.LogoutHandlingFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -40,7 +39,6 @@ public class UserWebSecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain (HttpSecurity http,
-                                                    LoginAuthenticationFilter loginAuthenticationFilter,
                                                     JWTAuthorizationFilter jwtAuthorizationFilter,
                                                     LogoutHandlingFilter logoutHandlingFilter) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
@@ -52,17 +50,12 @@ public class UserWebSecurityConfiguration {
                         .requestMatchers(new AntPathRequestMatcher("/error")).permitAll()
                         .requestMatchers("/api/user/create").permitAll()
                         .requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers(new AntPathRequestMatcher(HttpMethod.POST.toString(), "/error")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher(HttpMethod.POST.toString(),"/error")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher(HttpMethod.GET.toString(),"/error")).permitAll()
                         .anyRequest().authenticated())
-                .addFilterBefore(loginAuthenticationFilter, AuthorizationFilter.class)
                 .addFilterBefore(jwtAuthorizationFilter, AuthorizationFilter.class)
-                .addFilterAfter(logoutHandlingFilter, AuthorizationFilter.class)
+                .addFilterBefore(logoutHandlingFilter, AuthorizationFilter.class)
                 .build();
-    }
-
-    @Bean
-    public LoginAuthenticationFilter loginAuthenticationFilter(AuthenticationManager authenticationManager) {
-        return new LoginAuthenticationFilter(authenticationManager, jwtUtils);
     }
 
     @Bean
@@ -70,16 +63,21 @@ public class UserWebSecurityConfiguration {
         return new JWTAuthorizationFilter(jwtUtils, userDetailsService);
     }
     @Bean
-    @Primary
     public UserDetailsService userDetailsService(GenumUserRepository userRepository) {
         return new CustomUserDetailService(userRepository);
     }
 
 
     @Bean
-    public AuthenticationManager authenticationManager(GenumUserRepository userRepository) {
-        var authManager = new GenumAuthProvider(userRepository, passwordEncoder());
-        return new ProviderManager(authManager);
+    public DaoAuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder, UserDetailsService userDetailsService) {
+        var daoAuthProvider = new DaoAuthenticationProvider(passwordEncoder);
+        daoAuthProvider.setUserDetailsService(userDetailsService);
+        return daoAuthProvider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
     @Bean
     public LogoutHandlingFilter logoutHandlingFilter() {

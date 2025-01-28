@@ -91,7 +91,7 @@ public class JwtUtils {
     }
 
     public <T> T getTokenData(String token, Function<TokenData, T> tokenFunction) {
-        var userDetails = genumUserRepository.getCustomUserDetailsByEmail(subject.apply(token));
+        var userDetails = genumUserRepository.findByCustomUserDetailsEmail(subject.apply(token)).getCustomUserDetails();
         return tokenFunction.apply(
                 TokenData.builder()
                         .valid(

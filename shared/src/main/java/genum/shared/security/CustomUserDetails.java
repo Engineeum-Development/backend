@@ -30,7 +30,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority(role.name()));
+        return Collections.singletonList(new SimpleGrantedAuthority(Role.USER.name()));
     }
 
     @Override
@@ -60,6 +60,6 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return this.accountEnabled;
+        return true;
     }
 }

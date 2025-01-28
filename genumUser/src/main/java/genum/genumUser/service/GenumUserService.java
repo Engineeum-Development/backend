@@ -1,8 +1,13 @@
 package genum.genumUser.service;
 
 import genum.genumUser.controller.UserCreationRequest;
+
 import genum.genumUser.event.UserEvent;
 import genum.genumUser.event.UserEventType;
+
+import genum.genumUser.exception.BadRequestException;
+import genum.genumUser.exception.UserAlreadyExistsException;
+
 import genum.genumUser.model.GenumUser;
 import genum.genumUser.model.OneTimeToken;
 import genum.genumUser.model.WaitListEmail;
@@ -14,19 +19,23 @@ import genum.shared.constant.Gender;
 import genum.shared.genumUser.GenumUserDTO;
 import genum.shared.genumUser.WaitListEmailDTO;
 import genum.shared.security.CustomUserDetails;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
+
 import java.util.Map;
 import java.util.UUID;
+
 
 @Service
 @RequiredArgsConstructor
@@ -40,9 +49,9 @@ public class GenumUserService {
     private final GenumUserWaitListRepository waitListRepository;
 
 
-    public ResponseDetails<GenumUserDTO> createNewUser(UserCreationRequest userCreationRequest) {
+    public GenumUserDTO createNewUser(@Valid UserCreationRequest userCreationRequest) {
         if (genumUserRepository.existsByCustomUserDetailsEmail(userCreationRequest.email())){
-            return new ResponseDetails<>(LocalDateTime.now(), "Invalid email, please choose another one", HttpStatus.CONFLICT.toString(),null);
+            throw new UserAlreadyExistsException();
         }
         try {
             final GenumUser user = GenumUser.builder()
@@ -62,10 +71,10 @@ public class GenumUserService {
                 oneTimeTokenRepository.save(otp);
                 return registeredUser;
             });
+            return registeredUserOut.toUserDTO();
 
-            return new ResponseDetails<>(LocalDateTime.now(), "User was successful created", HttpStatus.CREATED.toString(), registeredUserOut.toUserDTO());
         } catch (IllegalArgumentException illegalArgumentException) {
-            return new ResponseDetails<>(LocalDateTime.now(), "something happened while parsing gender", HttpStatus.BAD_REQUEST.toString());
+            throw new BadRequestException();
         }
 
     }

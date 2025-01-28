@@ -1,7 +1,6 @@
 package genum.genumUser.security.jwt;
 
 
-import genum.genumUser.security.GenumAuthentication;
 import genum.genumUser.security.domain.TokenData;
 import genum.genumUser.security.exception.InvalidTokenException;
 import genum.genumUser.security.exception.TokenNotFoundException;
@@ -11,6 +10,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -56,7 +56,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (!request.getRequestURI().equals("/api/user/create")){
+        if (!request.getRequestURI().equals("/api/user/create") && !request.getRequestURI().equals("/api/auth/login")){
             var optionalToken = jwtUtils.extractToken(request);
 
             if (optionalToken.isEmpty()){
@@ -69,7 +69,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
                     var userDetails = userDetailService.loadUserByUsername(email);
                     if (jwtUtils.validateToken(request)) {
                         var authorities = jwtUtils.getTokenData(jwtToken, TokenData::getGrantedAuthorities);
-                        var genumAuthenticationToken = GenumAuthentication.authenticated(userDetails, authorities);
+                        var genumAuthenticationToken = UsernamePasswordAuthenticationToken.authenticated(userDetails, "[PROTECTED]",authorities);
                         genumAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(genumAuthenticationToken);
                     } else {
