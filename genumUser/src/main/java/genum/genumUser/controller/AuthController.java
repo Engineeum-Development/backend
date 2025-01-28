@@ -37,7 +37,7 @@ public class AuthController {
         );
         SecurityContextHolder.getContext().setAuthentication(authentication);
         authService.addJWTtoHeader(httpServletRequest,httpServletResponse,authentication);
-        var loginResponse = new LoginResponse("Welcome", httpServletRequest.getHeader("Authorization").substring(7));
+        var loginResponse = new LoginResponse("Welcome", "");
         return ResponseEntity
                 .created(URI.create(httpServletRequest.getRequestURI()))
                 .body(new ResponseDetails<>(LocalDateTime.now() ,
