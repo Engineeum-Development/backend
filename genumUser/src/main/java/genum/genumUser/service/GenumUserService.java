@@ -50,6 +50,7 @@ public class GenumUserService {
     private final GenumUserWaitListRepository waitListRepository;
 
 
+    @Transactional
     public GenumUserDTO createNewUser(@Valid UserCreationRequest userCreationRequest) {
         if (genumUserRepository.existsByCustomUserDetailsEmail(userCreationRequest.email())){
             throw new UserAlreadyExistsException();

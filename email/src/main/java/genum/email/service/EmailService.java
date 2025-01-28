@@ -65,7 +65,7 @@ public class EmailService {
             MimeMessage email = new MimeMessage(session);
             MimeMessageHelper helper = new MimeMessageHelper(email);
             helper.setTo(to);
-            helper.setFrom("me");
+            helper.setFrom("engineeum@gmail.com");
             helper.setText(message, true);
             helper.setSubject(subject);
 
