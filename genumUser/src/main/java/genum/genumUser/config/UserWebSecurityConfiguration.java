@@ -1,4 +1,5 @@
 package genum.genumUser.config;
+
 import genum.genumUser.repository.GenumUserRepository;
 import genum.genumUser.security.CustomUserDetailService;
 import genum.genumUser.security.jwt.JWTAuthorizationFilter;
@@ -8,9 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,7 +21,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -51,13 +49,6 @@ public class UserWebSecurityConfiguration {
                         .requestMatchers("/api-docs","/api-docs/*", "/api-docs.yaml","/swagger-ui/*").permitAll()
                         .requestMatchers("/api/user/create").permitAll()
                         .anyRequest().authenticated())
-                .exceptionHandling(ex -> ex.accessDeniedHandler((request, response, accessDeniedException) ->
-                        {throw new AccessDeniedException("Access was denied for path "+ request.getRequestURI());
-                        })
-                        .authenticationEntryPoint(((request, response, authException) -> {
-                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.getWriter().write("Unauthorized: " + authException.getMessage());
-                        })))
                 .addFilterBefore(jwtAuthorizationFilter, AuthorizationFilter.class)
                 .addFilterBefore(logoutHandlingFilter, AuthorizationFilter.class)
                 .build();
