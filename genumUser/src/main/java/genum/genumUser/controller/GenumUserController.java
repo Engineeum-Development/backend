@@ -1,11 +1,9 @@
 package genum.genumUser.controller;
 
 
-import genum.genumUser.exception.BadRequestException;
-import genum.genumUser.exception.UserAlreadyExistsException;
-import genum.genumUser.model.WaitListEmail;
+import genum.shared.genumUser.exception.BadRequestException;
+import genum.shared.genumUser.exception.UserAlreadyExistsException;
 import genum.genumUser.service.GenumUserService;
-import genum.shared.DTO.request.LoginRequest;
 import genum.shared.DTO.response.ResponseDetails;
 import genum.shared.genumUser.GenumUserDTO;
 
@@ -50,7 +48,8 @@ public class GenumUserController {
             var response = new ResponseDetails<GenumUserDTO>(
                     LocalDateTime.now(),
                     "User was created successfully",
-                    HttpStatus.CREATED.toString());
+                    HttpStatus.CREATED.toString(),
+                    userInfo);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (BadRequestException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

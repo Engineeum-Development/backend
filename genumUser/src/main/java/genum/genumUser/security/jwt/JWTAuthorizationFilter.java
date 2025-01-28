@@ -2,8 +2,8 @@ package genum.genumUser.security.jwt;
 
 
 import genum.genumUser.security.domain.TokenData;
-import genum.genumUser.security.exception.InvalidTokenException;
-import genum.genumUser.security.exception.TokenNotFoundException;
+import genum.shared.security.exception.InvalidTokenException;
+import genum.shared.security.exception.TokenNotFoundException;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -56,7 +56,8 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (!request.getRequestURI().equals("/api/user/create") && !request.getRequestURI().equals("/api/auth/login")){
+        if (!request.getRequestURI().equals("/api/user/create") &&
+                !request.getRequestURI().equals("/api/auth/login")){
             var optionalToken = jwtUtils.extractToken(request);
 
             if (optionalToken.isEmpty()){

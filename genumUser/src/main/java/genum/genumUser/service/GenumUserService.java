@@ -5,8 +5,8 @@ import genum.genumUser.controller.UserCreationRequest;
 import genum.genumUser.event.UserEvent;
 import genum.genumUser.event.UserEventType;
 
-import genum.genumUser.exception.BadRequestException;
-import genum.genumUser.exception.UserAlreadyExistsException;
+import genum.shared.genumUser.exception.BadRequestException;
+import genum.shared.genumUser.exception.UserAlreadyExistsException;
 
 import genum.genumUser.model.GenumUser;
 import genum.genumUser.model.OneTimeToken;
@@ -58,7 +58,7 @@ public class GenumUserService {
                     .firstName(userCreationRequest.firstName())
                     .lastName(userCreationRequest.lastName())
                     .createdDate(LocalDateTime.now())
-                    .dateOfBirth(userCreationRequest.dateOfBirth())
+                    .country(userCreationRequest.country())
                     .gender(Gender.valueOf(userCreationRequest.gender()))
                     .customUserDetails(new CustomUserDetails(passwordEncoder.encode(userCreationRequest.password()), userCreationRequest.email()))
                     .build();
@@ -71,6 +71,7 @@ public class GenumUserService {
                 oneTimeTokenRepository.save(otp);
                 return registeredUser;
             });
+            assert registeredUserOut != null;
             return registeredUserOut.toUserDTO();
 
         } catch (IllegalArgumentException illegalArgumentException) {
