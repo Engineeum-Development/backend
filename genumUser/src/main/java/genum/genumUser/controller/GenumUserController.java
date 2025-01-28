@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/user")
 public class GenumUserController {
@@ -30,12 +30,12 @@ public class GenumUserController {
 
 
 
-    @GetMapping("waitlist")
+    @GetMapping("/waiting-list")
     public Page<WaitListEmailDTO> getWaitListEmails(@PageableDefault(size = 20, sort = "email") Pageable pageable) {
         return userService.getWaitListEmails(pageable);
     }
 
-    @PostMapping("waitlist")
+    @PostMapping("/waiting-list")
     public ResponseEntity<ResponseDetails<String>> addToWaitList(@RequestParam(name = "email") String email) {
         var response = userService.addEmailToWaitingList(email);
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));

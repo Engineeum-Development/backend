@@ -48,6 +48,7 @@ public class UserWebSecurityConfiguration {
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api-docs","/api-docs/*", "/api-docs.yaml","/swagger-ui/*").permitAll()
                         .requestMatchers("/api/user/create").permitAll()
+                        .requestMatchers("/api/user/waiting-list").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.accessDeniedHandler((request, response, accessDeniedException) ->
                         {throw new AccessDeniedException("Access was denied for path "+ request.getRequestURI());
