@@ -47,11 +47,6 @@ public class PaymentConfiguration {
                 applicationEventPublisher);
     }
 
-    @Bean
-    public PaymentProperties paymentProperties () {
-        return new PaymentProperties();
-    }
-
 }
 
 

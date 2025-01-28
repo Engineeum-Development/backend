@@ -5,11 +5,14 @@ import genum.dataset.service.DatasetsServiceImpl;
 import genum.shared.DTO.response.ResponseDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -78,8 +81,8 @@ public class DatasetController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<Datasets>> getAllDatasets() {
-        List<Datasets> datasets = datasetsService.getAllDatasets();
+    public ResponseEntity<Page<Datasets>> getAllDatasets(Pageable pageable) {
+        Page<Datasets> datasets = datasetsService.getAllDatasets(pageable);
         return ResponseEntity.ok(datasets);
     }
 

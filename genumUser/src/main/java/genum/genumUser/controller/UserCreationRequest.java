@@ -1,14 +1,15 @@
 package genum.genumUser.controller;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 
 public record UserCreationRequest(
-        String firstName,
-        String lastName,
-        @Email String email,
+        @NotNull String firstName,
+        @NotNull String lastName,
+        @NotNull @Email String email,
         @Length(min = 8) String password,
-        String dateOfBirth,
-        String gender
+        @NotNull String country,
+        @NotNull String gender
 ) {
 }
