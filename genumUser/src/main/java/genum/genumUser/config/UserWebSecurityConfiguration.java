@@ -1,18 +1,17 @@
 package genum.genumUser.config;
-import genum.genumUser.security.GenumAuthProvider;
 import genum.genumUser.repository.GenumUserRepository;
 import genum.genumUser.security.CustomUserDetailService;
 import genum.genumUser.security.jwt.JWTAuthorizationFilter;
 import genum.genumUser.security.jwt.JwtUtils;
-import genum.genumUser.security.jwt.LoginAuthenticationFilter;
 import genum.genumUser.security.jwt.LogoutHandlingFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -22,7 +21,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -41,7 +39,6 @@ public class UserWebSecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain (HttpSecurity http,
-                                                    LoginAuthenticationFilter loginAuthenticationFilter,
                                                     JWTAuthorizationFilter jwtAuthorizationFilter,
                                                     LogoutHandlingFilter logoutHandlingFilter) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
@@ -49,17 +46,13 @@ public class UserWebSecurityConfiguration {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/user/create").permitAll()
-                        .requestMatchers(new AntPathRequestMatcher(HttpMethod.POST.toString(), "/error")).permitAll()
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers(new AntPathRequestMatcher(HttpMethod.POST.toString(),"/error")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher(HttpMethod.GET.toString(),"/error")).permitAll()
                         .anyRequest().authenticated())
-                .addFilterBefore(loginAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(logoutHandlingFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthorizationFilter, AuthorizationFilter.class)
+                .addFilterBefore(logoutHandlingFilter, AuthorizationFilter.class)
                 .build();
-    }
-
-    @Bean
-    public LoginAuthenticationFilter loginAuthenticationFilter(AuthenticationManager authenticationManager) {
-        return new LoginAuthenticationFilter(authenticationManager, jwtUtils);
     }
 
     @Bean
@@ -67,16 +60,21 @@ public class UserWebSecurityConfiguration {
         return new JWTAuthorizationFilter(jwtUtils, userDetailsService);
     }
     @Bean
-    @Primary
     public UserDetailsService userDetailsService(GenumUserRepository userRepository) {
         return new CustomUserDetailService(userRepository);
     }
 
 
     @Bean
-    public AuthenticationManager authenticationManager(GenumUserRepository userRepository) {
-        var authManager = new GenumAuthProvider(userRepository, passwordEncoder());
-        return new ProviderManager(authManager);
+    public DaoAuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder, UserDetailsService userDetailsService) {
+        var daoAuthProvider = new DaoAuthenticationProvider(passwordEncoder);
+        daoAuthProvider.setUserDetailsService(userDetailsService);
+        return daoAuthProvider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
     @Bean
     public LogoutHandlingFilter logoutHandlingFilter() {
@@ -88,7 +86,7 @@ public class UserWebSecurityConfiguration {
     CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "OPTIONS", "DELETE", "PATCH"));
-        configuration.setAllowedOriginPatterns(Collections.singletonList("https://backend-9qqc.onrender.com"));
+        configuration.setAllowedOriginPatterns(Collections.singletonList("*"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 

@@ -13,6 +13,7 @@ import genum.shared.security.CustomUserDetails;
 import genum.shared.security.LoginResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class GenumUserService {
     private final TransactionTemplate transactionTemplate;
 
 
-    public GenumUserDTO createNewUser(UserCreationRequest userCreationRequest) {
+    public GenumUserDTO createNewUser(@Valid UserCreationRequest userCreationRequest) {
         if (genumUserRepository.existsByCustomUserDetailsEmail(userCreationRequest.email())){
             throw new UserAlreadyExistsException();
         }
@@ -50,16 +51,6 @@ public class GenumUserService {
             throw new BadRequestException();
         }
 
-    }
-
-    public LoginResponse loginUser(LoginRequest loginRequest, HttpServletRequest request, HttpServletResponse response) throws UserNotFoundException {
-        var userFromDatabase = genumUserRepository.findByCustomUserDetailsEmail(loginRequest.email());
-
-        if (Objects.isNull(userFromDatabase)){
-            throw new UserNotFoundException("User was not found");
-        } else{
-            return new LoginResponse(LocalDateTime.now(), "User was logged in");
-        }
     }
 
 }

@@ -45,19 +45,4 @@ public class GenumUserController {
         }
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<ResponseDetails<GenumUserDTO>> createUser(@Valid @RequestBody LoginRequest loginRequest,
-                                                                    HttpServletRequest servletRequest,
-                                                                    HttpServletResponse servletResponse) {
-        try{
-            LoginResponse userInfo =  userService.loginUser(loginRequest, servletRequest, servletResponse);
-            var response = new ResponseDetails<GenumUserDTO>(
-                    LocalDateTime.now(),
-                    "User was created successfully",
-                    HttpStatus.CREATED.toString());
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
-        } catch (UserNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

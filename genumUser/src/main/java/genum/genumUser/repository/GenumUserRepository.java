@@ -13,17 +13,5 @@ public interface GenumUserRepository extends MongoRepository<GenumUser, String> 
 
     GenumUser findByCustomUserDetailsEmail(String email);
 
-    @Query(value = """
-            {
-                'email': { $eq: ?0 }
-            }
-                """,
-            fields = """
-                    {
-                        'email': 1, 'password': 1
-                    }
-                    """)
-    CustomUserDetails getCustomUserDetailsByEmail(String email);
-
 
 }
