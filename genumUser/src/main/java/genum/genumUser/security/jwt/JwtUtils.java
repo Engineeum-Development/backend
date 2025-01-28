@@ -3,6 +3,7 @@ package genum.genumUser.security.jwt;
 import genum.genumUser.security.constant.SecurityConstants;
 import genum.genumUser.security.domain.TokenData;
 import genum.genumUser.repository.GenumUserRepository;
+import genum.shared.constant.Role;
 import genum.shared.security.CustomUserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
@@ -12,6 +13,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
@@ -71,7 +73,7 @@ public class JwtUtils {
     private final Function<CustomUserDetails, String> buildToken = (user) ->
             builder.get()
                     .subject(user.getEmail())
-                    .claim(SecurityConstants.ROLE, user.getAuthorities())
+                    .claim(SecurityConstants.ROLE, Role.USER)
                     .expiration(Date.from(Instant.now().plusSeconds(SecurityConstants.EXPIRATION_TIME)))
                     .compact();
 

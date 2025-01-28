@@ -5,6 +5,7 @@ import genum.genumUser.controller.UserCreationRequest;
 import genum.genumUser.event.UserEvent;
 import genum.genumUser.event.UserEventType;
 
+import genum.shared.constant.Role;
 import genum.shared.genumUser.exception.BadRequestException;
 import genum.shared.genumUser.exception.UserAlreadyExistsException;
 
@@ -49,18 +50,21 @@ public class GenumUserService {
     private final GenumUserWaitListRepository waitListRepository;
 
 
+    @Transactional
     public GenumUserDTO createNewUser(@Valid UserCreationRequest userCreationRequest) {
         if (genumUserRepository.existsByCustomUserDetailsEmail(userCreationRequest.email())){
             throw new UserAlreadyExistsException();
         }
         try {
+            var userDetails = new CustomUserDetails(passwordEncoder.encode(userCreationRequest.password()), userCreationRequest.email());
+            userDetails.setRole(Role.USER);
             final GenumUser user = GenumUser.builder()
                     .firstName(userCreationRequest.firstName())
                     .lastName(userCreationRequest.lastName())
                     .createdDate(LocalDateTime.now())
                     .country(userCreationRequest.country())
                     .gender(Gender.valueOf(userCreationRequest.gender()))
-                    .customUserDetails(new CustomUserDetails(passwordEncoder.encode(userCreationRequest.password()), userCreationRequest.email()))
+                    .customUserDetails(userDetails)
                     .build();
 
             var registeredUserOut = transactionTemplate.execute((action) -> {
@@ -81,12 +85,12 @@ public class GenumUserService {
     }
 
     @Transactional
-    public ResponseDetails<String> addEmailToWaitingList(String email) {
+    public String addEmailToWaitingList(String email) {
         if (waitListRepository.existsByEmail(email)) {
-            return new ResponseDetails<>(LocalDateTime.now(), "Email alresdy exists in waitlist", HttpStatus.OK.toString());
+            return "Already Exists";
         }else {
             waitListRepository.save(new WaitListEmail(email));
-            return new ResponseDetails<>(LocalDateTime.now(), "Email successfully added to waitlist", HttpStatus.CREATED.toString());
+            return "Email successfully saved";
         }
     }
     @Transactional(readOnly = true)
