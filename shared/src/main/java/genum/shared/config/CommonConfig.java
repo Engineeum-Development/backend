@@ -6,7 +6,6 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.MongoTransactionManager;
 
@@ -19,12 +18,10 @@ import org.springframework.web.client.RestTemplate;
 @EnableTransactionManagement
 public class CommonConfig {
     @Bean
-    @Primary
     public TransactionTemplate transactionTemplate (MongoDatabaseFactory mongoDatabaseFactory){
         return new TransactionTemplate(new MongoTransactionManager(mongoDatabaseFactory));
     }
     @Bean
-    @Primary
     public TransactionManager transactionManager(MongoDatabaseFactory factory) {
         return new MongoTransactionManager(factory);
     }
