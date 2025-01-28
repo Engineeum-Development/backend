@@ -1,6 +1,5 @@
 package genum.genumUser.controller;
 
-
 import genum.shared.genumUser.exception.BadRequestException;
 import genum.shared.genumUser.exception.UserAlreadyExistsException;
 import genum.genumUser.service.GenumUserService;
@@ -21,14 +20,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/user")
 public class GenumUserController {
 
     private final GenumUserService userService;
-
-
 
     @GetMapping("waitlist")
     public Page<WaitListEmailDTO> getWaitListEmails(@PageableDefault(size = 20, sort = "email") Pageable pageable) {

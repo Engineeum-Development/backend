@@ -3,5 +3,6 @@
 *target
 *.iml
 application-dev.properties
+application-deployment.properties
 compose.yaml
 Dockerfile
