@@ -49,13 +49,6 @@ public class UserWebSecurityConfiguration {
                         .requestMatchers("/api-docs","/api-docs/*", "/api-docs.yaml","/swagger-ui/*").permitAll()
                         .requestMatchers("/api/user/create").permitAll()
                         .anyRequest().authenticated())
-                .exceptionHandling(ex -> ex.accessDeniedHandler((request, response, accessDeniedException) ->
-                        {throw new AccessDeniedException("Access was denied for path "+ request.getRequestURI());
-                        })
-                        .authenticationEntryPoint(((request, response, authException) -> {
-                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.getWriter().write("Unauthorized: " + authException.getMessage());
-                        })))
                 .addFilterBefore(jwtAuthorizationFilter, AuthorizationFilter.class)
                 .addFilterBefore(logoutHandlingFilter, AuthorizationFilter.class)
                 .build();
