@@ -255,7 +255,7 @@ public class EmailService {
             }
 
             private Map<String, String> queryToMap(String query) {
-                Map<String, String> result = new HashMap();
+                Map<String, String> result = new HashMap<>();
                 if (query != null) {
                     String[] var3 = query.split("&");
 
