@@ -3,6 +3,7 @@ package genum.email.service;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.java6.auth.oauth2.VerificationCodeReceiver;
+import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -116,162 +117,14 @@ public class EmailService {
         GsonFactory gsonFactory = GsonFactory.getDefaultInstance();
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(GsonFactory.getDefaultInstance(), new InputStreamReader(inputStream));
 
-        // Build flow and trigger user authorization request.
+        FileDataStoreFactory dataStoreFactory = new FileDataStoreFactory(new File("email/token"));
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-                HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), clientSecrets, Collections.singletonList(GmailScopes.GMAIL_SEND))
-                .setDataStoreFactory(new FileDataStoreFactory(new File("email/token")))
-                .setAccessType("offline")
+                HTTP_TRANSPORT,gsonFactory, clientSecrets, Collections.singletonList(GmailScopes.GMAIL_SEND)
+        ).setAccessType("offline")
+                .setDataStoreFactory(dataStoreFactory)
                 .build();
-        MyServerReceiver receiver = new MyServerReceiver();
 
-        return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
-
+        return flow.loadCredential("user");
     }
 
-    private static class MyServerReceiver implements VerificationCodeReceiver {
-        private static final String host = "backend-9qqc.onrender.com";
-        private static final String callbackPath = "/oauth2/callback?flowName=GeneralOAuthFlow";
-        private static int port = 8888;
-        final Semaphore waitUnlessSignaled;
-        String successLandingPageUrl;
-        String failureLandingPageUrl;
-        String code;
-        String error;
-        private HttpServer server;
-
-        MyServerReceiver() {
-            this.waitUnlessSignaled = new Semaphore(0);
-        }
-
-        @Override
-        public String getRedirectUri() throws IOException {
-
-            this.server = HttpServer.create(new InetSocketAddress(port), 0);
-            HttpContext context = this.server.createContext(callbackPath, new MyServerReceiver.CallbackHandler());
-            this.server.setExecutor(null);
-
-            try {
-                this.server.start();
-                port = this.server.getAddress().getPort();
-            } catch (Exception var3) {
-                Throwables.propagateIfPossible(var3);
-                throw new IOException(var3);
-            }
-
-            return "https://" + host + ":" + port + callbackPath;
-        }
-
-        @Override
-        public String waitForCode() throws IOException {
-            this.waitUnlessSignaled.acquireUninterruptibly();
-            if (this.error != null) {
-                throw new IOException("User authorization failed (" + this.error + ")");
-            } else {
-                return this.code;
-            }
-
-        }
-
-        @Override
-        public void stop() throws IOException {
-            this.waitUnlessSignaled.release();
-            if (this.server != null) {
-                try {
-                    this.server.stop(0);
-                } catch (Exception var2) {
-                    Throwables.propagateIfPossible(var2);
-                    throw new IOException(var2);
-                }
-
-                this.server = null;
-            }
-
-        }
-
-        class CallbackHandler implements HttpHandler {
-            CallbackHandler() {
-            }
-
-            public void handle(HttpExchange httpExchange) throws IOException {
-                if (MyServerReceiver.callbackPath.equals(httpExchange.getRequestURI().getPath())) {
-                    new StringBuilder();
-
-                    try {
-                        Map<String, String> parms = this.queryToMap(httpExchange.getRequestURI().getQuery());
-                        MyServerReceiver.this.error = parms.get("error");
-                        MyServerReceiver.this.code = parms.get("code");
-                        Headers respHeaders = httpExchange.getResponseHeaders();
-                        if (MyServerReceiver.this.error == null && MyServerReceiver.this.successLandingPageUrl != null) {
-                            respHeaders.add("Location", MyServerReceiver.this.successLandingPageUrl);
-                            httpExchange.sendResponseHeaders(302, -1L);
-                        } else if (MyServerReceiver.this.error != null && MyServerReceiver.this.failureLandingPageUrl != null) {
-                            respHeaders.add("Location", MyServerReceiver.this.failureLandingPageUrl);
-                            httpExchange.sendResponseHeaders(302, -1L);
-                        } else {
-                            this.writeLandingHtml(httpExchange, respHeaders);
-                        }
-
-                        httpExchange.close();
-                    } finally {
-                        MyServerReceiver.this.waitUnlessSignaled.release();
-                    }
-
-                }
-            }
-
-            private void writeLandingHtml(HttpExchange exchange, Headers headers) throws IOException {
-                OutputStream os = exchange.getResponseBody();
-                Throwable var4 = null;
-
-                try {
-                    exchange.sendResponseHeaders(200, 0L);
-                    headers.add("ContentType", "text/html");
-                    OutputStreamWriter doc = new OutputStreamWriter(os, StandardCharsets.UTF_8);
-                    doc.write("<html>");
-                    doc.write("<head><title>OAuth 2.0 Authentication Token Received</title></head>");
-                    doc.write("<body>");
-                    doc.write("Received verification code. You may now close this window.");
-                    doc.write("</body>");
-                    doc.write("</html>\n");
-                    doc.flush();
-                } catch (Throwable var13) {
-                    var4 = var13;
-                    throw var13;
-                } finally {
-                    if (os != null) {
-                        if (var4 != null) {
-                            try {
-                                os.close();
-                            } catch (Throwable var12) {
-                                var4.addSuppressed(var12);
-                            }
-                        } else {
-                            os.close();
-                        }
-                    }
-
-                }
-
-            }
-
-            private Map<String, String> queryToMap(String query) {
-                Map<String, String> result = new HashMap<>();
-                if (query != null) {
-                    String[] var3 = query.split("&");
-
-                    for (String param : var3) {
-                        String[] pair = param.split("=");
-                        if (pair.length > 1) {
-                            result.put(pair[0], pair[1]);
-                        } else {
-                            result.put(pair[0], "");
-                        }
-                    }
-                }
-
-                return result;
-            }
-
-        }
     }
-}
