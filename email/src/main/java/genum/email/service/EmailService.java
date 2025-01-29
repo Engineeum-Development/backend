@@ -9,6 +9,7 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.googleapis.json.GoogleJsonError;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.JsonParser;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.gmail.Gmail;
@@ -105,19 +106,19 @@ public class EmailService {
 
     private Credential getCredential(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         // Load client secrets
-
+        log.debug(googleCredential);
         InputStream inputStream = new ByteArrayInputStream(
                 Objects.isNull(googleCredential) ?
                 System.getenv("GOOGLE_CREDENTIALS").getBytes()
                 : googleCredential.getBytes()
         );
-
+        GsonFactory gsonFactory = GsonFactory.getDefaultInstance();
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(GsonFactory.getDefaultInstance(), new InputStreamReader(inputStream));
 
         // Build flow and trigger user authorization request.
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                 HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), clientSecrets, Collections.singletonList(GmailScopes.GMAIL_SEND))
-                .setDataStoreFactory(new FileDataStoreFactory(new File("token")))
+                .setDataStoreFactory(new FileDataStoreFactory(new File("email/token")))
                 .setAccessType("offline")
                 .build();
         LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
