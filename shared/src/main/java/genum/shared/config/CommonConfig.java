@@ -21,6 +21,7 @@ public class CommonConfig {
     public TransactionTemplate transactionTemplate (MongoDatabaseFactory mongoDatabaseFactory){
         return new TransactionTemplate(new MongoTransactionManager(mongoDatabaseFactory));
     }
+
     @Bean
     public TransactionManager transactionManager(MongoDatabaseFactory factory) {
         return new MongoTransactionManager(factory);
