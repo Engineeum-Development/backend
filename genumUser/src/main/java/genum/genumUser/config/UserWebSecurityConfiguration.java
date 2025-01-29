@@ -46,7 +46,6 @@ public class UserWebSecurityConfiguration {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers("/gmailCallback").permitAll()
                         .requestMatchers("/api-docs","/api-docs/*", "/api-docs.yaml","/swagger-ui/*").permitAll()
                         .requestMatchers("/api/user/create").permitAll()
                         .anyRequest().authenticated())

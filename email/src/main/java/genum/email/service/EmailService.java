@@ -121,7 +121,7 @@ public class EmailService {
                 .setDataStoreFactory(new FileDataStoreFactory(new File("email/token")))
                 .setAccessType("offline")
                 .build();
-        LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
+        LocalServerReceiver receiver = new LocalServerReceiver.Builder().setHost("backend-9qqc.onrender.com").setCallbackPath("/oauth2/callback").build();
 
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
 
