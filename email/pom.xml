@@ -29,11 +29,18 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>token</directory>
+                <includes>
+                    <include>*</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
