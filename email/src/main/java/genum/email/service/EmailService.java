@@ -130,7 +130,7 @@ public class EmailService {
 
     private static class MyServerReceiver implements VerificationCodeReceiver {
         private static final String host = "backend-9qqc.onrender.com";
-        private static final String callbackPath = "/oauth2/callback";
+        private static final String callbackPath = "/oauth2/callback?flowName=GeneralOAuthFlow";
         private static int port = 8888;
         final Semaphore waitUnlessSignaled;
         String successLandingPageUrl;
