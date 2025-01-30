@@ -25,6 +25,7 @@ public class GenumUser implements Serializable {
     private String lastName;
     private boolean isVerified;
     private LocalDateTime createdDate;
+    private LocalDateTime lastLogin;
     private String country;
     private Gender gender;
     private CustomUserDetails customUserDetails;
