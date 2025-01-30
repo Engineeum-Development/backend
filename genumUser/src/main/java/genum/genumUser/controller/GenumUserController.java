@@ -2,6 +2,8 @@ package genum.genumUser.controller;
 
 
 import genum.shared.genumUser.exception.BadRequestException;
+import genum.shared.genumUser.exception.GenumUserNotFoundException;
+import genum.shared.genumUser.exception.OTTNotFoundException;
 import genum.shared.genumUser.exception.UserAlreadyExistsException;
 import genum.genumUser.service.GenumUserService;
 import genum.shared.DTO.response.ResponseDetails;
@@ -16,7 +18,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -40,6 +41,23 @@ public class GenumUserController {
         var response = userService.addEmailToWaitingList(email);
         var responseDetail = new ResponseDetails<String>(LocalDateTime.now(), response, HttpStatus.CREATED.toString());
         return new ResponseEntity<>(responseDetail, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/confirm-token")
+    public ResponseEntity<ResponseDetails<String>> confirmEmail(@RequestParam(name = "token") String token) {
+        try{
+            var response = userService.confirmOTT(token);
+            var responseDetail = new ResponseDetails<String>(LocalDateTime.now(), response, HttpStatus.OK.toString());
+            return ResponseEntity.status(HttpStatus.OK).body(responseDetail);
+        } catch (OTTNotFoundException | GenumUserNotFoundException e) {
+            if (e instanceof OTTNotFoundException ex) {
+                var responseDetail = new ResponseDetails<String>(LocalDateTime.now(), ex.getMessage(), HttpStatus.OK.toString());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseDetail);
+            } else {
+                var responseDetail = new ResponseDetails<String>(LocalDateTime.now(), e.getMessage(), HttpStatus.OK.toString());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseDetail);
+            }
+        }
     }
 
     @PostMapping("/create")

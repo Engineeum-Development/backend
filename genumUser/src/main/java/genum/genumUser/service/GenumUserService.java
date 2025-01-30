@@ -7,6 +7,8 @@ import genum.genumUser.event.UserEventType;
 
 import genum.shared.constant.Role;
 import genum.shared.genumUser.exception.BadRequestException;
+import genum.shared.genumUser.exception.GenumUserNotFoundException;
+import genum.shared.genumUser.exception.OTTNotFoundException;
 import genum.shared.genumUser.exception.UserAlreadyExistsException;
 
 import genum.genumUser.model.GenumUser;
@@ -15,7 +17,6 @@ import genum.genumUser.model.WaitListEmail;
 import genum.genumUser.repository.GenumUserRepository;
 import genum.genumUser.repository.GenumUserWaitListRepository;
 import genum.genumUser.repository.OneTimeTokenRepository;
-import genum.shared.DTO.response.ResponseDetails;
 import genum.shared.constant.Gender;
 import genum.shared.genumUser.GenumUserDTO;
 import genum.shared.genumUser.WaitListEmailDTO;
@@ -25,7 +26,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -87,6 +87,30 @@ public class GenumUserService {
         var user = genumUserRepository.findByCustomUserDetailsEmail(email);
         user.setLastLogin(LocalDateTime.now());
         genumUserRepository.save(user);
+    }
+    //TODO: Need to periodically delete expired oneTimeTokens
+    @Transactional
+    public String confirmOTT(String token) {
+        // only returns otts that are not yet expired
+        var oneTimeTokenOptional = oneTimeTokenRepository
+                .findOneTimeTokenByToken(token)
+                .filter(ott -> LocalDateTime.now().isAfter(ott.getExpiry()));
+
+        if (oneTimeTokenOptional.isPresent()) {
+            var oneTimeTokenUserOptional = oneTimeTokenOptional
+                    .map(OneTimeToken::getUserEmail)
+                    .map(genumUserRepository::findByCustomUserDetailsEmail);
+            if (oneTimeTokenUserOptional.isPresent()){
+                var genumUser = oneTimeTokenUserOptional.get();
+                genumUser.setVerified(true);
+                genumUserRepository.save(genumUser);
+                return "confirmed";
+            } else {
+                throw new GenumUserNotFoundException();
+            }
+        } else {
+            throw new OTTNotFoundException();
+        }
     }
     public String addEmailToWaitingList(String email) {
         if (waitListRepository.existsByEmail(email)) {
