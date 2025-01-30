@@ -85,7 +85,7 @@ public class GenumUserService {
     }
     public void incrementUserLastLogin(String email) {
         var user = genumUserRepository.findByCustomUserDetailsEmail(email);
-        user.setLastLogin(LocalDateTime.now());
+        user.getCustomUserDetails().setLastLogin(LocalDateTime.now());
         genumUserRepository.save(user);
     }
     //TODO: Need to periodically delete expired oneTimeTokens

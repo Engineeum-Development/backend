@@ -28,34 +28,6 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailService;
 
 
-
-
-//    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-//        String header = request.getHeader(HEADER_STRING);
-//        if (header == null || !header.startsWith(TOKEN_PREFIX)) {
-//            chain.doFilter(request, response);
-//            return;
-//        }
-//        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = getAuthentication(request);
-//        SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-//        chain.doFilter(request, response);
-//    }
-//    private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
-//        String token = request.getHeader(HEADER_STRING);
-//        if (token != null) {
-//            String user = JWT.require(Algorithm.HMAC512(SECRET.getBytes()))
-//                    .build()
-//                    .verify(token.replace(TOKEN_PREFIX, ""))
-//                    .getSubject();
-//
-//            if (user != null) {
-//                return new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
-//            }
-//            return null;
-//        }
-//        return null;
-//    }
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         if (!request.getRequestURI().equals("/api/user/create") &&

@@ -26,6 +26,10 @@ public class CustomUserDetails implements UserDetails {
     public CustomUserDetails(String password, String email) {
         this.password = password;
         this.email = email;
+        this.accountExpired = false;
+        this.accountCredentialsExpired = false;
+        this.accountLocked = false;
+        this.accountEnabled = true;
     }
 
     @Override
@@ -60,6 +64,6 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return accountEnabled;
     }
 }
