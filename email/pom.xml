@@ -14,11 +14,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.google.apis</groupId>
-            <artifactId>google-api-services-gmail</artifactId>
-            <version>v1-rev20220404-2.0.0</version>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
@@ -34,6 +29,12 @@
                 <directory>token</directory>
                 <includes>
                     <include>*</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*</include>
                 </includes>
             </resource>
         </resources>

@@ -83,8 +83,11 @@ public class GenumUserService {
         }
 
     }
-
-    @Transactional
+    public void incrementUserLastLogin(String email) {
+        var user = genumUserRepository.findByCustomUserDetailsEmail(email);
+        user.setLastLogin(LocalDateTime.now());
+        genumUserRepository.save(user);
+    }
     public String addEmailToWaitingList(String email) {
         if (waitListRepository.existsByEmail(email)) {
             return "Already Exists";

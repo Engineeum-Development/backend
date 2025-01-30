@@ -21,6 +21,7 @@ import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -55,9 +56,10 @@ public class JwtUtils {
         return Optional.empty();
     };
 
-    private final BiConsumer<HttpServletResponse, CustomUserDetails> addTokenToHeaderFunction = (response, user) -> {
+    private final BiFunction<HttpServletResponse, CustomUserDetails, String> addTokenToHeaderFunction = (response, user) -> {
         var accessToken = createToken(user);
         response.addHeader("Authorization", String.format("Bearer %s", accessToken));
+        return accessToken;
     };
 
     private final Supplier<JwtBuilder> builder = () ->
@@ -88,8 +90,8 @@ public class JwtUtils {
         return extractToken.apply(httpServletRequest);
     }
 
-    public void addHeader(HttpServletResponse response, CustomUserDetails user) {
-        addTokenToHeaderFunction.accept(response,user);
+    public String addHeader(HttpServletResponse response, CustomUserDetails user) {
+        return addTokenToHeaderFunction.apply(response,user);
     }
 
     public <T> T getTokenData(String token, Function<TokenData, T> tokenFunction) {
