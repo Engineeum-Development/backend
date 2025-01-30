@@ -44,7 +44,7 @@ public class UserWebSecurityConfiguration {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers("/api-docs","/api-docs/*", "/api-docs.yaml","/swagger-ui/*").permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/api/user/create").permitAll()
                         .requestMatchers("/api/user/waiting-list").permitAll()
                         .anyRequest().authenticated())

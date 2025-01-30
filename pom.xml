@@ -36,8 +36,13 @@
         <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
-    <dependencies>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <version>2.5.0</version>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
@@ -89,15 +94,8 @@
             <version>2.0.0</version>
         </dependency>
     </dependencies>
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-            <groupId>org.springdoc</groupId>
-                <version>2.5.0</version>
-                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+
+
 
 
     <build>
