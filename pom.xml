@@ -39,18 +39,16 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.springdoc</groupId>
-            <version>2.5.0</version>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-actuator</artifactId>
         </dependency>
 
         <dependency>
@@ -130,22 +128,6 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>3.4.2</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.springdoc</groupId>
-                    <artifactId>springdoc-openapi-maven-plugin</artifactId>
-                    <version>1.4</version>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>generate</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <outputFileName>openapi.json</outputFileName>
-                        <outputDir>${project.build.directory}</outputDir>
-                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
