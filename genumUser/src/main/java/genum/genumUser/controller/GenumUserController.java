@@ -15,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +33,7 @@ public class GenumUserController {
 
 
     @GetMapping("/waiting-list")
-    public Page<WaitListEmailDTO> getWaitListEmails(@PageableDefault(size = 20, sort = "email") Pageable pageable) {
+    public Page<WaitListEmailDTO> getWaitListEmails(@PageableDefault(size = 20, direction = Sort.Direction.ASC) Pageable pageable) {
         return userService.getWaitListEmails(pageable);
     }
 
