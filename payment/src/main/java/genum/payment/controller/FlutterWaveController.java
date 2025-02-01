@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 
-@Controller
+@RestController
 @RequestMapping("api/payment/flutter_wave")
 public class FlutterWaveController {
 

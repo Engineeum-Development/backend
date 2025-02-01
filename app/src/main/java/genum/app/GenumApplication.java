@@ -1,13 +1,11 @@
 package genum.app;
 
-import genum.product.model.Course;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
 @EnableAsync
@@ -29,4 +27,5 @@ public class GenumApplication
 
         SpringApplication.run(GenumApplication.class, args);
     }
+
 }
