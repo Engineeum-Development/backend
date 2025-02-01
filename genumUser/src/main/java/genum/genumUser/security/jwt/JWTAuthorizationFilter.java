@@ -19,6 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -26,15 +27,21 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
     private final UserDetailsService userDetailService;
+    private static final Pattern SWAGGER_PATHS = Pattern.compile("^/(swagger-ui|v3/api-docs|swagger-resources|webjars)(/.*)?$");
 
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (!request.getRequestURI().equals("/api/user/create") &&
-                !request.getRequestURI().equals("/api/auth/login")){
+        String requestUri = request.getRequestURI();
+        if (requestUri.equals("/api/user/create") ||
+                requestUri.equals("/api/auth/login") ||
+                SWAGGER_PATHS.matcher(requestUri).matches()
+        ) {
+            filterChain.doFilter(request,response);
+        } else {
             var optionalToken = jwtUtils.extractToken(request);
 
-            if (optionalToken.isEmpty()){
+            if (optionalToken.isEmpty()) {
                 throw new TokenNotFoundException();
             } else {
                 var jwtToken = optionalToken.get();
@@ -44,7 +51,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
                     var userDetails = userDetailService.loadUserByUsername(email);
                     if (jwtUtils.validateToken(request)) {
                         var authorities = jwtUtils.getTokenData(jwtToken, TokenData::getGrantedAuthorities);
-                        var genumAuthenticationToken = UsernamePasswordAuthenticationToken.authenticated(userDetails, "[PROTECTED]",authorities);
+                        var genumAuthenticationToken = UsernamePasswordAuthenticationToken.authenticated(userDetails, "[PROTECTED]", authorities);
                         genumAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(genumAuthenticationToken);
                     } else {
@@ -53,11 +60,9 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
                 } else {
                     throw new InvalidTokenException();
                 }
-                filterChain.doFilter(request,response);
+                filterChain.doFilter(request, response);
             }
-        }else {
-            filterChain.doFilter(request,response);
-        }
 
+        }
     }
 }

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
-@Controller
+@RestController
 @RequestMapping("api/payment/paystack")
 public class PaystackController {
 
