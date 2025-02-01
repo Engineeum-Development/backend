@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -34,6 +35,11 @@ public class GlobalExceptionHandler{
         return new ResponseEntity<>("An error occurred: " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler
+    public ResponseEntity<String> handleLockedException(LockedException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
+
 
     @ExceptionHandler(InvalidTokenException.class)
     public ResponseEntity<ResponseDetails<String>> handleTokenInvalidTokenException(InvalidTokenException invalidTokenException) {
@@ -50,6 +56,6 @@ public class GlobalExceptionHandler{
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ResponseDetails<String>> handleBadCredentialsException(BadCredentialsException badCredentialsException) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ResponseDetails<>(LocalDateTime.now(), "invalid creedentials, Please try again with correct credentials", HttpStatus.UNAUTHORIZED.toString()));
+                .body(new ResponseDetails<>(LocalDateTime.now(), "invalid credentials, Please try again with correct credentials", HttpStatus.UNAUTHORIZED.toString()));
     }
 }

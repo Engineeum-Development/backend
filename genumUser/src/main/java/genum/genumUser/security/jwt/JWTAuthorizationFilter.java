@@ -43,7 +43,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
             var optionalToken = jwtUtils.extractToken(request);
 
             if (optionalToken.isEmpty()) {
-                throw new TokenNotFoundException();
+                throw new TokenNotFoundException(requestUri);
             } else {
                 var jwtToken = optionalToken.get();
                 var email = jwtUtils.getClaimsValue(jwtToken, Claims::getSubject);
