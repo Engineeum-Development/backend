@@ -27,19 +27,16 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
     private final UserDetailsService userDetailService;
-    private static final Pattern SWAGGER_PATHS = Pattern.compile("^/(swagger-ui|v3/api-docs|swagger-resources|webjars)(/.*)?$");
+    private static final Pattern ACTUATOR_PATHS = Pattern.compile("^/(actuator|favicon.ico)(/.*)?");
     public static final Pattern USER_PATHS = Pattern.compile("^/api/user/(create|waiting-list)");
     public static final Pattern AUTH_PATHS = Pattern.compile("^/api/auth/.*");
-    public static final Pattern HEALTH_CHECK = Pattern.compile("/healthz");
-
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String requestUri = request.getRequestURI();
-        if (AUTH_PATHS.matcher(requestUri).matches() ||
+        if ( AUTH_PATHS.matcher(requestUri).matches() ||
                 USER_PATHS.matcher(requestUri).matches() ||
-                SWAGGER_PATHS.matcher(requestUri).matches() ||
-                HEALTH_CHECK.matcher(requestUri).matches()
+                ACTUATOR_PATHS.matcher(requestUri).matches()
         ) {
             filterChain.doFilter(request,response);
         } else {
