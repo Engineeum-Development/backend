@@ -36,6 +36,7 @@ import java.time.LocalDateTime;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -112,9 +113,18 @@ public class GenumUserService {
             throw new OTTNotFoundException();
         }
     }
+    public void deleteExpiredOTTs() {
+        var oneTimeTokens = oneTimeTokenRepository
+                .findTop50ByExpiryBeforeOrderByExpiryDesc(LocalDateTime.now())
+                .stream()
+                .map(OneTimeTokenRepository.IdOnly::getId)
+                .collect(Collectors.toList());
+
+        oneTimeTokenRepository.deleteAllById(oneTimeTokens);
+    }
     public String addEmailToWaitingList(String email) {
         if (waitListRepository.existsByEmail(email)) {
-            return "Already Exists";
+            throw new UserAlreadyExistsException();
         }else {
             waitListRepository.save(new WaitListEmail(email));
             return "Email successfully saved";

@@ -35,7 +35,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String requestUri = request.getRequestURI();
         if ( AUTH_PATHS.matcher(requestUri).matches() ||
-                USER_PATHS.matcher(requestUri).matches() ||
+                (USER_PATHS.matcher(requestUri).matches() && request.getMethod().equals("POST")) ||
                 ACTUATOR_PATHS.matcher(requestUri).matches()
         ) {
             filterChain.doFilter(request,response);
