@@ -1,6 +1,7 @@
 package genum.dataset.config;
 
 import genum.dataset.repository.DatasetRepository;
+import genum.dataset.service.DatasetStorageService;
 import genum.dataset.service.DatasetsService;
 import genum.dataset.service.DatasetsServiceImpl;
 import org.springframework.context.annotation.Bean;
@@ -10,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 public class DatasetConfiguration {
 
     @Bean
-    public DatasetsService datasetsService(DatasetRepository datasetRepository) {
-        return new DatasetsServiceImpl(datasetRepository);
+    public DatasetsService datasetsService(DatasetRepository datasetRepository, DatasetStorageService datasetStorageService) {
+        return new DatasetsServiceImpl(datasetRepository, datasetStorageService);
     }
 }
