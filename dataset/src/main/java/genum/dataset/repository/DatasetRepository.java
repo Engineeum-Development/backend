@@ -16,5 +16,5 @@ public interface DatasetRepository extends MongoRepository<Dataset, String>{
 
     boolean existsByDatasetID(String datasetID);
 
-    List<Dataset> findTop50ByOrderByDownloadsDesc();
+    List<Dataset> findTop100ByOrderByDownloadsDesc();
 }

@@ -1,7 +1,6 @@
 package genum.dataset.service;
 
 import genum.dataset.DTO.CreateDatasetDTO;
-import genum.dataset.domain.DatasetDownloadData;
 import genum.dataset.domain.DatasetMetadata;
 import genum.dataset.domain.DatasetType;
 import genum.dataset.model.Dataset;
@@ -9,6 +8,9 @@ import genum.dataset.repository.DatasetRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -16,8 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.nio.file.Path;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,7 +35,7 @@ public class DatasetsServiceImpl implements DatasetsService {
 
 
     @Override
-    public String createDataset(CreateDatasetDTO createNewDatasetDTO, MultipartFile file) {
+    public String createDataset(CreateDatasetDTO createNewDatasetDTO, MultipartFile file) throws IOException {
         DatasetType fileType = validateFileType(file);
         DatasetMetadata metadata = new DatasetMetadata(
                 createNewDatasetDTO.getDescription(),
@@ -55,25 +56,6 @@ public class DatasetsServiceImpl implements DatasetsService {
         dataset.setUploadFileUrl(uploadUrl);
         dataset.setDownloads(0);
             return datasetsRepository.save(dataset).getDatasetID();
-
-//        if (dataset.getTitle() == null || dataset.getTitle().length() < 6 || dataset.getTitle().length() > 50) {
-//            throw new IllegalArgumentException("Title must be between 6 and 50 characters.");
-//        }
-//        if (dataset.getUploadFileUrl() == null || dataset.getUploadFileUrl().isEmpty()) {
-//            throw new IllegalArgumentException("File URL must be provided.");
-//        }
-//        if (dataset.getVisibility() == null) {
-//            throw new IllegalArgumentException("Visibility must be selected.");
-//        }
-
-//        File file = new File(dataset.getUploadFileUrl());
-//        if (file.exists() && file.isFile()) {
-//            dataset.setFileSize(String.format("%.2f MB", file.length() / (1024.0 * 1024.0)));
-//        } else {
-//            throw new IllegalArgumentException("File does not exist at the provided URL.");
-//        }
-
-
     }
     private DatasetType validateFileType(MultipartFile file) {
         String originalFileName = file.getOriginalFilename();
@@ -86,37 +68,27 @@ public class DatasetsServiceImpl implements DatasetsService {
     }
 
     @Override
-    public DatasetMetadata updateDataset(String id, DatasetMetadata metadata) {
-        DatasetMetadata existingDataset = getDatasetMetadataById(id);
-        Dataset updatedDataSet =  new Dataset();
+    @CachePut(value = "dataset_metadata", key = "#id")
+    public DatasetMetadata updateDatasetMetadata(String id, DatasetMetadata metadata) {
+
+        return updateDataset(id, metadata).toMetadata();
+    }
+
+    public Dataset updateDataset(String id, DatasetMetadata metadata) {
+        var existingDataset = getDatasetById(id);
+        var updatedDataSet =  new Dataset();
+        updatedDataSet.setId(existingDataset.getId());
         updatedDataSet.setDatasetID(id);
         updatedDataSet.setDatasetType(metadata.getContentType());
         updatedDataSet.setVisibility(metadata.getVisibility());
         updatedDataSet.setTags(metadata.getTags());
         updatedDataSet.setDescription(metadata.getDescription());
         updatedDataSet.setTitle(metadata.getOriginalFilename());
-//        if (metadata.getTitle() != null && metadata.getTitle().length() >= 6 && metadata.getTitle().length() <= 50) {
-//            existingDataset.setTitle(metadata.getTitle());
-//        } else {
-//            throw new IllegalArgumentException("Title must be between 6 and 50 characters.");
-//        }
-//        if (metadata.getUploadFile() != null && !metadata.getUploadFile().isEmpty()) {
-//            existingDataset.setUploadFile(metadata.getUploadFile());
-//            File file = new File(metadata.getUploadFile());
-//            if (file.exists() && file.isFile()) {
-//                existingDataset.setFileSize(String.format("%.2f MB", file.length() / (1024.0 * 1024.0)));
-//            } else {
-//                throw new IllegalArgumentException("File does not exist at the provided URL.");
-//            }
-//        }
-//        if (metadata.getVisibility() != null) {
-//            existingDataset.setVisibility(metadata.getVisibility());
-//        } else {
-//            throw new IllegalArgumentException("Visibility must be selected.");
-//        }
-        return ((Dataset)datasetsRepository.save(updatedDataSet)).toMetadata();
+
+        return datasetsRepository.save(updatedDataSet);
     }
 
+    @Cacheable(value = "dataset_metadata", key = "#id")
     @Override
     public DatasetMetadata getDatasetMetadataById(String id) {
         Optional<Dataset> dataset = datasetsRepository.getDatasetByDatasetID(id);
@@ -137,6 +109,7 @@ public class DatasetsServiceImpl implements DatasetsService {
     }
 
     @Override
+    @Cacheable(value = "dataset_metadatas", keyGenerator = "customPageableKeyGenerator")
     public Page<DatasetMetadata> getAllDatasets(Pageable pageable) {
         Page<Dataset> page =  datasetsRepository.findAll(pageable);
         return new PageImpl<>(
@@ -154,6 +127,7 @@ public class DatasetsServiceImpl implements DatasetsService {
     }
 
     @Override
+    @CacheEvict(value = "dataset_metadata", key = "#id")
     public void deleteDataset(String id) {
         if (datasetsRepository.existsByDatasetID(id)) {
             datasetsRepository.deleteByDatasetID(id);
@@ -161,24 +135,22 @@ public class DatasetsServiceImpl implements DatasetsService {
     }
 
     @Override
+    @Cacheable(value = "trending_dataset_metadatas", keyGenerator = "customPageableKeyGenerator")
     public Page<DatasetMetadata> trending(Pageable pageable) {
-        List<Dataset> datasets = datasetsRepository.findTop50ByOrderByDownloadsDesc();
-        var pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
-
-        return new PageImpl<>(
-                datasets.stream()
+        List<DatasetMetadata> datasets = datasetsRepository.findTop100ByOrderByDownloadsDesc().stream()
                 .map(Dataset::toMetadata)
-                .collect(Collectors.toList()), pageRequest, datasets.size()
-                );
+                .collect(Collectors.toList());
+        int start = Math.min((int) pageable.getOffset(), datasets.size());
+        int end = Math.min((start + pageable.getPageSize()), datasets.size());
+        return new PageImpl<>(datasets.subList(start,end), pageable, datasets.size());
+
     }
 
     @Override
-    public DatasetDownloadData downloadDataset(String id) {
+    public String downloadDataset(String id) {
         incrementDownloadCount(id);
         Dataset dataset = getDatasetById(id);
-        DatasetMetadata metadata = dataset.toMetadata();
-        var multipartFile = datasetStorageService.getDataSet(dataset.getUploadFileUrl());
-        return new DatasetDownloadData(metadata, multipartFile);
+       return dataset.getUploadFileUrl();
 
 }
 

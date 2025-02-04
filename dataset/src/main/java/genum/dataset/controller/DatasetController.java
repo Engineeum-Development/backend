@@ -1,31 +1,25 @@
 package genum.dataset.controller;
+
 import genum.dataset.DTO.CreateDatasetDTO;
-import genum.dataset.domain.DatasetDownloadData;
 import genum.dataset.domain.DatasetMetadata;
-import genum.dataset.model.Dataset;
 import genum.dataset.service.DatasetsServiceImpl;
 import genum.shared.DTO.response.ResponseDetails;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import jakarta.validation.Valid;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Path;
+import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/dataset")
@@ -38,7 +32,7 @@ public class DatasetController {
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createDataset(@Valid @RequestPart("metadata") CreateDatasetDTO createDatasetDTO,
-                                           @RequestPart("file")MultipartFile file) {
+                                           @RequestPart("file") MultipartFile file) {
         try {
             var createdDataset = datasetsService.createDataset(createDatasetDTO, file);
             var responseDetails = new ResponseDetails<>(
@@ -48,6 +42,13 @@ public class DatasetController {
                     Map.of("datasetUrl", createdDataset)
             );
             return ResponseEntity.status(HttpStatus.CREATED).body(responseDetails);
+        } catch (IOException e) {
+            var responseDetails = new ResponseDetails<>(
+                    LocalDateTime.now(),
+                    e.getMessage(),
+                    HttpStatus.SERVICE_UNAVAILABLE.toString()
+            );
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(responseDetails);
         } catch (Exception e) {
             var responseDetails = new ResponseDetails<>(
                     LocalDateTime.now(),
@@ -61,7 +62,7 @@ public class DatasetController {
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateDataset(@PathVariable String id, @Valid @RequestBody DatasetMetadata updatedDataset) {
         try {
-            DatasetMetadata updated = datasetsService.updateDataset(id, updatedDataset);
+            DatasetMetadata updated = datasetsService.updateDatasetMetadata(id, updatedDataset);
             var responseDetails = new ResponseDetails<>(
                     LocalDateTime.now(),
                     "Dataset updated successfully.",
@@ -122,28 +123,9 @@ public class DatasetController {
     }
 
     @GetMapping("/download/{id}")
-    public ResponseEntity<?> downloadDataset(@PathVariable String id) {
-        try {
-            DatasetDownloadData datasetDownloadData = datasetsService.downloadDataset(id);
-            var multipartFile = datasetDownloadData.getFile();
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(Objects.requireNonNull(multipartFile.getContentType())))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + multipartFile.getOriginalFilename() + "\"")
-                    .body(new InputStreamResource(multipartFile.getInputStream()));
-        } catch (RuntimeException e) {
-            var responseDetails = new ResponseDetails<>(
-                    LocalDateTime.now(),
-                    e.getMessage(),
-                    HttpStatus.NOT_FOUND.toString()
-            );
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseDetails);
-        } catch (IOException e) {
-            var responseDetails = new ResponseDetails<>(
-                    LocalDateTime.now(),
-                    "Error transferring the file",
-                    HttpStatus.REQUEST_TIMEOUT.toString()
-            );
-            return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body(responseDetails);
-        }
+    public ResponseEntity<Void> downloadDataset(@PathVariable String id) {
+
+        String datasetDownloadURL = datasetsService.downloadDataset(id);
+        return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(datasetDownloadURL)).build();
     }
 }

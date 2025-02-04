@@ -8,11 +8,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface DatasetsService {
     // Returns the ID of the dataset file
-    String createDataset(CreateDatasetDTO createDatasetDTO, MultipartFile file);
+    String createDataset(CreateDatasetDTO createDatasetDTO, MultipartFile file) throws IOException;
 
     DatasetMetadata getDatasetMetadataById(String id);
 
@@ -20,11 +21,13 @@ public interface DatasetsService {
 
     Page<DatasetMetadata> getAllDatasets(Pageable pageable);
 
-    DatasetMetadata updateDataset(String id, DatasetMetadata updatedDataset);
+    DatasetMetadata updateDatasetMetadata(String id, DatasetMetadata metadata);
+
+    Dataset updateDataset(String id, DatasetMetadata updatedDataset);
 
     void deleteDataset(String id);
 
     Page<DatasetMetadata> trending(Pageable pageable);
 
-    DatasetDownloadData downloadDataset(String id);
+    String downloadDataset(String id);
 }
