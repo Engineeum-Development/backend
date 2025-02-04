@@ -4,6 +4,7 @@ import genum.dataset.DTO.CreateDatasetDTO;
 import genum.dataset.domain.DatasetMetadata;
 import genum.dataset.service.DatasetsServiceImpl;
 import genum.shared.DTO.response.ResponseDetails;
+import genum.shared.dataset.exception.DatasetNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -123,9 +124,12 @@ public class DatasetController {
     }
 
     @GetMapping("/download/{id}")
-    public ResponseEntity<Void> downloadDataset(@PathVariable String id) {
-
-        String datasetDownloadURL = datasetsService.downloadDataset(id);
-        return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(datasetDownloadURL)).build();
+    public ResponseEntity<?> downloadDataset(@PathVariable String id) {
+        try {
+            String datasetDownloadURL = datasetsService.downloadDataset(id);
+            return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(datasetDownloadURL)).build();
+        } catch (DatasetNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 }

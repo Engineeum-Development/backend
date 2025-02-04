@@ -5,6 +5,7 @@ import genum.dataset.domain.DatasetMetadata;
 import genum.dataset.domain.DatasetType;
 import genum.dataset.model.Dataset;
 import genum.dataset.repository.DatasetRepository;
+import genum.shared.dataset.exception.DatasetNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -69,6 +70,7 @@ public class DatasetsServiceImpl implements DatasetsService {
 
     @Override
     @CachePut(value = "dataset_metadata", key = "#id")
+    @CacheEvict(value = "dataset_download_url", key = "#id")
     public DatasetMetadata updateDatasetMetadata(String id, DatasetMetadata metadata) {
 
         return updateDataset(id, metadata).toMetadata();
@@ -105,7 +107,7 @@ public class DatasetsServiceImpl implements DatasetsService {
 
     @Override
     public Dataset getDatasetById(String id) {
-        return datasetsRepository.getDatasetByDatasetID(id).orElseThrow(() -> new RuntimeException("Dataset not found with ID: " + id));
+        return datasetsRepository.getDatasetByDatasetID(id).orElseThrow(() -> new DatasetNotFoundException(id));
     }
 
     @Override
@@ -114,16 +116,10 @@ public class DatasetsServiceImpl implements DatasetsService {
         Page<Dataset> page =  datasetsRepository.findAll(pageable);
         return new PageImpl<>(
                 page.stream()
-                        .map(dataset ->
-                                new DatasetMetadata(
-                                        dataset.getDatasetID(),
-                                        dataset.getDescription(),
-                                        dataset.getTags(),
-                                        dataset.getTitle(),
-                                        dataset.getFileSize(),
-                                        dataset.getDatasetType(),
-                                        dataset.getVisibility()
-                                )).collect(Collectors.toList()), page.getPageable(), page.getTotalElements());
+                        .map(Dataset::toMetadata)
+                        .collect(Collectors.toList()),
+                page.getPageable(),
+                page.getTotalElements());
     }
 
     @Override
@@ -147,6 +143,7 @@ public class DatasetsServiceImpl implements DatasetsService {
     }
 
     @Override
+    @Cacheable(value = "dataset_download_url", key = "#id")
     public String downloadDataset(String id) {
         incrementDownloadCount(id);
         Dataset dataset = getDatasetById(id);

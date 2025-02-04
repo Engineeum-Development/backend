@@ -23,12 +23,15 @@ import genum.shared.genumUser.WaitListEmailDTO;
 import genum.shared.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -51,7 +54,7 @@ public class GenumUserService {
     private final GenumUserWaitListRepository waitListRepository;
 
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public GenumUserDTO createNewUser(@Valid UserCreationRequest userCreationRequest) {
         if (genumUserRepository.existsByCustomUserDetailsEmail(userCreationRequest.email())){
             throw new UserAlreadyExistsException();
@@ -130,6 +133,7 @@ public class GenumUserService {
             return "Email successfully saved";
         }
     }
+    @Cacheable(value = "waiting_lists" , keyGenerator = "customPageableKeyGenerator")
     @Transactional(readOnly = true)
     public Page<WaitListEmailDTO> getWaitListEmails(Pageable pageable) {
         return waitListRepository.findAllProjectedBy(pageable);
