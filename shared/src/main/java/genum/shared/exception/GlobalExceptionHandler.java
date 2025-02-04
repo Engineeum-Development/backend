@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -25,28 +26,29 @@ public class GlobalExceptionHandler{
                 .body(new ResponseDetails<>(LocalDateTime.now(), tokenNotFoundException.getMessage(), HttpStatus.UNAUTHORIZED.toString()));
     }
 
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<String> handleAccessDeniedException(AccessDeniedException ex) {
-        return new ResponseEntity<>("Forbidden: " + ex.getMessage(), HttpStatus.FORBIDDEN);
-    }
-
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleGeneralException(Exception ex) {
-        return new ResponseEntity<>("An error occurred: " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>("An error occurred: " + ex.getMessage() + " " + ex.getClass(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(LockedException.class)
     public ResponseEntity<String> handleLockedException(LockedException e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
     }
-
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<String> handleLockedException(DisabledException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<String> handleAccessDeniedException(AccessDeniedException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
 
     @ExceptionHandler(InvalidTokenException.class)
     public ResponseEntity<ResponseDetails<String>> handleTokenInvalidTokenException(InvalidTokenException invalidTokenException) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(new ResponseDetails<>(LocalDateTime.now(), invalidTokenException.getMessage(), HttpStatus.UNAUTHORIZED.toString()));
     }
-
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ResponseDetails<String>> handleTokenNotFoundException(BadRequestException badRequestException) {

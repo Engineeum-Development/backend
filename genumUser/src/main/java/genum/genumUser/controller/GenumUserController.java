@@ -12,6 +12,7 @@ import genum.shared.genumUser.GenumUserDTO;
 import genum.shared.genumUser.WaitListEmailDTO;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,10 +39,15 @@ public class GenumUserController {
     }
 
     @PostMapping("/waiting-list")
-    public ResponseEntity<ResponseDetails<String>> addToWaitList(@RequestParam(name = "email") String email) {
-        var response = userService.addEmailToWaitingList(email);
-        var responseDetail = new ResponseDetails<String>(LocalDateTime.now(), response, HttpStatus.CREATED.toString());
-        return new ResponseEntity<>(responseDetail, HttpStatus.CREATED);
+    public ResponseEntity<ResponseDetails<String>> addToWaitList(@RequestParam(name = "email")@Valid @Email String email) {
+
+        try {
+            var response = userService.addEmailToWaitingList(email);
+            var responseDetail = new ResponseDetails<String>(LocalDateTime.now(), response, HttpStatus.CREATED.toString());
+            return new ResponseEntity<>(responseDetail, HttpStatus.CREATED);
+        } catch (UserAlreadyExistsException e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        }
     }
 
     @GetMapping("/confirm-token")
