@@ -48,7 +48,8 @@ public class UserWebSecurityConfiguration {
                         .requestMatchers("/actuator/**", "/favicon.ico").permitAll()
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/user/create").permitAll()
-                        .requestMatchers("/api/user/waiting-list").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/api/user/waiting-list").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/user/waiting-list").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthorizationFilter, AuthorizationFilter.class)
                 .addFilterBefore(logoutHandlingFilter, AuthorizationFilter.class)
@@ -86,7 +87,6 @@ public class UserWebSecurityConfiguration {
     CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "OPTIONS", "DELETE", "PATCH"));
-        configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedOrigins(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

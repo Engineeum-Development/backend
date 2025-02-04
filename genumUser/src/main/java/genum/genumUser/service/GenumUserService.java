@@ -23,12 +23,15 @@ import genum.shared.genumUser.WaitListEmailDTO;
 import genum.shared.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -36,6 +39,7 @@ import java.time.LocalDateTime;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -50,7 +54,7 @@ public class GenumUserService {
     private final GenumUserWaitListRepository waitListRepository;
 
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public GenumUserDTO createNewUser(@Valid UserCreationRequest userCreationRequest) {
         if (genumUserRepository.existsByCustomUserDetailsEmail(userCreationRequest.email())){
             throw new UserAlreadyExistsException();
@@ -112,14 +116,24 @@ public class GenumUserService {
             throw new OTTNotFoundException();
         }
     }
+    public void deleteExpiredOTTs() {
+        var oneTimeTokens = oneTimeTokenRepository
+                .findTop50ByExpiryBeforeOrderByExpiryDesc(LocalDateTime.now())
+                .stream()
+                .map(OneTimeTokenRepository.IdOnly::getId)
+                .collect(Collectors.toList());
+
+        oneTimeTokenRepository.deleteAllById(oneTimeTokens);
+    }
     public String addEmailToWaitingList(String email) {
         if (waitListRepository.existsByEmail(email)) {
-            return "Already Exists";
+            throw new UserAlreadyExistsException();
         }else {
             waitListRepository.save(new WaitListEmail(email));
             return "Email successfully saved";
         }
     }
+    @Cacheable(value = "waiting_lists" , keyGenerator = "customPageableKeyGenerator")
     @Transactional(readOnly = true)
     public Page<WaitListEmailDTO> getWaitListEmails(Pageable pageable) {
         return waitListRepository.findAllProjectedBy(pageable);
