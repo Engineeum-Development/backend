@@ -40,9 +40,9 @@ public class UserWebSecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain (HttpSecurity http,
                                                     JWTAuthorizationFilter jwtAuthorizationFilter,
-                                                    LogoutHandlingFilter logoutHandlingFilter) throws Exception {
+                                                    LogoutHandlingFilter logoutHandlingFilter, CorsConfigurationSource corsConfigurationSource) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
-                .cors(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/actuator/**", "/favicon.ico").permitAll()
@@ -54,6 +54,19 @@ public class UserWebSecurityConfiguration {
                 .addFilterBefore(jwtAuthorizationFilter, AuthorizationFilter.class)
                 .addFilterBefore(logoutHandlingFilter, AuthorizationFilter.class)
                 .build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+
+        corsConfiguration.setAllowedOrigins(List.of("http://localhost:3000", "*"));
+        corsConfiguration.setAllowedHeaders(List.of("*"));
+        corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT","DELETE", "OPTIONS"));
+        corsConfiguration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource configurationSource = new UrlBasedCorsConfigurationSource();
+        configurationSource.registerCorsConfiguration("/**", corsConfiguration);
     }
 
     @Bean
