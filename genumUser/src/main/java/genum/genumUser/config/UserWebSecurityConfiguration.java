@@ -67,6 +67,7 @@ public class UserWebSecurityConfiguration {
 
         UrlBasedCorsConfigurationSource configurationSource = new UrlBasedCorsConfigurationSource();
         configurationSource.registerCorsConfiguration("/**", corsConfiguration);
+        return configurationSource;
     }
 
     @Bean
