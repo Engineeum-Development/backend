@@ -39,10 +39,10 @@ public class GenumUserController {
     }
 
     @PostMapping("/waiting-list")
-    public ResponseEntity<ResponseDetails<String>> addToWaitList(@RequestParam(name = "email")@Valid @Email String email) {
+    public ResponseEntity<ResponseDetails<String>> addToWaitList(@RequestBody @Valid WishlistRequest wishlistRequest) {
 
         try {
-            var response = userService.addEmailToWaitingList(email);
+            var response = userService.addEmailToWaitingList(wishlistRequest.email());
             var responseDetail = new ResponseDetails<String>(LocalDateTime.now(), response, HttpStatus.CREATED.toString());
             return new ResponseEntity<>(responseDetail, HttpStatus.CREATED);
         } catch (UserAlreadyExistsException e) {
