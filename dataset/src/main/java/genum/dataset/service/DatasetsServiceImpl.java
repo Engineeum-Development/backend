@@ -12,6 +12,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -69,8 +70,10 @@ public class DatasetsServiceImpl implements DatasetsService {
     }
 
     @Override
-    @CachePut(value = "dataset_metadata", key = "#id")
-    @CacheEvict(value = "dataset_download_url", key = "#id")
+    @Caching(
+            evict = {@CacheEvict(value = "dataset_download_url", key = "#id", beforeInvocation = true)},
+            put = {@CachePut(value = "dataset_metadata", key = "#id")}
+    )
     public DatasetMetadata updateDatasetMetadata(String id, DatasetMetadata metadata) {
 
         return updateDataset(id, metadata).toMetadata();
