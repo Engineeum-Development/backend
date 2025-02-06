@@ -23,6 +23,7 @@ import genum.shared.genumUser.WaitListEmailDTO;
 import genum.shared.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.mapper.MapperListener;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -122,6 +123,8 @@ public class GenumUserService {
             throw new UserAlreadyExistsException();
         }else {
             waitListRepository.save(new WaitListEmail(email));
+            var userEvent = new UserEvent(null, UserEventType.WAITING_LIST_ADDED, Map.of("email", email));
+            eventPublisher.publishEvent(userEvent);
             return "Email successfully saved";
         }
     }

@@ -1,6 +1,7 @@
 package genum.shared.security;
 
 import genum.shared.constant.Role;
+import genum.shared.constant.UserStatus;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
@@ -18,6 +19,7 @@ public class CustomUserDetails implements UserDetails {
     private String email;
     private Role role;
     private LocalDateTime lastLogin;
+    private UserStatus userStatus;
     private boolean accountExpired;
     private boolean accountLocked;
     private boolean accountCredentialsExpired;
@@ -30,11 +32,16 @@ public class CustomUserDetails implements UserDetails {
         this.accountCredentialsExpired = false;
         this.accountLocked = false;
         this.accountEnabled = true;
+        this.userStatus = UserStatus.ACTIVE;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + Role.USER.name()));
+    }
+
+    public UserStatus getUserStatus() {
+       return (lastLogin.plusDays(28).isBefore(LocalDateTime.now()) ? UserStatus.INACTIVE : UserStatus.ACTIVE);
     }
 
     @Override
