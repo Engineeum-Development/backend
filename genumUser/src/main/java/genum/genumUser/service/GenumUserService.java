@@ -23,12 +23,16 @@ import genum.shared.genumUser.WaitListEmailDTO;
 import genum.shared.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.mapper.MapperListener;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -36,6 +40,8 @@ import java.time.LocalDateTime;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -50,7 +56,7 @@ public class GenumUserService {
     private final GenumUserWaitListRepository waitListRepository;
 
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public GenumUserDTO createNewUser(@Valid UserCreationRequest userCreationRequest) {
         if (genumUserRepository.existsByCustomUserDetailsEmail(userCreationRequest.email())){
             throw new UserAlreadyExistsException();
@@ -89,7 +95,7 @@ public class GenumUserService {
         genumUserRepository.save(user);
     }
     //TODO: Need to periodically delete expired oneTimeTokens
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public String confirmOTT(String token) {
         // only returns otts that are not yet expired
         var oneTimeTokenOptional = oneTimeTokenRepository
@@ -114,14 +120,38 @@ public class GenumUserService {
     }
     public String addEmailToWaitingList(String email) {
         if (waitListRepository.existsByEmail(email)) {
-            return "Already Exists";
+            throw new UserAlreadyExistsException();
         }else {
             waitListRepository.save(new WaitListEmail(email));
+            var userEvent = new UserEvent(null, UserEventType.WAITING_LIST_ADDED, Map.of("email", email));
+            eventPublisher.publishEvent(userEvent);
             return "Email successfully saved";
         }
     }
+    @Cacheable(value = "waiting_lists" , keyGenerator = "customPageableKeyGenerator")
     @Transactional(readOnly = true)
     public Page<WaitListEmailDTO> getWaitListEmails(Pageable pageable) {
         return waitListRepository.findAllProjectedBy(pageable);
+    }
+
+    /*
+    * Clears all the expired OTTs every 30 days
+    * */
+    @Scheduled(timeUnit = TimeUnit.DAYS, fixedRate = 28)
+    public void deleteExpiredOTTsScheduled () {
+        while (true) {
+            var oneTimeTokenIDs = oneTimeTokenRepository
+                    .findTop50ByExpiryBeforeOrderByExpiryDesc(LocalDateTime.now())
+                    .stream()
+                    .map(OneTimeTokenRepository.IdOnly::getId)
+                    .toList();
+            if (oneTimeTokenIDs.isEmpty()) {
+                break;
+            }
+            transactionTemplate.execute(status -> {
+                oneTimeTokenRepository.deleteAllById(oneTimeTokenIDs);
+                return oneTimeTokenIDs;
+            });
+        }
     }
 }

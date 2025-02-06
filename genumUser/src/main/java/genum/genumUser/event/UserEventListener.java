@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 @Component
 @RequiredArgsConstructor
@@ -25,12 +24,14 @@ public class UserEventListener {
     @EventListener
     public void onUserEvent(UserEvent userEvent) {
         switch (userEvent.userEventType()) {
-            case USER_LOGIN -> {}
+            case USER_LOGIN -> {
+                log.info("User {} account logged in", userEvent.user().getId());
+            }
             case USER_DELETION -> {
                 log.info("User {} account was deleted", userEvent.user().getId());
             }
             case USER_REGISTRATION -> {
-                String message = getUserRegistrationString.apply(Map.of(
+                String message = getUserRegistrationMessage.apply(Map.of(
                         "username", userEvent.user().getFirstName(),
                         "frontend_domain", frontendDomain,
                         "token", userEvent.data().get("token")));
@@ -40,11 +41,27 @@ public class UserEventListener {
                 emailService.sendEmail(subject, message, to);
 
             }
+            case WAITING_LIST_ADDED -> {
+                String message = getWishlistAddition.apply(userEvent.data().get("email"));
+                String subject = "Welcome to Genum - Pioneering AI solutions for Africa";
+                String to = userEvent.data().get("email");
+
+                emailService.sendEmail(subject,message,to);
+            }
         }
 
     }
 
-    private static final Function<Map<String, String>, String> getUserRegistrationString = (map) -> {
+    private static final Function<String, String> getWishlistAddition = (email) -> {
+        try {
+            return EmailTemplateUtil.processTemplate("email_templates/WaitingListSubscriptionTemplate.html", Map.of("username", email.split("@")[0]));
+        } catch (IOException e) {
+            log.error("Couldn't load email html template file: {}", e.getMessage());
+            throw new RuntimeException(e);
+        }
+    };
+
+    private static final Function<Map<String, String>, String> getUserRegistrationMessage = (map) -> {
         try {
             return EmailTemplateUtil.processTemplate(
                     "email_templates/SignUpConfirmationTemplate.html",

@@ -4,5 +4,6 @@ public enum UserEventType {
 
     USER_REGISTRATION,
     USER_LOGIN,
-    USER_DELETION
+    USER_DELETION,
+    WAITING_LIST_ADDED
 }

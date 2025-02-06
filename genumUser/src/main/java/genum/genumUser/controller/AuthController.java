@@ -31,7 +31,7 @@ public class AuthController {
         var token = authService.handleUserLogin(loginRequest, httpServletRequest, httpServletResponse);
         var loginResponse = new LoginResponse("Welcome", token);
         return ResponseEntity
-                .created(URI.create(httpServletRequest.getRequestURI()))
+                .ok()
                 .body(new ResponseDetails<>(LocalDateTime.now() ,
                         "Login Successful",
                         HttpStatus.OK.toString(), loginResponse)
