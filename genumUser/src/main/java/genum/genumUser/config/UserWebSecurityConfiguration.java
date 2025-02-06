@@ -97,6 +97,7 @@ public class UserWebSecurityConfiguration {
 
 
     @Bean
+
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
