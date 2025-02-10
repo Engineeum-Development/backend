@@ -10,6 +10,9 @@
             .content-table {
                 width: 600px !important;
             }
+            .tab-padding {
+                padding: 20px !important;
+            }
         }
 
         /* Mobile styles */
@@ -41,10 +44,26 @@
             <!-- Content table -->
             <table role="presentation" class="content-table" width="600" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 600px;">
                 <!-- Header -->
-                <tr>
-                    <td class="mobile-padding" bgcolor="#4a90e2" style="padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
-                        <h1 class="mobile-font" style="color: #ffffff; margin: 0; font-size: 28px; font-family: Arial, sans-serif; line-height: 1.2;">Hey Welcome to genum!</h1>
+                <tr class="mobile-padding tab-padding">
+                    <td style="background: #000000; border-radius: 18px;">
+                        <table align="center">
+                            <tr>
+                                <td class="mobile-padding" bgcolor="black" style="width: fit-content; align-content: center">
+                                    <img src="cid:genum-logo" alt="genum logo" style="height: 54px"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="mobile-padding"
+                                    style="padding: 30px;width: fit-content;text-align: center;">
+                                    <h1 class="mobile-font"
+                                        style="color: #ffffff; margin: 0; font-size: 28px; font-family: Arial, sans-serif; line-height: 1.2;">
+                                        Welcome to genum!</h1>
+                                </td>
+
+                            </tr>
+                        </table>
                     </td>
+
                 </tr>
 
                 <!-- Content -->
@@ -64,7 +83,7 @@
                                 <td align="center" style="padding: 20px 0;">
                                     <table role="presentation" class="mobile-button" cellpadding="0" cellspacing="0" style="width: auto;">
                                         <tr>
-                                            <td bgcolor="#4CAF50" style="border-radius: 4px; text-align: center;">
+                                            <td style="background: #3786e0; border-radius: 4px; text-align: center;">
                                                 <a href="{{frontend_domain}}/confirm?token={{token}}" style="color: #ffffff; text-decoration: none; font-weight: bold; font-family: Arial, sans-serif; font-size: 16px; display: inline-block; padding: 12px 24px;">Confirm Email Address</a>
                                             </td>
                                         </tr>

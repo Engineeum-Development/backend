@@ -8,6 +8,7 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -37,11 +38,14 @@ public class EmailService {
                 .build();
         try {
             MimeMessage email = javaMailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(email);
+            MimeMessageHelper helper = new MimeMessageHelper(email, true);
             helper.setTo(to);
             helper.setFrom(fromEmail);
             helper.setText(message, true);
             helper.setSubject(subject);
+
+            ClassPathResource genumLogo = new ClassPathResource("email_img/genum-logo-cropped.jpg");
+            helper.addInline("genum-logo", genumLogo);
             try {
                 javaMailSender.send(email);
                 emailEntity.setStatus(EmailStatus.SUCCESS);
