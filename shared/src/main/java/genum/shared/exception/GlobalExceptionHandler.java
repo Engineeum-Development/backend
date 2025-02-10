@@ -5,6 +5,7 @@ import genum.shared.DTO.response.ResponseDetails;
 import genum.shared.genumUser.exception.BadRequestException;
 import genum.shared.security.exception.InvalidTokenException;
 import genum.shared.security.exception.TokenNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.LocalDateTime;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler{
     @ExceptionHandler(TokenNotFoundException.class)
     public ResponseEntity<ResponseDetails<String>> handleTokenNotFoundException(TokenNotFoundException tokenNotFoundException) {
@@ -26,9 +28,11 @@ public class GlobalExceptionHandler{
                 .body(new ResponseDetails<>(LocalDateTime.now(), tokenNotFoundException.getMessage(), HttpStatus.UNAUTHORIZED.toString()));
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGeneralException(Exception ex) {
-        return new ResponseEntity<>("An error occurred: " + ex.getMessage() + " " + ex.getClass(), HttpStatus.INTERNAL_SERVER_ERROR);
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleGeneralException(RuntimeException ex) {
+        log.error("And error occurred");
+        log.trace("Error trace", ex);
+        return new ResponseEntity<>("An error occurred on our end, and we are hard at work to fix it" , HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(LockedException.class)
