@@ -44,7 +44,7 @@ public class EmailService {
             helper.setText(message, true);
             helper.setSubject(subject);
 
-            ClassPathResource genumLogo = new ClassPathResource("email_img/genum-logo-cropped.jpg");
+            ClassPathResource genumLogo = new ClassPathResource("email_img/genum-logo-cropped-2.jpg");
             helper.addInline("genum-logo", genumLogo);
             try {
                 javaMailSender.send(email);
