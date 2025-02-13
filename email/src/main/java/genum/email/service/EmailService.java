@@ -45,7 +45,11 @@ public class EmailService {
             helper.setSubject(subject);
 
             ClassPathResource genumLogo = new ClassPathResource("email_img/genum-logo-cropped-2.jpg");
+            ClassPathResource facebookLogo = new ClassPathResource("email_img/facebook.png");
+            ClassPathResource linkedInLogo = new ClassPathResource("email_img/linkedin.png");
             helper.addInline("genum-logo", genumLogo);
+            helper.addInline("facebook-logo", facebookLogo);
+            helper.addInline("linkedin-logo", linkedInLogo);
             try {
                 javaMailSender.send(email);
                 emailEntity.setStatus(EmailStatus.SUCCESS);
