@@ -23,7 +23,7 @@ import genum.shared.genumUser.WaitListEmailDTO;
 import genum.shared.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.mapper.MapperListener;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -41,7 +41,6 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -100,7 +99,7 @@ public class GenumUserService {
         // only returns otts that are not yet expired
         var oneTimeTokenOptional = oneTimeTokenRepository
                 .findOneTimeTokenByToken(token)
-                .filter(ott -> LocalDateTime.now().isAfter(ott.getExpiry()));
+                .filter(ott -> LocalDateTime.now().isBefore(ott.getExpiry()));
 
         if (oneTimeTokenOptional.isPresent()) {
             var oneTimeTokenUserOptional = oneTimeTokenOptional
@@ -118,12 +117,13 @@ public class GenumUserService {
             throw new OTTNotFoundException();
         }
     }
-    public String addEmailToWaitingList(String email) {
+    @CacheEvict(value = "waiting_lists", allEntries = true)
+    public String addEmailToWaitingList(String email, String firstName, String lastName) {
         if (waitListRepository.existsByEmail(email)) {
             throw new UserAlreadyExistsException();
         }else {
-            waitListRepository.save(new WaitListEmail(email));
-            var userEvent = new UserEvent(null, UserEventType.WAITING_LIST_ADDED, Map.of("email", email));
+            waitListRepository.save(new WaitListEmail(email, lastName, firstName));
+            var userEvent = new UserEvent(null, UserEventType.WAITING_LIST_ADDED, Map.of("email", email,"firstname", firstName));
             eventPublisher.publishEvent(userEvent);
             return "Email successfully saved";
         }

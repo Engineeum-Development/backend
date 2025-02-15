@@ -42,7 +42,7 @@ public class GenumUserController {
     public ResponseEntity<ResponseDetails<String>> addToWaitList(@RequestBody @Valid WishlistRequest wishlistRequest) {
 
         try {
-            var response = userService.addEmailToWaitingList(wishlistRequest.email());
+            var response = userService.addEmailToWaitingList(wishlistRequest.email(), wishlistRequest.firstName(), wishlistRequest.lastName());
             var responseDetail = new ResponseDetails<String>(LocalDateTime.now(), response, HttpStatus.CREATED.toString());
             return new ResponseEntity<>(responseDetail, HttpStatus.CREATED);
         } catch (UserAlreadyExistsException e) {
