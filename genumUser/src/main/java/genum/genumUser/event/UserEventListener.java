@@ -42,7 +42,7 @@ public class UserEventListener {
 
             }
             case WAITING_LIST_ADDED -> {
-                String message = getWishlistAddition.apply(userEvent.data().get("email"));
+                String message = getWishlistAddition.apply(userEvent.data());
                 String subject = "Welcome to Genum - Pioneering AI solutions for Africa";
                 String to = userEvent.data().get("email");
 
@@ -52,9 +52,9 @@ public class UserEventListener {
 
     }
 
-    private static final Function<String, String> getWishlistAddition = (email) -> {
+    private static final Function<Map<String, String>, String> getWishlistAddition = (map) -> {
         try {
-            return EmailTemplateUtil.processTemplate("email_templates/WaitingListSubscriptionTemplate.html", Map.of("username", email.split("@")[0]));
+            return EmailTemplateUtil.processTemplate("email_templates/WaitingListSubscriptionTemplate.html", Map.of("firstName", map.get("firstname")));
         } catch (IOException e) {
             log.error("Couldn't load email html template file: {}", e.getMessage());
             throw new RuntimeException(e);

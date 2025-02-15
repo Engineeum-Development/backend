@@ -10,9 +10,13 @@ public class WaitListEmail {
     @Id
     private String id;
     private final String email;
+    private final String lastName;
+    private final String firstName;
 
-    public WaitListEmail(String email) {
+    public WaitListEmail(String email, String lastName, String firstName) {
         this.email = email;
+        this.lastName = lastName;
+        this.firstName = firstName;
     }
 
 }
