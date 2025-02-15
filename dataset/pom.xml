@@ -15,6 +15,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>genum</groupId>
+            <artifactId>genumUser</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.cloudinary</groupId>
             <artifactId>cloudinary-http5</artifactId>
             <version>2.0.0</version>

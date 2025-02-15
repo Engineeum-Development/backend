@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Set;
 
 @AllArgsConstructor
 @Data
@@ -19,6 +20,7 @@ public class Dataset {
     @Id
     private String id;
     private String datasetID;
+    private String uploader;
     private String description;
     private String uploadFileUrl;
     private Visibility visibility;
@@ -26,12 +28,16 @@ public class Dataset {
     private DatasetType datasetType;
     private String title;
     private long fileSize;
-
     private int downloads;
+    private Set<String> usersThatLiked;
+
+    public void addUsersThatLiked(String userId) {
+        usersThatLiked.add(userId);
+    }
 
 
     public DatasetMetadata toMetadata() {
-        return new DatasetMetadata(
+       var datasetMetadata = new DatasetMetadata(
                 datasetID,
                 description,
                 tags,
@@ -40,6 +46,9 @@ public class Dataset {
                 datasetType,
                 visibility
         );
+
+       datasetMetadata.setLikes(usersThatLiked.size());
+       return datasetMetadata;
     }
 
     // TODO

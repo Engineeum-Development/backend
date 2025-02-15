@@ -50,7 +50,8 @@ public class DatasetController {
                     HttpStatus.SERVICE_UNAVAILABLE.toString()
             );
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(responseDetails);
-        } catch (Exception e) {
+        }
+        catch (IllegalArgumentException e) {
             var responseDetails = new ResponseDetails<>(
                     LocalDateTime.now(),
                     e.getMessage(),
@@ -90,7 +91,7 @@ public class DatasetController {
                     HttpStatus.OK.toString(),
                     dataset
             );
-            return ResponseEntity.ok(dataset);
+            return ResponseEntity.ok(responseDetails);
         } catch (RuntimeException e) {
             var responseDetails = new ResponseDetails<>(
                     LocalDateTime.now(),
@@ -102,15 +103,15 @@ public class DatasetController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<Page<DatasetMetadata>> getAllDatasets(@PageableDefault(size = 20, sort = {"datasetID"}) Pageable pageable) {
+    public ResponseEntity<Page<DatasetMetadata>> getAllDatasets(@PageableDefault(size = 20, sort = {"datasetId"}) Pageable pageable) {
         var datasets = datasetsService.getAllDatasets(pageable);
         return ResponseEntity.ok(datasets);
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteDataset(@PathVariable String id) {
+    @DeleteMapping("/delete/{datasetId}")
+    public ResponseEntity<?> deleteDataset(@PathVariable String datasetId) {
         try {
-            datasetsService.deleteDataset(id);
+            datasetsService.deleteDataset(datasetId);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -123,13 +124,18 @@ public class DatasetController {
         return ResponseEntity.ok(trendingDatasets);
     }
 
-    @GetMapping("/download/{id}")
-    public ResponseEntity<?> downloadDataset(@PathVariable String id) {
+    @GetMapping("/download/{datasetId}")
+    public ResponseEntity<?> downloadDataset(@PathVariable String datasetId) {
         try {
-            String datasetDownloadURL = datasetsService.downloadDataset(id);
+            String datasetDownloadURL = datasetsService.downloadDataset(datasetId);
             return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(datasetDownloadURL)).build();
         } catch (DatasetNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
+    }
+    @PutMapping("/like/{datasetId}")
+    public ResponseEntity<?> likeDataset(@PathVariable String datasetId){
+            datasetsService.likeDataset(datasetId);
+            return ResponseEntity.noContent().build();
     }
 }

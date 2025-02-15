@@ -11,7 +11,7 @@ import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
-public class CloudinaryStorageService implements DatasetStorageService{
+public class CloudinaryStorageService implements DatasetStorageService {
 
     private final Cloudinary cloudinary;
 
@@ -20,7 +20,7 @@ public class CloudinaryStorageService implements DatasetStorageService{
         var uploadResult = cloudinary.uploader().upload(
                 file.getBytes(),
                 ObjectUtils.asMap(
-                        "resource_type","raw",
+                        "resource_type", "raw",
                         "public_id", file.getOriginalFilename()
                 )
 
