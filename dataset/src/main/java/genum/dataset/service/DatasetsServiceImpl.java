@@ -39,9 +39,11 @@ public class DatasetsServiceImpl implements DatasetsService {
     @Override
     @CacheEvict(value = "dataset_metadata_page", allEntries = true)
     public String createDataset(CreateDatasetDTO createNewDatasetDTO, MultipartFile file) throws IOException, IllegalArgumentException {
+        log.info("entered create dataset");
         var userCredentials = getAuthenticatedUserCredentials();
-        String userId = genumUserRepository.findUserIdByEmail(userCredentials.getEmail());
+        var user = genumUserRepository.findByCustomUserDetailsEmail(userCredentials.getEmail());
         DatasetType fileType = validateFileType(file);
+        log.info("datasetType: {}", fileType);
         DatasetMetadata metadata = new DatasetMetadata(
                 createNewDatasetDTO.getDescription(),
                 createNewDatasetDTO.getTags(),
@@ -50,8 +52,9 @@ public class DatasetsServiceImpl implements DatasetsService {
                 fileType,
                 createNewDatasetDTO.getVisibility()
         );
+        log.info("metadata: {}", metadata);
         String uploadUrl = datasetStorageService.storeDataSet(file, metadata);
-
+        log.info("uploadUrl: {}", uploadUrl);
         var dataset = new Dataset();
         dataset.setDatasetID(UUID.randomUUID().toString());
         dataset.setTags(metadata.getTags());
@@ -60,7 +63,8 @@ public class DatasetsServiceImpl implements DatasetsService {
         dataset.setTitle(file.getOriginalFilename());
         dataset.setUploadFileUrl(uploadUrl);
         dataset.setDownloads(0);
-        dataset.setUploader(userId);
+        dataset.setUploader(user.getId());
+        log.info("dataset: {}", dataset);
         return datasetsRepository.save(dataset).getDatasetID();
     }
 
