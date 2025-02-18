@@ -5,15 +5,19 @@ import genum.dataset.domain.DatasetMetadata;
 import genum.dataset.service.DatasetsServiceImpl;
 import genum.shared.DTO.response.ResponseDetails;
 import genum.shared.dataset.exception.DatasetNotFoundException;
+import genum.shared.exception.UploadSizeLimitExceededException;
+import genum.shared.genumUser.exception.BadRequestException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.unit.DataSize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,17 +34,26 @@ public class DatasetController {
 
 
     private final DatasetsServiceImpl datasetsService;
+    @Value("${spring.servlet.multipart.max-file-size}")
+    private String maxUploadSize;
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE )
     public ResponseEntity<?> createDataset(@Valid @RequestPart("metadata") CreateDatasetDTO createDatasetDTO,
                                            @RequestPart("file") MultipartFile file) {
+
+        var MAX_FILE_SIZE = DataSize.parse(maxUploadSize);
+        var file_data_size = DataSize.ofBytes(file.getSize());
+
+        if (file_data_size.toBytes() > MAX_FILE_SIZE.toBytes()) {
+            throw new UploadSizeLimitExceededException(file_data_size.toBytes(), MAX_FILE_SIZE.toBytes());
+        }
         try {
-            var createdDataset = datasetsService.createDataset(createDatasetDTO, file);
+            var createdDatasetId = datasetsService.createDataset(createDatasetDTO, file);
             var responseDetails = new ResponseDetails<>(
                     LocalDateTime.now(),
                     "Dataset created successfully.",
                     HttpStatus.CREATED.toString(),
-                    Map.of("datasetUrl", createdDataset)
+                    Map.of("datasetId", createdDatasetId)
             );
             return ResponseEntity.status(HttpStatus.CREATED).body(responseDetails);
         } catch (IOException e) {
@@ -52,12 +65,7 @@ public class DatasetController {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(responseDetails);
         }
         catch (IllegalArgumentException e) {
-            var responseDetails = new ResponseDetails<>(
-                    LocalDateTime.now(),
-                    e.getMessage(),
-                    HttpStatus.BAD_REQUEST.toString()
-            );
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseDetails);
+            throw new BadRequestException();
         }
     }
 

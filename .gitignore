@@ -7,3 +7,5 @@ application-dev.properties
 compose.yaml
 Dockerfile
 application-deployment.properties
+application-test.properties
+datasets
