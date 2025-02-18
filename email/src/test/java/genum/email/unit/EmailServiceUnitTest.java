@@ -49,11 +49,11 @@ public class EmailServiceUnitTest {
                 </html>
                 
                 """;
-    private final String to = "Test Email";
+    private final String to = "TestEmail";
     private final String subject = "engineeum@gmail.com";
     @BeforeEach
     void setup() {
-        emailService = new EmailService(emailRepository, javaMailSender);
+        emailService = new EmailService(emailRepository, javaMailSender, "divjazz9@gmail.com");
     }
 
 

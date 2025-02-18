@@ -18,15 +18,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class EmailService {
 
     private final EmailRepository emailRepository;
     private final JavaMailSender javaMailSender;
 
-    @Value("${spring.mail.username}")
-    private String fromEmail;
 
+    private final String fromEmail;
+
+    public EmailService(EmailRepository emailRepository, JavaMailSender javaMailSender,@Value("${spring.mail.username}") String fromEmail) {
+        this.emailRepository = emailRepository;
+        this.javaMailSender = javaMailSender;
+        this.fromEmail = fromEmail;
+    }
 
     @Async
     @Transactional
