@@ -15,11 +15,13 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @EnableMongoRepositories(basePackages = {
         "genum.product.repository",
+        "genum.learn.repository",
         "genum.dataset.repository",
         "genum.genumUser.repository",
         "genum.payment.repository", "genum.email.repository"})
 @ComponentScan(basePackages = {"genum.product",
         "genum.shared",
+        "genum.learn",
         "genum.dataset",
         "genum.genumUser",
         "genum.payment","genum.email"})

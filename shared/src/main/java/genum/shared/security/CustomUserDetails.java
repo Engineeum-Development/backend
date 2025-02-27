@@ -11,12 +11,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.UUID;
 
 @Getter
 @Setter
 public class CustomUserDetails implements UserDetails {
     private String password;
     private String email;
+    private String userReferenceId;
     private Role role;
     private LocalDateTime lastLogin;
     private UserStatus userStatus;
@@ -28,6 +30,7 @@ public class CustomUserDetails implements UserDetails {
     public CustomUserDetails(String password, String email) {
         this.password = password;
         this.email = email;
+        this.userReferenceId = UUID.randomUUID().toString();
         this.accountExpired = false;
         this.accountCredentialsExpired = false;
         this.accountLocked = false;

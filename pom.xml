@@ -11,6 +11,8 @@
         <relativePath/>
     </parent>
 
+
+
     <modules>
         <module>challenges</module>
         <module>research</module>
@@ -54,6 +56,16 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.cloudinary</groupId>
+            <artifactId>cloudinary-http5</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.cloudinary</groupId>
+            <artifactId>cloudinary-taglib</artifactId>
+            <version>2.2.0</version>
         </dependency>
 
         <dependency>

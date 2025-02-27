@@ -46,10 +46,10 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
                 throw new TokenNotFoundException(requestUri);
             } else {
                 var jwtToken = optionalToken.get();
-                var email = jwtUtils.getClaimsValue(jwtToken, Claims::getSubject);
-                log.info("email = {}", email);
-                if (email != null || SecurityContextHolder.getContext().getAuthentication() == null) {
-                    var userDetails = userDetailService.loadUserByUsername(email);
+                var referenceId = jwtUtils.getClaimsValue(jwtToken, Claims::getSubject);
+                log.info(" = {}", referenceId);
+                if (referenceId != null || SecurityContextHolder.getContext().getAuthentication() == null) {
+                    var userDetails = userDetailService.loadUserByUsername(referenceId);
                     if (jwtUtils.validateToken(request)) {
                         var authorities = jwtUtils.getTokenData(jwtToken, TokenData::getGrantedAuthorities);
                         var genumAuthenticationToken = UsernamePasswordAuthenticationToken.authenticated(userDetails, "[PROTECTED]", authorities);

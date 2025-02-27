@@ -35,6 +35,11 @@
             <artifactId>dataset</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>genum</groupId>
+            <artifactId>learn</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
