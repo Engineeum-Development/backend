@@ -4,7 +4,6 @@ import genum.learn.dto.*;
 import genum.learn.service.LearningService;
 import genum.shared.DTO.response.ResponseDetails;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -13,6 +12,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
 
@@ -61,6 +61,21 @@ public class LearningController {
         var responseDetails = new ResponseDetails<>("Successful",
                 HttpStatus.CREATED.toString(),
                 learningService.uploadLesson(createLessonRequest));
+        return ResponseEntity.created(URI.create(httpServletRequest.getRequestURI())).body(responseDetails);
+    }
+    @GetMapping("/lesson/video/upload/{id}")
+    public ResponseEntity<ResponseDetails<VideoUploadResponse>> getUploadStatus(@PathVariable("id") String videoId) {
+        var responseDetails = new ResponseDetails<>("Successful",
+                HttpStatus.OK.toString(),
+                learningService.getUploadStatus(videoId));
+        return ResponseEntity.ok(responseDetails);
+    }
+    @PostMapping("/lesson/video/upload")
+    public ResponseEntity<ResponseDetails<VideoUploadResponse>> uploadVideoForLesson(@RequestPart("metadata")VideoUploadRequest uploadRequest, @RequestPart("video")MultipartFile file, HttpServletRequest httpServletRequest) {
+        var responseDetails = new ResponseDetails<>("Successful",
+                HttpStatus.CREATED.toString(),
+                learningService.addVideoToLesson(uploadRequest, file));
+
         return ResponseEntity.created(URI.create(httpServletRequest.getRequestURI())).body(responseDetails);
     }
 }

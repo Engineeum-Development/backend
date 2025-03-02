@@ -8,5 +8,6 @@ import java.util.Optional;
 
 @Repository
 public interface VideoSeriesRepository extends MongoRepository<VideoSeries, String> {
-    public Optional<VideoSeries> findByCourseReference(String courseReferenceID);
+    /*Optional<VideoSeries> findByCourseReference(String courseReferenceID);
+    Optional<VideoSeries> findByReference(String seriesReference);*/
 }
