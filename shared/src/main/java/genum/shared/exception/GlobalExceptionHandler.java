@@ -64,4 +64,10 @@ public class GlobalExceptionHandler{
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(new ResponseDetails<>(LocalDateTime.now(), "invalid credentials, Please try again with correct credentials", HttpStatus.UNAUTHORIZED.toString()));
     }
+
+    @ExceptionHandler(UploadSizeLimitExceededException.class)
+    public ResponseEntity<ResponseDetails<String>> handleMaxFileSizeExceeded(UploadSizeLimitExceededException uploadSizeLimitExceededException) {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .body(new ResponseDetails<>(uploadSizeLimitExceededException.getMessage(), HttpStatus.PAYLOAD_TOO_LARGE.toString()));
+    }
 }

@@ -19,8 +19,4 @@ public class ProductEvent implements DomainEvent  {
     private EventType eventType;
     private LocalDateTime time;
     private Map<String,?> data;
-    @Override
-    public LocalDateTime getTimeStamp() {
-        return time;
-    }
 }

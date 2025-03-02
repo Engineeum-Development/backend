@@ -1,11 +1,14 @@
 package genum.product.service;
 
 import genum.product.model.Course;
+import genum.product.repository.ProductRepository;
 import genum.shared.product.DTO.CourseDTO;
 import genum.shared.product.exception.ProductNotFoundException;
+import genum.shared.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import genum.product.repository.ProductRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -13,30 +16,44 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final SecurityUtils securityUtils;
     @Transactional(readOnly = true)
     public CourseDTO findCourseById(String id) {
         Course course = productRepository.findById(id).orElseThrow(ProductNotFoundException::new);
-        return new CourseDTO(course.getReferenceId(), course.getName(), course.getNumberOfEnrolledUsers(), course.getPrice());
+        return course.toDTO();
     }
     @Transactional(readOnly = true)
     public CourseDTO findCourseByReference(String referenceId) {
         Course course = productRepository.findByReferenceId(referenceId).orElseThrow(ProductNotFoundException::new);
-        return new CourseDTO(course.getReferenceId(), course.getName(), course.getNumberOfEnrolledUsers(), course.getPrice());
+        return course.toDTO();
     }
 
-    @Transactional
-    public void incrementCourseEnrolled(String courseReferenceId) {
-        Course course = productRepository.findByReferenceId(courseReferenceId).orElseThrow(ProductNotFoundException::new);
-        var currentNumberOfEnrolledUsers = course.getNumberOfEnrolledUsers();
-        course.setNumberOfEnrolledUsers(++currentNumberOfEnrolledUsers);
+    public CourseDTO createCourse(CourseDTO courseDTO) {
+        Course course = new Course(courseDTO.name(),courseDTO.uploader(), courseDTO.description(), courseDTO.price());
+        return productRepository.save(course).toDTO();
+    }
+    public Page<CourseDTO> findAllCourses(Pageable pageable) {
+        var courses = productRepository.findAll(pageable);
+        return courses.map(Course::toDTO);
+    }
+    public boolean userIdHasEnrolledForCourse(String courseId, String userId) {
+        return productRepository.existsByReferenceIdAndEnrolledUsersContaining(courseId, userId);
+    }
+
+    public void enrollCurrentUser(String courseReferenceId) {
+        var currentUserId = securityUtils.getCurrentAuthenticatedUserId();
+        var course = productRepository.findByReferenceId(courseReferenceId).orElseThrow(ProductNotFoundException::new);
+        course.addEnrolledUsers(currentUserId);
         productRepository.save(course);
     }
-    @Transactional
+
     public CourseDTO updateProductPrice(String courseReferenceId, int newPrice) {
         var course = productRepository.findByReferenceId(courseReferenceId).orElseThrow(ProductNotFoundException::new);
         course.setPrice(newPrice);
         course = productRepository.save(course);
         return course.toDTO();
     }
+
+
 
 }

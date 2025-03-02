@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import genum.payment.config.PaymentProperties;
 import genum.payment.constant.PaymentPlatform;
+import genum.payment.event.PaymentEvent;
 import genum.payment.model.CoursePayment;
 import genum.payment.repository.PaymentRepository;
 import genum.product.event.EventType;
@@ -35,15 +36,14 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class FlutterWavePaymentService implements PaymentService {
 
+    public static final String FLUTTERWAVE_BASE_API = "https://api.flutterwave.com/v3/";
+    public static final String INITIALIZE_TRANSACTION_ENDPOINT = FLUTTERWAVE_BASE_API + "payments";
+    public static final String VERIFY_TRANSACTION_ENDPOINT = FLUTTERWAVE_BASE_API + "transactions/" + "%s" + "/verify";
     private final PaymentProperties paymentProperties;
     private final ProductService productService;
     private final RestTemplate restTemplate;
     private final PaymentRepository paymentRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
-
-    public static final String FLUTTERWAVE_BASE_API = "https://api.flutterwave.com/v3/";
-    public static final String INITIALIZE_TRANSACTION_ENDPOINT = FLUTTERWAVE_BASE_API + "payments";
-    public static final String VERIFY_TRANSACTION_ENDPOINT = FLUTTERWAVE_BASE_API + "transactions/" + "%s" + "/verify";
 
     /*
     ReferenceId for each transaction consists of the concatenation of the courseId
@@ -85,9 +85,15 @@ public class FlutterWavePaymentService implements PaymentService {
                 HttpMethod.POST,
                 initializeTransactionFlutterWaveHttpEntity,
                 InitializeTransactionResponse.class);
+
         if (response.getStatusCode().is2xxSuccessful()) {
             var responseBody = response.getBody();
+            assert responseBody != null;
+
             if (responseBody.status.equals("success")) {
+                PaymentEvent paymentEvent = new PaymentEvent(payment.toPaymentDTO(),
+                        genum.payment.event.EventType.PAYMENT_SUCCESSFUL, null);
+                applicationEventPublisher.publishEvent(paymentEvent);
                 return new PaymentResponse(LocalDateTime.now(), PaymentStatus.PENDING, Map.of(
                         "message", "Payment initialization was a success",
                         "authorization_url", response.getBody().data().link()));
@@ -99,6 +105,7 @@ public class FlutterWavePaymentService implements PaymentService {
                         "status", "failed"
                 ));
             }
+
         } else {
             payment.setPaymentStatus(PaymentStatus.FAILED);
             paymentRepository.save(payment);
@@ -145,15 +152,16 @@ public class FlutterWavePaymentService implements PaymentService {
                         HttpMethod.GET,
                         verifyTransactionHttpEntity,
                         VerifyTransactionResponse.class);
-        if (response.getStatusCode().is2xxSuccessful()){
+        if (response.getStatusCode().is2xxSuccessful()) {
             var payment = optionalPayment.get();
             var responseData = response.getBody();
+            assert responseData != null;
             if (responseData.status.equals("success")) {
                 payment.setPaymentStatus(PaymentStatus.COMPLETED);
                 paymentRepository.save(payment);
                 var courseEvent = new ProductEvent(
                         courseDTO,
-                        EventType.ENROLLED,
+                        EventType.COURSE_ENROLLED,
                         LocalDateTime.now(),
                         null
                 );
@@ -161,7 +169,7 @@ public class FlutterWavePaymentService implements PaymentService {
                 return new PaymentResponse(
                         LocalDateTime.now(),
                         PaymentStatus.COMPLETED,
-                        Map.of("message","The payment was a success",
+                        Map.of("message", "The payment was a success",
                                 "status", "success"));
             } else {
                 payment.setPaymentStatus(PaymentStatus.FAILED);
@@ -224,5 +232,6 @@ public class FlutterWavePaymentService implements PaymentService {
             int chargedAmount,
             String status,
             Customer customer
-    ) {}
+    ) {
+    }
 }
