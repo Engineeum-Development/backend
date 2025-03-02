@@ -13,6 +13,7 @@ public interface GenumUserRepository extends MongoRepository<GenumUser, String> 
     boolean existsByCustomUserDetailsEmail(String email);
 
     GenumUser findByCustomUserDetailsEmail(String email);
+    GenumUser findByCustomUserDetails_UserReferenceId(String referenceId);
 
     @Query(value = " {customUserDetails.email: ?0}", fields = "{_id: 1}")
     String findUserIdByEmail(String email);

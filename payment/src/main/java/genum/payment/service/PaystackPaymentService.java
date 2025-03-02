@@ -2,10 +2,10 @@ package genum.payment.service;
 
 import genum.payment.config.PaymentProperties;
 import genum.payment.constant.PaymentPlatform;
+import genum.payment.event.EventType;
+import genum.payment.event.PaymentEvent;
 import genum.payment.model.CoursePayment;
 import genum.payment.repository.PaymentRepository;
-import genum.product.event.EventType;
-import genum.product.event.ProductEvent;
 import genum.product.service.ProductService;
 import genum.shared.payment.constants.PaymentStatus;
 import genum.shared.payment.domain.PaymentResponse;
@@ -28,6 +28,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -72,7 +73,7 @@ public class PaystackPaymentService implements PaymentService {
         var response = restTemplate.exchange(INITIALIZE_TRANSACTION_URL, HttpMethod.POST, initializeTransactionHttpEntity, InitializeTransactionResponse.class);
         String paymentId = null;
         if (response.getStatusCode().is2xxSuccessful()){
-            if (response.getBody().status.equals("true")) {
+            if (Objects.requireNonNull(response.getBody()).status.equals("true")) {
                 var payment = CoursePayment.builder()
                         .courseId(course.referenceId())
                         .paymentInitializationDate(LocalDateTime.now())
@@ -122,17 +123,17 @@ public class PaystackPaymentService implements PaymentService {
         var response = restTemplate.exchange(VERIFY_TRANSACTION_URL+reference,HttpMethod.GET,initializeTransactionHttpEntity, VerifyTransactionResponse.class);
         if (response.getStatusCode().is2xxSuccessful()){
             var responseData = response.getBody();
+            assert responseData != null;
             if (responseData.status.equals("success")) {
                 payment.setPaymentStatus(PaymentStatus.COMPLETED);
                 payment = paymentRepository.save(payment);
 
-                var courseEvent = new ProductEvent(
-                        courseDTO,
-                        EventType.ENROLLED,
-                        LocalDateTime.now(),
+                var paymentEvent = new PaymentEvent(
+                        payment.toPaymentDTO(),
+                        EventType.PAYMENT_SUCCESSFUL,
                         null
                 );
-                applicationEventPublisher.publishEvent(courseEvent);
+                applicationEventPublisher.publishEvent(paymentEvent);
 
 
                 return new PaymentResponse(LocalDateTime.now(), payment.getPaymentStatus(), Map.of("message", "Payment Success: Congratulations you can now access the course"));

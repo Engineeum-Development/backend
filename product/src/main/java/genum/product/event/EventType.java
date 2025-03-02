@@ -2,6 +2,6 @@ package genum.product.event;
 
 public enum EventType {
 
-    ENROLLED,
+    COURSE_ENROLLED,
     PRICE_CHANGE
 }

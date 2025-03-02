@@ -17,8 +17,8 @@ public class CustomUserDetailService implements UserDetailsService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        var genumUser = userRepository.findByCustomUserDetailsEmail(email);
+    public UserDetails loadUserByUsername(String referenceId) throws UsernameNotFoundException {
+        var genumUser = userRepository.findByCustomUserDetails_UserReferenceId(referenceId);
         if (genumUser == null) {
             throw new UsernameNotFoundException("User not found");
         }

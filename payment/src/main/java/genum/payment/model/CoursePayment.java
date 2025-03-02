@@ -1,6 +1,7 @@
 package genum.payment.model;
 
 import genum.payment.constant.PaymentPlatform;
+import genum.shared.payment.DTO.PaymentDTO;
 import genum.shared.payment.constants.PaymentStatus;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,4 +29,8 @@ public class CoursePayment {
     private int paymentValue;
     private PaymentPlatform paymentPlatForm;
     private LocalDateTime paymentInitializationDate;
+
+    public PaymentDTO toPaymentDTO() {
+        return new PaymentDTO(this.userid, this.paymentStatus, this.paymentValue);
+    }
 }

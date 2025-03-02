@@ -14,8 +14,7 @@ public class ProductEventListener {
     @EventListener
     public void onProductEvent(ProductEvent domainEvent) {
         switch (domainEvent.getEventType()) {
-            case ENROLLED -> {
-                productService.incrementCourseEnrolled(domainEvent.getCourse().referenceId());
+            case COURSE_ENROLLED -> {
             }
             case PRICE_CHANGE -> {}
         }
