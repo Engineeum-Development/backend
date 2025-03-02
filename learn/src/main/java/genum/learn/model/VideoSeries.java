@@ -21,12 +21,19 @@ public class VideoSeries {
     private final String description;
     private final Set<String> tags;
 
-    public VideoSeries(Video video, String title, String lessonReference, String description, Set<String> tags) {
-        this.videosAccordingToOrder = new TreeSet<>(Collections.singleton(video.getVideoId()));
+    public VideoSeries(String videoId, String title, String lessonReference, String description, Set<String> tags) {
+        this.videosAccordingToOrder = new TreeSet<>(Collections.singleton(videoId));
         this.reference = UUID.randomUUID().toString();
         this.title = title;
         this.lessonReference = lessonReference;
         this.description = description;
         this.tags = new TreeSet<>(tags);
+    }
+
+    public void removeFromVideosAccordingToOrder(String videoId) {
+        videosAccordingToOrder.remove(videoId);
+    }
+    public void addToSeriesAccordingToOrder(String videoId) {
+        videosAccordingToOrder.add(videoId);
     }
 }

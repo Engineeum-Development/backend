@@ -34,7 +34,7 @@ public class DatasetController {
 
 
     private final DatasetsServiceImpl datasetsService;
-    @Value("${spring.servlet.multipart.max-file-size}")
+    @Value("${dataset.upload.max-file-size}")
     private String maxUploadSize;
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE )

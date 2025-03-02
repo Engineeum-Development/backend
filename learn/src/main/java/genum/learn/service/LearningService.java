@@ -9,6 +9,7 @@ import genum.learn.repository.*;
 import genum.product.service.ProductService;
 import genum.shared.learn.exception.LessonNotFoundException;
 import genum.shared.learn.exception.VideoNotFoundException;
+import genum.shared.learn.exception.VideoSeriesNotFoundException;
 import genum.shared.product.DTO.CourseDTO;
 import genum.shared.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -59,29 +60,42 @@ public class LearningService {
     public LessonResponse uploadLesson(CreateLessonRequest createLessonRequest) {
         var lesson = new Lesson(createLessonRequest.title(), createLessonRequest.description(), createLessonRequest.content(), createLessonRequest.courseId());
         lesson = lessonRepository.save(lesson);
-        return new LessonResponse(lesson.getReferenceId(), lesson.getTitle(), lesson.getDescription());
+        return new LessonResponse(lesson.getReferenceId(), lesson.getTitle(), lesson.getDescription(), null);
     }
 
     @Transactional
     public VideoUploadResponse addVideoToLesson(VideoUploadRequest uploadRequest, MultipartFile file) {
-        var lesson = lessonRepository.findByReferenceId(uploadRequest.lessonId()).orElseThrow(LessonNotFoundException::new);
-        var video = new Video(uploadRequest.videoNumber(), uploadRequest.description(), uploadRequest.title());
-        var videoSeries = new VideoSeries(video, lesson.getTitle(), lesson.getReferenceId(), lesson.getDescription(), uploadRequest.tags());
-        video.setSeriesReference(videoSeries.getReference());
+        boolean requestContainsVideoSeriesIdNotLessonId = (uploadRequest.videoSeriesId() != null && uploadRequest.lessonId() == null);
+        boolean requestContainsLessonIdNotVideoSeriesId = (uploadRequest.lessonId() != null && uploadRequest.videoSeriesId() == null);
+        if (requestContainsLessonIdNotVideoSeriesId) {
+            var lesson = lessonRepository.findByReferenceId(uploadRequest.lessonId()).orElseThrow(LessonNotFoundException::new);
+            var video = new Video(uploadRequest.videoNumber(), uploadRequest.description(), uploadRequest.title());
+            var videoSeries = new VideoSeries(video.getVideoId(), lesson.getTitle(), lesson.getReferenceId(), lesson.getDescription(), uploadRequest.tags());
+            return getVideoUploadResponse(file, videoSeries, video);
+        } else if (requestContainsVideoSeriesIdNotLessonId) {
+            var videoSeries = videoSeriesRepository.findByReference(uploadRequest.videoSeriesId()).orElseThrow(VideoSeriesNotFoundException::new);
+            var video = new Video(uploadRequest.videoNumber(), uploadRequest.description(), uploadRequest.title());
+            return getVideoUploadResponse(file, videoSeries, video);
+        } else {
+            throw new IllegalArgumentException("Request must contain either lesson id or video series id");
+        }
+    }
 
+    private VideoUploadResponse getVideoUploadResponse(MultipartFile file, VideoSeries videoSeries, Video video) {
+        video.setSeriesReference(videoSeries.getReference());
         var videoId = videoRepository.save(video).getVideoId();
         videoSeriesRepository.save(videoSeries);
         var videoUpload = new VideoUploadStatusModel(video.getVideoId(), VideoUploadStatus.PENDING);
         videoUploadStatusRepository.save(videoUpload);
         CompletableFuture.runAsync(() -> uploadVideo(file,videoId));
-        return new VideoUploadResponse(video.getVideoId(), videoUpload.getVideoUploadStatus());
+        return new VideoUploadResponse(video.getVideoId(),videoSeries.getReference(), videoUpload.getVideoUploadStatus());
     }
 
     public VideoUploadResponse getUploadStatus(String videoId) {
         var videoStatus = videoUploadStatusRepository
                 .getVideoUploadStatusModelByVideoId(videoId)
                 .orElse(new VideoUploadStatusModel(videoId,VideoUploadStatus.PENDING));
-        return new VideoUploadResponse(videoId, videoStatus.getVideoUploadStatus());
+        return new VideoUploadResponse(videoId,null, videoStatus.getVideoUploadStatus());
     }
     @Async("videoUploadExecutor")
     public void uploadVideo(MultipartFile multipartFile, String videoId) {
@@ -119,6 +133,18 @@ public class LearningService {
                 reviewData
         );
 
+    }
+
+    public void deleteLesson(String lessonId) {
+        lessonRepository.deleteByReferenceId(lessonId);
+    }
+    public void deleteVideo(String videoId) {
+        videoRepository.deleteByVideoId(videoId);
+        var videoSeries = videoSeriesRepository.findByVideosAccordingToOrderContaining(videoId).orElseThrow(VideoSeriesNotFoundException::new);
+        videoSeries.removeFromVideosAccordingToOrder(videoId);
+        if (videoSeries.getVideosAccordingToOrder().isEmpty()) {
+            videoSeriesRepository.delete(videoSeries);
+        }
     }
 
     public boolean getIfCurrentUserIsAuthorizedToAccessCourse(String courseID) {
