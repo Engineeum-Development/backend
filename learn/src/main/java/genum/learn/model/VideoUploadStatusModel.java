@@ -1,6 +1,6 @@
 package genum.learn.model;
 
-import genum.learn.dto.VideoUploadStatus;
+import genum.learn.enums.VideoUploadStatus;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.mapping.Document;

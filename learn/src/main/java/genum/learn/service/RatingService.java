@@ -16,6 +16,9 @@ public class RatingService {
     @Cacheable(value = "course_rating", key = "#courseId")
     public int generateRatingForCourse(String courseId) {
         var reviews = reviewRepository.findAllByCourseId(courseId);
+        if (reviews.isEmpty()){
+            return 0;
+        }
         var ratingSum = reviews.stream()
                 .map(Review::getRating)
                 .reduce(Integer::sum).orElseThrow();

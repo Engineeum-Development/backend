@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
-public class GenumUser implements Serializable {
+public class GenumUser{
 
     @Id
     private String id;

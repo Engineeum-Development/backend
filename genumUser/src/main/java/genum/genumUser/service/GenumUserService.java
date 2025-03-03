@@ -89,7 +89,9 @@ public class GenumUserService {
 
     }
     public void incrementUserLastLogin(String email) {
-        var user = genumUserRepository.findByCustomUserDetailsEmail(email);
+        var user = genumUserRepository
+                .findByCustomUserDetailsEmail(email)
+                .orElseThrow(GenumUserNotFoundException::new);
         user.getCustomUserDetails().setLastLogin(LocalDateTime.now());
         genumUserRepository.save(user);
     }
@@ -104,7 +106,9 @@ public class GenumUserService {
         if (oneTimeTokenOptional.isPresent()) {
             var oneTimeTokenUserOptional = oneTimeTokenOptional
                     .map(OneTimeToken::getUserEmail)
-                    .map(genumUserRepository::findByCustomUserDetailsEmail);
+                    .map(email -> genumUserRepository
+                            .findByCustomUserDetailsEmail(email)
+                            .orElseThrow(GenumUserNotFoundException::new));
             if (oneTimeTokenUserOptional.isPresent()){
                 var genumUser = oneTimeTokenUserOptional.get();
                 genumUser.setVerified(true);

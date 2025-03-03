@@ -22,6 +22,11 @@ public class ProductService {
         Course course = productRepository.findById(id).orElseThrow(ProductNotFoundException::new);
         return course.toDTO();
     }
+
+    @Transactional(readOnly = true)
+    public Page<CourseDTO> findCourseWithUploaderId(String id, Pageable pageable) {
+        return productRepository.findAllByUploaderId(id, pageable).map(Course::toDTO);
+    }
     @Transactional(readOnly = true)
     public CourseDTO findCourseByReference(String referenceId) {
         Course course = productRepository.findByReferenceId(referenceId).orElseThrow(ProductNotFoundException::new);

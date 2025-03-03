@@ -4,6 +4,7 @@ import genum.genumUser.security.constant.SecurityConstants;
 import genum.genumUser.security.domain.TokenData;
 import genum.genumUser.repository.GenumUserRepository;
 import genum.shared.constant.Role;
+import genum.shared.genumUser.exception.GenumUserNotFoundException;
 import genum.shared.security.CustomUserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
@@ -95,11 +96,11 @@ public class JwtUtils {
     }
 
     public <T> T getTokenData(String token, Function<TokenData, T> tokenFunction) {
-        var userDetails = genumUserRepository.findByCustomUserDetailsEmail(subject.apply(token)).getCustomUserDetails();
+        var userDetails = genumUserRepository.findByCustomUserDetails_UserReferenceId(subject.apply(token)).orElseThrow(GenumUserNotFoundException::new).getCustomUserDetails();
         return tokenFunction.apply(
                 TokenData.builder()
                         .valid(
-                                Objects.equals(userDetails.getEmail(), claimsFunction.apply(token).getSubject())
+                                Objects.equals(userDetails.getUserReferenceId(), claimsFunction.apply(token).getSubject())
                         )
                         .expired(Instant.now().isAfter(getClaimsValue(token, Claims::getExpiration).toInstant()))
                         .grantedAuthorities(List.of(new SimpleGrantedAuthority((String) claimsFunction.apply(token).get(SecurityConstants.ROLE))))

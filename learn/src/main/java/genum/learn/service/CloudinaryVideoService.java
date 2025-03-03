@@ -26,4 +26,15 @@ public class CloudinaryVideoService implements VideoService{
         );
         return uploadResult.get("secure_url").toString();
     }
+
+    @Override
+    public boolean deleteVideo(String url){
+
+        try {
+            var deleteResult = cloudinary.uploader().destroy(url, ObjectUtils.asMap("resource_type", "video"));
+            return "ok".equals(deleteResult.get("result"));
+        } catch (IOException e) {
+            return false;
+        }
+    }
 }
