@@ -34,7 +34,7 @@ public class GlobalExceptionHandler{
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<String> handleGeneralException(RuntimeException ex) {
         log.error("And error occurred {} {}",ex.getClass(), ex.getMessage());
-        log.trace("Error trace", ex);
+        log.error("Error trace", ex);
         return new ResponseEntity<>("An error occurred on our end, and we are hard at work to fix it" , HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

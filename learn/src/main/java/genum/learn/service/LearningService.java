@@ -12,6 +12,7 @@ import genum.shared.learn.exception.VideoSeriesNotFoundException;
 import genum.shared.product.DTO.CourseDTO;
 import genum.shared.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class LearningService {
 
     private final ProductService productService;
@@ -81,7 +83,9 @@ public class LearningService {
         if (requestContainsLessonIdNotVideoSeriesId) {
             var lesson = lessonRepository.findByReferenceId(uploadRequest.lessonId()).orElseThrow(LessonNotFoundException::new);
             var video = new Video(uploadRequest.videoNumber(), uploadRequest.description(), uploadRequest.title());
-            var videoSeries = new VideoSeries(video.getVideoId(), lesson.getTitle(), lesson.getReferenceId(), lesson.getDescription(), uploadRequest.tags());
+            var videoSeries = videoSeriesRepository
+                    .findByLessonReference(lesson.getReferenceId())
+                    .orElse(new VideoSeries(video.getVideoId(), lesson.getTitle(), lesson.getReferenceId(), lesson.getDescription(), uploadRequest.tags()));
             return getVideoUploadResponse(file, videoSeries, video);
         } else if (requestContainsVideoSeriesIdNotLessonId) {
             var videoSeries = videoSeriesRepository.findByReference(uploadRequest.videoSeriesId()).orElseThrow(VideoSeriesNotFoundException::new);
@@ -116,13 +120,16 @@ public class LearningService {
                 .getVideoUploadStatusModelByVideoId(videoId)
                 .orElse(new VideoUploadStatusModel(videoId, VideoUploadStatus.PENDING));
         try {
+            log.info("Started sending video {}", videoId);
             var uploadUrl = videoService.uploadVideo(multipartFile);
             video.setUploadVideoFileUrl(uploadUrl);
             videoRepository.save(video);
             videoUpload.setVideoUploadStatus(VideoUploadStatus.SUCCESS);
+            log.info("Video {} was successfully uploaded", videoId);
 
         } catch (IOException e) {
             videoUpload.setVideoUploadStatus(VideoUploadStatus.FAILED);
+            log.error("Video {} upload failed", videoId);
         } finally {
             videoUploadStatusRepository.save(videoUpload);
         }

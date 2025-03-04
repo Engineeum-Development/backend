@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface VideoSeriesRepository extends MongoRepository<VideoSeries, String> {
     Optional<VideoSeries> findByReference(String seriesReference);
     Optional<VideoSeries> findByVideosAccordingToOrderContaining(String videoId);
+    Optional<VideoSeries> findByLessonReference(String lessonId);
 }
