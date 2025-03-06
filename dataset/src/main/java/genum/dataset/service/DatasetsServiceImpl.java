@@ -132,8 +132,11 @@ public class DatasetsServiceImpl implements DatasetsService {
     @Override
     @CacheEvict(value = "dataset_metadata", key = "#id")
     public void deleteDataset(String id) {
-        datasetsRepository.deleteByDatasetID(id);
-
+        if (datasetsRepository.existsByDatasetID(id)) {
+            datasetsRepository.deleteByDatasetID(id);
+        } else {
+         throw new DatasetNotFoundException("This dataset is not found or has been deleted");
+        }
     }
 
     @Override
