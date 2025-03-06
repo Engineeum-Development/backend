@@ -87,7 +87,7 @@ public class GenumUserServiceTest {
                 .customUserDetails(new CustomUserDetails("encodedPassword", "john@example.com"))
                 .build();
         when(oneTimeTokenRepository.findOneTimeTokenByToken(token)).thenReturn(Optional.of(ott));
-        when(genumUserRepository.findByCustomUserDetailsEmail("john@example.com")).thenReturn(user);
+        when(genumUserRepository.findByCustomUserDetailsEmail("john@example.com").orElseThrow()).thenReturn(user);
 
         String result = genumUserService.confirmOTT(token);
 
@@ -110,7 +110,7 @@ public class GenumUserServiceTest {
                 .customUserDetails(new CustomUserDetails("encoded password", email))
                 .build();
 
-        when(genumUserRepository.findByCustomUserDetailsEmail(email)).thenReturn(user);
+        when(genumUserRepository.findByCustomUserDetailsEmail(email).orElseThrow()).thenReturn(user);
 
         genumUserService.incrementUserLastLogin(email);
 

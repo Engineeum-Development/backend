@@ -1,10 +1,9 @@
 package genum.learn.service;
 
 import genum.learn.dto.*;
-import genum.learn.model.Lesson;
-import genum.learn.model.Video;
-import genum.learn.model.VideoSeries;
-import genum.learn.model.VideoUploadStatusModel;
+import genum.learn.enums.VideoDeleteStatus;
+import genum.learn.enums.VideoUploadStatus;
+import genum.learn.model.*;
 import genum.learn.repository.*;
 import genum.product.service.ProductService;
 import genum.shared.learn.exception.LessonNotFoundException;
@@ -13,6 +12,7 @@ import genum.shared.learn.exception.VideoSeriesNotFoundException;
 import genum.shared.product.DTO.CourseDTO;
 import genum.shared.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class LearningService {
 
     private final ProductService productService;
@@ -38,10 +39,22 @@ public class LearningService {
     private final ReviewRepository reviewRepository;
     private final VideoService videoService;
     private final VideoUploadStatusRepository videoUploadStatusRepository;
+    private final VideoDeleteStatusRepository videoDeleteStatusRepository;
 
     public Page<CourseResponse> getAllCourses(Pageable pageable) {
         var courses = productService.findAllCourses(pageable);
-        return courses.map(courseDTO -> new CourseResponse(courseDTO.referenceId(), courseDTO.name(), courseDTO.numberOfEnrolledUsers(), ratingService.generateRatingForCourse(courseDTO.referenceId())));
+        return courses.map(courseDTO -> new CourseResponse(courseDTO.referenceId(),
+                courseDTO.name(),
+                courseDTO.numberOfEnrolledUsers(),
+                ratingService.generateRatingForCourse(courseDTO.referenceId())));
+    }
+    public Page<CourseResponse> getAllMyCourses(Pageable pageable) {
+        var currentUserId = securityUtils.getCurrentAuthenticatedUserId();
+        var courses = productService.findCourseWithUploaderId(currentUserId, pageable);
+        return courses.map(courseDTO -> new CourseResponse(courseDTO.referenceId(),
+                courseDTO.name(),
+                courseDTO.numberOfEnrolledUsers(),
+                ratingService.generateRatingForCourse(courseDTO.referenceId())));
     }
 
     public CourseResponse uploadCourse(CreateCourseRequest createCourseRequest) {
@@ -70,7 +83,9 @@ public class LearningService {
         if (requestContainsLessonIdNotVideoSeriesId) {
             var lesson = lessonRepository.findByReferenceId(uploadRequest.lessonId()).orElseThrow(LessonNotFoundException::new);
             var video = new Video(uploadRequest.videoNumber(), uploadRequest.description(), uploadRequest.title());
-            var videoSeries = new VideoSeries(video.getVideoId(), lesson.getTitle(), lesson.getReferenceId(), lesson.getDescription(), uploadRequest.tags());
+            var videoSeries = videoSeriesRepository
+                    .findByLessonReference(lesson.getReferenceId())
+                    .orElse(new VideoSeries(video.getVideoId(), lesson.getTitle(), lesson.getReferenceId(), lesson.getDescription(), uploadRequest.tags()));
             return getVideoUploadResponse(file, videoSeries, video);
         } else if (requestContainsVideoSeriesIdNotLessonId) {
             var videoSeries = videoSeriesRepository.findByReference(uploadRequest.videoSeriesId()).orElseThrow(VideoSeriesNotFoundException::new);
@@ -87,16 +102,17 @@ public class LearningService {
         videoSeriesRepository.save(videoSeries);
         var videoUpload = new VideoUploadStatusModel(video.getVideoId(), VideoUploadStatus.PENDING);
         videoUploadStatusRepository.save(videoUpload);
-        CompletableFuture.runAsync(() -> uploadVideo(file,videoId));
-        return new VideoUploadResponse(video.getVideoId(),videoSeries.getReference(), videoUpload.getVideoUploadStatus());
+        CompletableFuture.runAsync(() -> uploadVideo(file, videoId));
+        return new VideoUploadResponse(video.getVideoId(), videoSeries.getReference(), videoUpload.getVideoUploadStatus());
     }
 
     public VideoUploadResponse getUploadStatus(String videoId) {
         var videoStatus = videoUploadStatusRepository
                 .getVideoUploadStatusModelByVideoId(videoId)
-                .orElse(new VideoUploadStatusModel(videoId,VideoUploadStatus.PENDING));
-        return new VideoUploadResponse(videoId,null, videoStatus.getVideoUploadStatus());
+                .orElse(new VideoUploadStatusModel(videoId, VideoUploadStatus.PENDING));
+        return new VideoUploadResponse(videoId, null, videoStatus.getVideoUploadStatus());
     }
+
     @Async("videoUploadExecutor")
     public void uploadVideo(MultipartFile multipartFile, String videoId) {
         var video = videoRepository.findByVideoId(videoId).orElseThrow(VideoNotFoundException::new);
@@ -104,13 +120,16 @@ public class LearningService {
                 .getVideoUploadStatusModelByVideoId(videoId)
                 .orElse(new VideoUploadStatusModel(videoId, VideoUploadStatus.PENDING));
         try {
+            log.info("Started sending video {}", videoId);
             var uploadUrl = videoService.uploadVideo(multipartFile);
             video.setUploadVideoFileUrl(uploadUrl);
             videoRepository.save(video);
             videoUpload.setVideoUploadStatus(VideoUploadStatus.SUCCESS);
+            log.info("Video {} was successfully uploaded", videoId);
 
         } catch (IOException e) {
             videoUpload.setVideoUploadStatus(VideoUploadStatus.FAILED);
+            log.error("Video {} upload failed", videoId);
         } finally {
             videoUploadStatusRepository.save(videoUpload);
         }
@@ -138,8 +157,16 @@ public class LearningService {
     public void deleteLesson(String lessonId) {
         lessonRepository.deleteByReferenceId(lessonId);
     }
+
     public void deleteVideo(String videoId) {
-        videoRepository.deleteByVideoId(videoId);
+        var video = videoRepository.findByVideoId(videoId).orElseThrow(VideoNotFoundException::new);
+        videoRepository.delete(video);
+        boolean videoIsDeleted = videoService.deleteVideo(video.getUploadVideoFileUrl());
+        if (videoIsDeleted) {
+            videoDeleteStatusRepository.save(new VideoDeleteStatusModel(videoId, VideoDeleteStatus.SUCCESS));
+        } else {
+            videoDeleteStatusRepository.save(new VideoDeleteStatusModel(videoId, VideoDeleteStatus.FAILED));
+        }
         var videoSeries = videoSeriesRepository.findByVideosAccordingToOrderContaining(videoId).orElseThrow(VideoSeriesNotFoundException::new);
         videoSeries.removeFromVideosAccordingToOrder(videoId);
         if (videoSeries.getVideosAccordingToOrder().isEmpty()) {

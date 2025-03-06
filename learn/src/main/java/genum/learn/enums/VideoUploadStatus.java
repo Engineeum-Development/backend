@@ -1,4 +1,4 @@
-package genum.learn.dto;
+package genum.learn.enums;
 
 public enum VideoUploadStatus {
 

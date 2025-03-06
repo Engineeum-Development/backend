@@ -7,6 +7,6 @@ import jakarta.validation.constraints.Positive;
 public record CreateCourseRequest(
         @NotBlank String name,
         @NotBlank String description,
-        @Positive @Min(5) int price
+        @Min(5) int price
 ) {
 }

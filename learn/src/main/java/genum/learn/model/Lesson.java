@@ -15,17 +15,20 @@ import java.util.UUID;
 public class Lesson {
     @MongoId
     private String id;
-    private final String referenceId;
+    @Setter
+    private String referenceId;
     @Setter
     private String title;
     @Setter
     private String description;
     @Setter
     private String content; //This is in markdown
-    private final String courseId;
+    @Setter
+    private String courseId;
     private String exerciseId;
     private String nextLessonId;
-    private final Set<String> readIds;
+    @Setter
+    private Set<String> readIds;
 
     public Lesson(String title, String description, String content, String courseId) {
         this.referenceId = UUID.randomUUID().toString();

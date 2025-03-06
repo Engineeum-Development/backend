@@ -1,7 +1,9 @@
 package genum.genumUser.security.jwt;
 
 
+import genum.genumUser.repository.GenumUserRepository;
 import genum.genumUser.security.domain.TokenData;
+import genum.shared.genumUser.exception.GenumUserNotFoundException;
 import genum.shared.security.exception.InvalidTokenException;
 import genum.shared.security.exception.TokenNotFoundException;
 import io.jsonwebtoken.Claims;
@@ -13,10 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 
 import java.io.IOException;
 import java.util.regex.Pattern;
@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
-    private final UserDetailsService userDetailService;
+    private final GenumUserRepository genumUserRepository;
     private static final Pattern ACTUATOR_PATHS = Pattern.compile("^/(actuator|favicon.ico)(/.*)?");
     public static final Pattern USER_PATHS = Pattern.compile("^/api/user/(create|waiting-list)");
     public static final Pattern AUTH_PATHS = Pattern.compile("^/api/auth/.*");
@@ -49,7 +49,9 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
                 var referenceId = jwtUtils.getClaimsValue(jwtToken, Claims::getSubject);
                 log.info(" = {}", referenceId);
                 if (referenceId != null || SecurityContextHolder.getContext().getAuthentication() == null) {
-                    var userDetails = userDetailService.loadUserByUsername(referenceId);
+                    var userDetails = genumUserRepository
+                            .findByCustomUserDetails_UserReferenceId(referenceId)
+                            .orElseThrow(GenumUserNotFoundException::new).getCustomUserDetails();
                     if (jwtUtils.validateToken(request)) {
                         var authorities = jwtUtils.getTokenData(jwtToken, TokenData::getGrantedAuthorities);
                         var genumAuthenticationToken = UsernamePasswordAuthenticationToken.authenticated(userDetails, "[PROTECTED]", authorities);
