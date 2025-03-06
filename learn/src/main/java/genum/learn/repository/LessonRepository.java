@@ -10,6 +10,7 @@ import java.util.Optional;
 public interface LessonRepository extends MongoRepository<Lesson, String> {
 
     Optional<Lesson> findByReferenceId(String lessonId);
+    boolean existsByReferenceId(String lessonId);
 
     void deleteByReferenceId(String lessonId);
 
