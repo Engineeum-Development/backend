@@ -20,8 +20,8 @@ public class Video {
     private String title;
     private String uploadVideoFileUrl;
 
-    public Video(int videoPositionInSeries, String description, String title) {
-        this.videoPositionInSeries = videoPositionInSeries;
+    public Video(String description, String title) {
+        this.videoPositionInSeries= 0;
         this.description = description;
         this.title = title;
         this.videoId = UUID.randomUUID().toString();
