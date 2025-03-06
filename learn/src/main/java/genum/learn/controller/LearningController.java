@@ -4,8 +4,9 @@ import genum.learn.dto.*;
 import genum.learn.service.LearningService;
 import genum.shared.DTO.response.ResponseDetails;
 import genum.shared.exception.UploadSizeLimitExceededException;
+import genum.shared.learn.exception.LessonNotFoundException;
+import genum.shared.learn.exception.VideoNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Path;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,13 +39,14 @@ public class LearningController {
         return ResponseEntity.ok(responseDetails);
     }
 
-    @GetMapping("/course/my-course/")
-    public ResponseEntity<ResponseDetails<Page<CourseResponse >>> getAllMyCourses(@PageableDefault Pageable pageable) {
+    @GetMapping("/course/my-course")
+    public ResponseEntity<ResponseDetails<Page<CourseResponse>>> getAllMyCourses(@PageableDefault Pageable pageable) {
         var responseDetails = new ResponseDetails<>("Successful",
                 HttpStatus.OK.toString(),
                 learningService.getAllMyCourses(pageable));
         return ResponseEntity.ok(responseDetails);
     }
+
     @GetMapping("/course/{id}")
     public ResponseEntity<ResponseDetails<CourseDetailedResponse>> getCourse(@PathVariable("id") String courseId) {
         var responseDetails = new ResponseDetails<>("Successful",
@@ -77,6 +79,7 @@ public class LearningController {
                 learningService.uploadLesson(createLessonRequest));
         return ResponseEntity.created(URI.create(httpServletRequest.getRequestURI())).body(responseDetails);
     }
+
     @GetMapping("/lesson/video/{id}")
     public ResponseEntity<ResponseDetails<VideoUploadResponse>> getUploadStatus(@PathVariable("id") String videoId) {
         var responseDetails = new ResponseDetails<>("Successful",
@@ -84,8 +87,9 @@ public class LearningController {
                 learningService.getUploadStatus(videoId));
         return ResponseEntity.ok(responseDetails);
     }
-    @PostMapping("/lesson/video/")
-    public ResponseEntity<ResponseDetails<VideoUploadResponse>> uploadVideoForLesson(@RequestPart("metadata") VideoUploadRequest uploadRequest, @RequestPart("video")MultipartFile file, HttpServletRequest httpServletRequest) {
+
+    @PostMapping("/lesson/video")
+    public ResponseEntity<ResponseDetails<VideoUploadResponse>> uploadVideoForLesson(@RequestPart("metadata") VideoUploadRequest uploadRequest, @RequestPart("video") MultipartFile file, HttpServletRequest httpServletRequest) {
 
         var MAX_FILE_SIZE = DataSize.parse(maxUploadSize);
         var file_data_size = DataSize.ofBytes(file.getSize());
@@ -102,12 +106,21 @@ public class LearningController {
 
     @DeleteMapping("/lesson/{id}")
     public ResponseEntity<Void> deleteLesson(@PathVariable("id") String lessonId) {
-        learningService.deleteLesson(lessonId);
-        return ResponseEntity.noContent().build();
+        try {
+            learningService.deleteLesson(lessonId);
+            return ResponseEntity.ok().build();
+        } catch (LessonNotFoundException e) {
+            return ResponseEntity.noContent().build();
+        }
     }
+
     @DeleteMapping("/lesson/video/{id}")
     public ResponseEntity<Void> deleteVideo(@PathVariable("id") String videoId) {
-        learningService.deleteVideo(videoId);
-        return ResponseEntity.noContent().build();
+        try {
+            learningService.deleteVideo(videoId);
+            return ResponseEntity.ok().build();
+        } catch (VideoNotFoundException e) {
+            return ResponseEntity.noContent().build();
+        }
     }
 }

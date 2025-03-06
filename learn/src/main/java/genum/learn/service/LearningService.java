@@ -48,6 +48,7 @@ public class LearningService {
                 courseDTO.numberOfEnrolledUsers(),
                 ratingService.generateRatingForCourse(courseDTO.referenceId())));
     }
+
     public Page<CourseResponse> getAllMyCourses(Pageable pageable) {
         var currentUserId = securityUtils.getCurrentAuthenticatedUserId();
         var courses = productService.findCourseWithUploaderId(currentUserId, pageable);
@@ -82,14 +83,15 @@ public class LearningService {
         boolean requestContainsLessonIdNotVideoSeriesId = (uploadRequest.lessonId() != null && uploadRequest.videoSeriesId() == null);
         if (requestContainsLessonIdNotVideoSeriesId) {
             var lesson = lessonRepository.findByReferenceId(uploadRequest.lessonId()).orElseThrow(LessonNotFoundException::new);
-            var video = new Video(uploadRequest.videoNumber(), uploadRequest.description(), uploadRequest.title());
+            var video = new Video(uploadRequest.description(), uploadRequest.title());
             var videoSeries = videoSeriesRepository
                     .findByLessonReference(lesson.getReferenceId())
                     .orElse(new VideoSeries(video.getVideoId(), lesson.getTitle(), lesson.getReferenceId(), lesson.getDescription(), uploadRequest.tags()));
+            video.setVideoPositionInSeries(videoSeries.getVideosAccordingToOrder().size());
             return getVideoUploadResponse(file, videoSeries, video);
         } else if (requestContainsVideoSeriesIdNotLessonId) {
             var videoSeries = videoSeriesRepository.findByReference(uploadRequest.videoSeriesId()).orElseThrow(VideoSeriesNotFoundException::new);
-            var video = new Video(uploadRequest.videoNumber(), uploadRequest.description(), uploadRequest.title());
+            var video = new Video(uploadRequest.description(), uploadRequest.title());
             return getVideoUploadResponse(file, videoSeries, video);
         } else {
             throw new IllegalArgumentException("Request must contain either lesson id or video series id");
@@ -155,7 +157,11 @@ public class LearningService {
     }
 
     public void deleteLesson(String lessonId) {
-        lessonRepository.deleteByReferenceId(lessonId);
+        if (lessonRepository.existsByReferenceId(lessonId)) {
+            lessonRepository.deleteByReferenceId(lessonId);
+        } else {
+            throw new LessonNotFoundException();
+        }
     }
 
     public void deleteVideo(String videoId) {
