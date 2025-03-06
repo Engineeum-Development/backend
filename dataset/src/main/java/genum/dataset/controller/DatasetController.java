@@ -120,9 +120,9 @@ public class DatasetController {
     public ResponseEntity<?> deleteDataset(@PathVariable String datasetId) {
         try {
             datasetsService.deleteDataset(datasetId);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (DatasetNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 

@@ -38,6 +38,13 @@ public class LearningController {
         return ResponseEntity.ok(responseDetails);
     }
 
+    @GetMapping("/course/my-course/")
+    public ResponseEntity<ResponseDetails<Page<CourseResponse >>> getAllMyCourses(@PageableDefault Pageable pageable) {
+        var responseDetails = new ResponseDetails<>("Successful",
+                HttpStatus.OK.toString(),
+                learningService.getAllMyCourses(pageable));
+        return ResponseEntity.ok(responseDetails);
+    }
     @GetMapping("/course/{id}")
     public ResponseEntity<ResponseDetails<CourseDetailedResponse>> getCourse(@PathVariable("id") String courseId) {
         var responseDetails = new ResponseDetails<>("Successful",
@@ -62,6 +69,7 @@ public class LearningController {
                 courseResponse);
         return ResponseEntity.created(URI.create(httpServletRequest.getRequestURI())).body(responseDetails);
     }
+
     @PostMapping("/lesson")
     public ResponseEntity<ResponseDetails<LessonResponse>> uploadLesson(@RequestBody @Valid CreateLessonRequest createLessonRequest, HttpServletRequest httpServletRequest) {
         var responseDetails = new ResponseDetails<>("Successful",

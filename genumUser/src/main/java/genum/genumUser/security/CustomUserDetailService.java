@@ -1,6 +1,7 @@
 package genum.genumUser.security;
 
 import genum.genumUser.repository.GenumUserRepository;
+import genum.shared.genumUser.exception.GenumUserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,11 +18,8 @@ public class CustomUserDetailService implements UserDetailsService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserDetails loadUserByUsername(String referenceId) throws UsernameNotFoundException {
-        var genumUser = userRepository.findByCustomUserDetails_UserReferenceId(referenceId);
-        if (genumUser == null) {
-            throw new UsernameNotFoundException("User not found");
-        }
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        var genumUser = userRepository.findByCustomUserDetailsEmail(email).orElseThrow(GenumUserNotFoundException::new);
         return genumUser.getCustomUserDetails();
     }
 

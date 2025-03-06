@@ -36,7 +36,6 @@ import java.util.List;
 public class UserWebSecurityConfiguration {
 
     private final JwtUtils jwtUtils;
-
     @Bean
     public SecurityFilterChain securityFilterChain (HttpSecurity http,
                                                     JWTAuthorizationFilter jwtAuthorizationFilter,
@@ -63,6 +62,7 @@ public class UserWebSecurityConfiguration {
         corsConfiguration.setAllowedHeaders(List.of("*"));
         corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT","DELETE", "OPTIONS"));
         corsConfiguration.setAllowCredentials(true);
+        corsConfiguration.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource configurationSource = new UrlBasedCorsConfigurationSource();
         configurationSource.registerCorsConfiguration("/**", corsConfiguration);
@@ -70,8 +70,8 @@ public class UserWebSecurityConfiguration {
     }
 
     @Bean
-    public JWTAuthorizationFilter jwtAuthorizationFilter (UserDetailsService userDetailsService) {
-        return new JWTAuthorizationFilter(jwtUtils, userDetailsService);
+    public JWTAuthorizationFilter jwtAuthorizationFilter (GenumUserRepository userRepository) {
+        return new JWTAuthorizationFilter(jwtUtils, userRepository);
     }
     @Bean
     public UserDetailsService userDetailsService(GenumUserRepository userRepository) {

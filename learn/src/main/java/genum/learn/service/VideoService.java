@@ -8,4 +8,5 @@ import java.io.IOException;
 
 public interface VideoService {
     String uploadVideo(MultipartFile file) throws IOException;
+    boolean deleteVideo(String url);
 }

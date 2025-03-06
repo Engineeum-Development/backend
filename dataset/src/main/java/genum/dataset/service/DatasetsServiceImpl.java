@@ -7,6 +7,7 @@ import genum.dataset.model.Dataset;
 import genum.dataset.repository.DatasetRepository;
 import genum.genumUser.repository.GenumUserRepository;
 import genum.shared.dataset.exception.DatasetNotFoundException;
+import genum.shared.genumUser.exception.GenumUserNotFoundException;
 import genum.shared.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +42,7 @@ public class DatasetsServiceImpl implements DatasetsService {
     public String createDataset(CreateDatasetDTO createNewDatasetDTO, MultipartFile file) throws IOException, IllegalArgumentException {
         log.info("entered create dataset");
         var userCredentials = getAuthenticatedUserCredentials();
-        var user = genumUserRepository.findByCustomUserDetailsEmail(userCredentials.getEmail());
+        var user = genumUserRepository.findByCustomUserDetailsEmail(userCredentials.getEmail()).orElseThrow(GenumUserNotFoundException::new);
         DatasetType fileType = validateFileType(file);
         log.info("datasetType: {}", fileType);
         DatasetMetadata metadata = new DatasetMetadata(
@@ -131,8 +132,11 @@ public class DatasetsServiceImpl implements DatasetsService {
     @Override
     @CacheEvict(value = "dataset_metadata", key = "#id")
     public void deleteDataset(String id) {
-        datasetsRepository.deleteByDatasetID(id);
-
+        if (datasetsRepository.existsByDatasetID(id)) {
+            datasetsRepository.deleteByDatasetID(id);
+        } else {
+         throw new DatasetNotFoundException("This dataset is not found or has been deleted");
+        }
     }
 
     @Override
