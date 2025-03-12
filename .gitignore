@@ -9,4 +9,5 @@ Dockerfile
 application-deployment.properties
 application-test.properties
 datasets
+build.sh
 run.sh
