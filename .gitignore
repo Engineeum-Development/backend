@@ -10,4 +10,4 @@ application-deployment.properties
 application-test.properties
 datasets
 build.sh
-build.sh
+run.sh
