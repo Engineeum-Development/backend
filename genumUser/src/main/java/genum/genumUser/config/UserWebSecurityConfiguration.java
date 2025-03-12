@@ -2,12 +2,14 @@ package genum.genumUser.config;
 
 import genum.genumUser.repository.GenumUserRepository;
 import genum.genumUser.security.CustomUserDetailService;
+import genum.genumUser.security.Oauth2SuccessHandler;
 import genum.genumUser.security.jwt.JWTAuthorizationFilter;
 import genum.genumUser.security.jwt.JwtUtils;
 import genum.genumUser.security.jwt.LogoutHandlingFilter;
 import genum.genumUser.service.OauthUserService;
 import genum.shared.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -26,9 +28,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
+import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -40,9 +46,11 @@ import java.util.List;
 @EnableWebSecurity
 @Configuration
 @RequiredArgsConstructor
+@Slf4j
 public class UserWebSecurityConfiguration {
 
     private final JwtUtils jwtUtils;
+    private final Oauth2SuccessHandler oauth2SuccessHandler;
     @Bean
     public SecurityFilterChain securityFilterChain (HttpSecurity http,
                                                     JWTAuthorizationFilter jwtAuthorizationFilter,
@@ -53,7 +61,7 @@ public class UserWebSecurityConfiguration {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/actuator/**", "/favicon.ico").permitAll()
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/login/**").permitAll()
                         .requestMatchers("/api/user/create").permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/user/waiting-list").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/user/waiting-list").hasRole("ADMIN")
@@ -64,7 +72,8 @@ public class UserWebSecurityConfiguration {
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(oauth -> oauth.oidcUserService(this.oidcUserService())
                                 .userService(oauthUserService))
-                        .successHandler(this.oauth2AuthenticationSuccessHandler(jwtUtils)))
+                        .successHandler(oauth2SuccessHandler)
+                        .failureHandler(this.oauth2AuthenticationFailureHandler()))
                 .build();
     }
 
@@ -72,13 +81,14 @@ public class UserWebSecurityConfiguration {
         return (new OidcUserService());
     }
 
-    private AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler(JwtUtils jwtUtils) {
-        return (((request, response, authentication) -> {
-            OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-            String email = oAuth2User.getAttribute("email");
+    @Bean
+    public AuthorizationRequestRepository<OAuth2AuthorizationRequest> auth2AuthorizationRequestRepository() {
+        return new HttpSessionOAuth2AuthorizationRequestRepository();
+    }
 
-            jwtUtils.addHeader(response, new CustomUserDetails("{Oauth User}", email));
-            response.setStatus(HttpStatus.OK.value());
+    private AuthenticationFailureHandler oauth2AuthenticationFailureHandler(){
+        return (((request, response, exception) -> {
+            log.error("Oauth2 authentication failed:", exception);
         }));
     }
 
