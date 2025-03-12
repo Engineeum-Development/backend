@@ -9,6 +9,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +26,7 @@ public class AuthController {
 
 
     private final AuthService authService;
+    private final ClientRegistrationRepository clientRegistrationRepository;
 
 
     @PostMapping("/login")
@@ -36,5 +39,12 @@ public class AuthController {
                         "Login Successful",
                         HttpStatus.OK.toString(), loginResponse)
                         );
+    }
+    @PostMapping("/login/google")
+    public ResponseEntity<ResponseDetails<String>> getGoogleLoginUrl() {
+        ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("google");
+        String authorizationUrl = registration.getRedirectUri();
+        var response = new ResponseDetails<>("redirect url", HttpStatus.OK.toString(), authorizationUrl);
+        return ResponseEntity.ok(response);
     }
 }

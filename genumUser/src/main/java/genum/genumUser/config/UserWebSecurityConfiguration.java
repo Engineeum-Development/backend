@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
@@ -42,12 +43,11 @@ import java.util.List;
 public class UserWebSecurityConfiguration {
 
     private final JwtUtils jwtUtils;
-
-    private final OauthUserService oauthUserService;
     @Bean
     public SecurityFilterChain securityFilterChain (HttpSecurity http,
                                                     JWTAuthorizationFilter jwtAuthorizationFilter,
-                                                    LogoutHandlingFilter logoutHandlingFilter, CorsConfigurationSource corsConfigurationSource) throws Exception {
+                                                    LogoutHandlingFilter logoutHandlingFilter, CorsConfigurationSource corsConfigurationSource,
+                                                    OauthUserService oauthUserService) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -78,6 +78,7 @@ public class UserWebSecurityConfiguration {
             String email = oAuth2User.getAttribute("email");
 
             jwtUtils.addHeader(response, new CustomUserDetails("{Oauth User}", email));
+            response.setStatus(HttpStatus.OK.value());
         }));
     }
 
