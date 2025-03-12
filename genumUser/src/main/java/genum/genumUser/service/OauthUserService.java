@@ -58,8 +58,8 @@ public class OauthUserService extends DefaultOAuth2UserService {
                 .createdDate(LocalDateTime.now())
                 .build();
         Optional<GenumUser> optionalGenumUser = genumUserService.getUserByEmail(email);
-
         GenumUser genumUser = optionalGenumUser.orElseGet(() -> registerNewUser(oAuth2UserRequest, user));
+        log.info("User {}",genumUser);
         return new DefaultOAuth2User(genumUser.getCustomUserDetails().getAuthorities(), oAuth2User.getAttributes(), "email");
     }
 
