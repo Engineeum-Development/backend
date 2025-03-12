@@ -39,6 +39,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.time.LocalDateTime;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -136,6 +137,13 @@ public class GenumUserService {
     @Transactional(readOnly = true)
     public Page<WaitListEmailDTO> getWaitListEmails(Pageable pageable) {
         return waitListRepository.findAllProjectedBy(pageable);
+    }
+
+    public Optional<GenumUser> getUserByEmail(String email) {
+        return genumUserRepository.findByCustomUserDetailsEmail(email);
+    }
+    public GenumUser saveOauthUser(GenumUser user) {
+        return genumUserRepository.save(user);
     }
 
     /*
