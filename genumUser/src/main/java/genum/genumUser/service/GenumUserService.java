@@ -146,6 +146,9 @@ public class GenumUserService {
         return genumUserRepository.save(user);
     }
 
+    @Transactional(readOnly = true)
+    public boolean isUserExists(String email){return genumUserRepository.existsByCustomUserDetailsEmail(email);}
+
     /*
     * Clears all the expired OTTs every 30 days
     * */

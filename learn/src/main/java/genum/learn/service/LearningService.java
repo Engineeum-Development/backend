@@ -115,7 +115,7 @@ public class LearningService {
         return new VideoUploadResponse(videoId, null, videoStatus.getVideoUploadStatus());
     }
 
-    @Async("videoUploadExecutor")
+    @Async("taskExecutor")
     public void uploadVideo(MultipartFile multipartFile, String videoId) {
         var video = videoRepository.findByVideoId(videoId).orElseThrow(VideoNotFoundException::new);
         var videoUpload = videoUploadStatusRepository

@@ -62,11 +62,11 @@ public class GlobalExceptionHandler{
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ResponseDetails<>(LocalDateTime.now(), badRequestException.getMessage(), HttpStatus.BAD_REQUEST.toString()));
     }
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ResponseDetails<String>> handleBadCredentialsException(BadCredentialsException badCredentialsException) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ResponseDetails<>(LocalDateTime.now(), "invalid credentials, Please try again with correct credentials", HttpStatus.UNAUTHORIZED.toString()));
-    }
+//    @ExceptionHandler(BadCredentialsException.class)
+//    public ResponseEntity<ResponseDetails<String>> handleBadCredentialsException(BadCredentialsException badCredentialsException) {
+//        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                .body(new ResponseDetails<>(LocalDateTime.now(), "invalid credentials, Please try again with correct credentials", HttpStatus.UNAUTHORIZED.toString()));
+//    }
 
     @ExceptionHandler(UploadSizeLimitExceededException.class)
     public ResponseEntity<ResponseDetails<String>> handleMaxFileSizeExceeded(UploadSizeLimitExceededException uploadSizeLimitExceededException) {

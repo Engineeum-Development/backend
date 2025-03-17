@@ -3,6 +3,7 @@ package genum.genumUser.service;
 import genum.genumUser.security.jwt.JwtUtils;
 import genum.shared.DTO.request.LoginRequest;
 import genum.shared.security.CustomUserDetails;
+import genum.shared.security.exception.LoginFailedException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -26,20 +28,14 @@ public class AuthService {
         genumUserService.incrementUserLastLogin(userEmail);
     }
 
-    public String handleUserLogin(LoginRequest loginRequest, HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.email(),loginRequest.password())
-        );
-        if (!authentication.isAuthenticated()) {
-            if (!((CustomUserDetails)authentication.getPrincipal()).isEnabled()){
-                throw new LockedException("Account is disabled");
-            } else if (((CustomUserDetails)authentication.getPrincipal()).isAccountLocked()) {
-                throw new LockedException("Account is locked");
-            }
-        }
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        updateUserLastLogin(((CustomUserDetails)authentication.getPrincipal()).getEmail());
-        return addJWTtoHeader(servletResponse,authentication);
+    public String handleUserLogin(LoginRequest loginRequest, HttpServletResponse servletResponse) throws AuthenticationException {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.email(),loginRequest.password())
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            updateUserLastLogin(((CustomUserDetails)authentication.getPrincipal()).getEmail());
+            return addJWTtoHeader(servletResponse,authentication);
+
     }
 
 

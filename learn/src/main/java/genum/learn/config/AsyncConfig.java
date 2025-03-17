@@ -8,7 +8,7 @@ import java.util.concurrent.Executor;
 
 @Configuration
 public class AsyncConfig {
-    @Bean(name = "videoUploadExecutor")
+    @Bean(name = "taskExecutor")
     public Executor videoUploadExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(5);
