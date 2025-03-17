@@ -2,16 +2,19 @@ package genum.genumUser.config;
 
 import genum.genumUser.repository.GenumUserRepository;
 import genum.genumUser.security.CustomUserDetailService;
+import genum.genumUser.security.GenumAuthenticationProvider;
 import genum.genumUser.security.Oauth2SuccessHandler;
 import genum.genumUser.security.jwt.JWTAuthorizationFilter;
 import genum.genumUser.security.jwt.JwtUtils;
 import genum.genumUser.security.jwt.LogoutHandlingFilter;
+import genum.genumUser.service.GenumUserService;
 import genum.genumUser.service.OauthUserService;
 import genum.shared.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -50,12 +53,14 @@ import java.util.List;
 public class UserWebSecurityConfiguration {
 
     private final JwtUtils jwtUtils;
-    private final Oauth2SuccessHandler oauth2SuccessHandler;
+
     @Bean
     public SecurityFilterChain securityFilterChain (HttpSecurity http,
                                                     JWTAuthorizationFilter jwtAuthorizationFilter,
-                                                    LogoutHandlingFilter logoutHandlingFilter, CorsConfigurationSource corsConfigurationSource,
-                                                    OauthUserService oauthUserService) throws Exception {
+                                                    LogoutHandlingFilter logoutHandlingFilter,
+                                                    CorsConfigurationSource corsConfigurationSource,
+                                                    OauthUserService oauthUserService,
+                                                    Oauth2SuccessHandler oauth2SuccessHandler) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -118,10 +123,10 @@ public class UserWebSecurityConfiguration {
 
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder, UserDetailsService userDetailsService) {
-        var daoAuthProvider = new DaoAuthenticationProvider(passwordEncoder);
-        daoAuthProvider.setUserDetailsService(userDetailsService);
-        return daoAuthProvider;
+    public DaoAuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder, RedisTemplate<String, Object> redisTemplate, UserDetailsService userDetailsService) {
+        var genumAuthProvider = new GenumAuthenticationProvider(passwordEncoder, redisTemplate);
+        genumAuthProvider.setUserDetailsService(userDetailsService);
+        return genumAuthProvider;
     }
 
     @Bean

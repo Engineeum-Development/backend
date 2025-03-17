@@ -1,14 +1,31 @@
 package genum.shared.security;
 
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Getter;
 
-public record LoginResponse(
-        String message,
-        String token) {
 
-    private static LocalDateTime localDateTime;
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 
-    public LoginResponse {
-        localDateTime = LocalDateTime.now();
+@JsonInclude(NON_DEFAULT)
+@Getter
+public final class LoginResponse {
+    private final String errorMessage;
+    private final String message;
+    private final String token;
+
+    public LoginResponse(
+            String message,
+            String token) {
+        this.message = message;
+        this.token = token;
+        this.errorMessage = null;
     }
+
+    public LoginResponse(String errorMessage) {
+        this.message = null;
+        this.token = null;
+        this.errorMessage = errorMessage;
+    }
+
+
 }
