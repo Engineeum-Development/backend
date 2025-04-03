@@ -71,10 +71,10 @@ public class AuthController {
                 .fromUriString(registration.getProviderDetails().getAuthorizationUri())
                 .queryParam("response_type", "code")
                 .queryParam("client_id", registration.getClientId())
-                .queryParam("scope", String.join(" ", registration.getScopes()))
+                .queryParam("scope", String.join("%20", registration.getScopes()))
                 .queryParam("state", state)
                 .queryParam("redirect_uri", registration.getRedirectUri());
-        String authorizationUrl = uriComponentsBuilder.build(true).toUriString();
+        String authorizationUrl = uriComponentsBuilder.build().toUriString();
         var responseOut = new ResponseDetails<>("Redirect Uri", HttpStatus.FOUND.toString(), authorizationUrl);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseOut);
