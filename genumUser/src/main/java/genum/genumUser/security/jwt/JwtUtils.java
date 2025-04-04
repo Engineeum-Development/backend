@@ -75,7 +75,7 @@ public class JwtUtils {
                     .signWith(keySupplier.get(), Jwts.SIG.HS512);
     private final Function<CustomUserDetails, String> buildToken = (user) ->
             builder.get()
-                    .subject(user.getUserReferenceId())
+                    .subject(user.getUserReferenceId() != null? user.getUserReferenceId() : user.getEmail())
                     .claim(SecurityConstants.ROLE, Role.USER)
                     .expiration(Date.from(Instant.now().plusSeconds(SecurityConstants.EXPIRATION_TIME)))
                     .compact();

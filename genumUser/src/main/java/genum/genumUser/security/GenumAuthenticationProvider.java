@@ -40,6 +40,7 @@ public class GenumAuthenticationProvider extends DaoAuthenticationProvider {
             return authenticationToken;
         }
     }
+
     private void handleFailedAttempts(Authentication authenticationToken) {
         String email = (String) authenticationToken.getPrincipal();
         if (authenticationToken.isAuthenticated()){

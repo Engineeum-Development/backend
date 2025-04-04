@@ -83,7 +83,7 @@ public class UserWebSecurityConfiguration {
     }
 
     private OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {
-        return (new OidcUserService());
+        return new OidcUserService();
     }
 
     @Bean
