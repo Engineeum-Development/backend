@@ -38,6 +38,7 @@ public class Oauth2SuccessHandler extends SavedRequestAwareAuthenticationSuccess
                 .country(oAuth2User.getClaimAsString("country"))
                 .isVerified(oAuth2User.getEmailVerified())
                 .gender(Gender.MALE)
+                .customUserDetails(new CustomUserDetails("{OauthUser}", email))
                 .build();
         var user = genumUserService.getUserByEmail(email);
         if (user.isPresent()) {
