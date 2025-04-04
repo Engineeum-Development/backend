@@ -51,32 +51,4 @@ public class AuthController {
             );
         }
     }
-    @GetMapping("/login/google")
-    public ResponseEntity<ResponseDetails<String>> getGoogleLoginUrl(HttpServletRequest request, HttpServletResponse response) throws URISyntaxException {
-        ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("google");
-
-        String state = UUID.randomUUID().toString();
-        OAuth2AuthorizationRequest authorizationRequest = OAuth2AuthorizationRequest
-                .authorizationCode()
-                .clientId(registration.getClientId())
-                .authorizationUri(registration.getProviderDetails().getAuthorizationUri())
-                .redirectUri(registration.getRedirectUri())
-                .scopes(registration.getScopes())
-                .state(state)
-                .build();
-
-        auth2AuthorizationRequestRepository.saveAuthorizationRequest(authorizationRequest, request, response);
-
-        UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder
-                .fromUriString(registration.getProviderDetails().getAuthorizationUri())
-                .queryParam("response_type", "code")
-                .queryParam("client_id", registration.getClientId())
-                .queryParam("scope", String.join("%20", registration.getScopes()))
-                .queryParam("state", state)
-                .queryParam("redirect_uri", registration.getRedirectUri());
-        String authorizationUrl = uriComponentsBuilder.build().toUriString();
-        var responseOut = new ResponseDetails<>("Redirect Uri", HttpStatus.FOUND.toString(), authorizationUrl);
-
-        return ResponseEntity.status(HttpStatus.OK).body(responseOut);
-    }
 }
