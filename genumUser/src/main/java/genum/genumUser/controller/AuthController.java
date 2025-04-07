@@ -51,4 +51,6 @@ public class AuthController {
             );
         }
     }
+
+    //The endpoint for Google Oauth login is {BaseUrl}/oauth2/authorization/google
 }
