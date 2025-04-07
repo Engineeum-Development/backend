@@ -30,7 +30,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
     private static final Pattern ROOT_PATHS = Pattern.compile("^/$");
     private static final Pattern ACTUATOR_PATHS = Pattern.compile("^/(actuator|favicon.ico)(/.*)?");
     public static final Pattern USER_PATHS = Pattern.compile("^/api/user/(create|waiting-list)");
-    public static final Pattern AUTH_PATHS = Pattern.compile("^/api/auth/.*|^/login/.*");
+    public static final Pattern AUTH_PATHS = Pattern.compile("^/api/auth/.*|^/login/.*|^/oauth2/.*");
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
