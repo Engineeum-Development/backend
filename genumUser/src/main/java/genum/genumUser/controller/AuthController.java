@@ -40,9 +40,10 @@ public class AuthController {
             var loginResponse = new LoginResponse("Welcome", token);
             return ResponseEntity
                     .ok()
-                    .body(new ResponseDetails<>(LocalDateTime.now() ,
+                    .body(new ResponseDetails<>(LocalDateTime.now().toString() ,
                             "Login Successful",
-                            HttpStatus.OK.toString(), loginResponse)
+                            HttpStatus.OK.toString(),
+                                    loginResponse)
                             );
         } catch (LoginFailedException e) {
             var loginResponse = new LoginResponse(e.getMessage());
