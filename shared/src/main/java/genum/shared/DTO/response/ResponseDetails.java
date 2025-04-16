@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Data
 @NoArgsConstructor
@@ -18,23 +19,23 @@ public class ResponseDetails<T> {
     private T data;
 
     public ResponseDetails(LocalDateTime timestamp, String message, String status) {
-        this.timestamp = timestamp.toString();
+        this.timestamp = timestamp.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         this.message = message;
         this.status = status;
     }
     public ResponseDetails(LocalDateTime timestamp, String message, String status, T data) {
-        this.timestamp = timestamp.toString();
+        this.timestamp = timestamp.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         this.message = message;
         this.status = status;
         this.data = data;
     }
     public ResponseDetails(String message, String status) {
-        this.timestamp = LocalDateTime.now().toString();
+        this.timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         this.message = message;
         this.status = status;
     }
     public ResponseDetails(String message, String status, T data) {
-        this.timestamp = LocalDateTime.now().toString();
+        this.timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         this.message = message;
         this.status = status;
         this.data = data;

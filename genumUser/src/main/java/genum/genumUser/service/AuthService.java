@@ -28,13 +28,17 @@ public class AuthService {
         genumUserService.incrementUserLastLogin(userEmail);
     }
 
-    public String handleUserLogin(LoginRequest loginRequest, HttpServletResponse servletResponse) throws AuthenticationException {
+    public String handleUserLogin(LoginRequest loginRequest, HttpServletResponse servletResponse) {
+        try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.email(),loginRequest.password())
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
             updateUserLastLogin(((CustomUserDetails)authentication.getPrincipal()).getEmail());
             return addJWTtoHeader(servletResponse,authentication);
+        } catch (AuthenticationException e) {
+            throw new LoginFailedException();
+        }
 
     }
 

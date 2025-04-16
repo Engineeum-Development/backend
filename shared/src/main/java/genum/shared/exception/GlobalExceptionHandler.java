@@ -3,7 +3,11 @@ package genum.shared.exception;
 
 import genum.shared.DTO.response.ResponseDetails;
 import genum.shared.genumUser.exception.BadRequestException;
+import genum.shared.genumUser.exception.GenumUserNotFoundException;
+import genum.shared.genumUser.exception.OTTNotFoundException;
+import genum.shared.genumUser.exception.UserAlreadyExistsException;
 import genum.shared.security.exception.InvalidTokenException;
+import genum.shared.security.exception.LoginFailedException;
 import genum.shared.security.exception.TokenNotFoundException;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
@@ -18,8 +22,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 
-
-import java.time.LocalDateTime;
 import java.util.Map;
 
 @RestControllerAdvice
@@ -28,7 +30,17 @@ public class GlobalExceptionHandler{
     @ExceptionHandler(TokenNotFoundException.class)
     public ResponseEntity<ResponseDetails<String>> handleTokenNotFoundException(TokenNotFoundException tokenNotFoundException) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ResponseDetails<>(LocalDateTime.now(), tokenNotFoundException.getMessage(), HttpStatus.UNAUTHORIZED.toString()));
+                .body(new ResponseDetails<>(tokenNotFoundException.getMessage(), HttpStatus.UNAUTHORIZED.toString()));
+    }
+    @ExceptionHandler(OTTNotFoundException.class)
+    public ResponseEntity<ResponseDetails<String>> handleOTTNotFoundException(OTTNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ResponseDetails<>(ex.getMessage(), HttpStatus.NOT_FOUND.toString()));
+    }
+    @ExceptionHandler(GenumUserNotFoundException.class)
+    public ResponseEntity<ResponseDetails<String>> handleGenumUserNotFoundException(GenumUserNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ResponseDetails<>(ex.getMessage(),HttpStatus.NOT_FOUND.toString()));
     }
 
     @ExceptionHandler(RuntimeException.class)
@@ -54,19 +66,18 @@ public class GlobalExceptionHandler{
     @ExceptionHandler(InvalidTokenException.class)
     public ResponseEntity<ResponseDetails<String>> handleTokenInvalidTokenException(InvalidTokenException invalidTokenException) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ResponseDetails<>(LocalDateTime.now(), invalidTokenException.getMessage(), HttpStatus.UNAUTHORIZED.toString()));
+                .body(new ResponseDetails<>(invalidTokenException.getMessage(), HttpStatus.UNAUTHORIZED.toString()));
     }
-
-    @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ResponseDetails<String>> handleTokenNotFoundException(BadRequestException badRequestException) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ResponseDetails<>(LocalDateTime.now(), badRequestException.getMessage(), HttpStatus.BAD_REQUEST.toString()));
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ResponseDetails<String>> handleBadCredentialsException(BadCredentialsException badCredentialsException) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ResponseDetails<>("invalid credentials, Please try again with correct credentials", HttpStatus.UNAUTHORIZED.toString()));
     }
-//    @ExceptionHandler(BadCredentialsException.class)
-//    public ResponseEntity<ResponseDetails<String>> handleBadCredentialsException(BadCredentialsException badCredentialsException) {
-//        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-//                .body(new ResponseDetails<>(LocalDateTime.now(), "invalid credentials, Please try again with correct credentials", HttpStatus.UNAUTHORIZED.toString()));
-//    }
+    @ExceptionHandler(LoginFailedException.class)
+    public ResponseEntity<ResponseDetails<String>> handleLoginFailedException(LoginFailedException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ResponseDetails<>(ex.getMessage(), HttpStatus.UNAUTHORIZED.toString()));
+    }
 
     @ExceptionHandler(UploadSizeLimitExceededException.class)
     public ResponseEntity<ResponseDetails<String>> handleMaxFileSizeExceeded(UploadSizeLimitExceededException uploadSizeLimitExceededException) {
@@ -80,8 +91,20 @@ public class GlobalExceptionHandler{
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ResponseDetails<Map>> handleValidationException(MethodArgumentNotValidException validationException) {
+    public ResponseEntity<ResponseDetails<Map<?,?>>> handleValidationException(MethodArgumentNotValidException validationException) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ResponseDetails<>(validationException.getBody().getDetail(), HttpStatus.BAD_REQUEST.toString(), validationException.getBody().getProperties()));
+    }
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<ResponseDetails<String>> handleUserAlreadyExistsException(UserAlreadyExistsException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(new ResponseDetails<>(ex.getMessage(), HttpStatus.CONFLICT.toString()));
+    }
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ResponseDetails<String>> handleBadRequestException(BadRequestException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ResponseDetails<>(ex.getMessage(), HttpStatus.BAD_REQUEST.toString()));
     }
 }
