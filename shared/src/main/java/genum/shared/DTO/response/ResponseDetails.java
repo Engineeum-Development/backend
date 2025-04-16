@@ -12,23 +12,23 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class ResponseDetails<T> {
-    private LocalDateTime timestamp;
+    private String timestamp;
     private String message;
     private String status;
     private T data;
 
     public ResponseDetails(LocalDateTime timestamp, String message, String status) {
-        this.timestamp = timestamp;
+        this.timestamp = timestamp.toString();
         this.message = message;
         this.status = status;
     }
     public ResponseDetails(String message, String status) {
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = LocalDateTime.now().toString();
         this.message = message;
         this.status = status;
     }
     public ResponseDetails(String message, String status, T data) {
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = LocalDateTime.now().toString();
         this.message = message;
         this.status = status;
         this.data = data;

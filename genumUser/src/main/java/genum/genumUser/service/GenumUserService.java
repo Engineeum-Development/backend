@@ -85,7 +85,7 @@ public class GenumUserService {
             return registeredUserOut.toUserDTO();
 
         } catch (IllegalArgumentException illegalArgumentException) {
-            throw new BadRequestException();
+            throw new BadRequestException(illegalArgumentException.getMessage());
         }
 
     }
@@ -150,7 +150,7 @@ public class GenumUserService {
     public boolean isUserExists(String email){return genumUserRepository.existsByCustomUserDetailsEmail(email);}
 
     /*
-    * Clears all the expired OTTs every 30 days
+    * Clears all the expired OTTs every 28 days
     * */
     @Scheduled(timeUnit = TimeUnit.DAYS, fixedRate = 28)
     public void deleteExpiredOTTsScheduled () {
