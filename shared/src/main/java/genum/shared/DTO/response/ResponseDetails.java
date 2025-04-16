@@ -22,6 +22,12 @@ public class ResponseDetails<T> {
         this.message = message;
         this.status = status;
     }
+    public ResponseDetails(LocalDateTime timestamp, String message, String status, T data) {
+        this.timestamp = timestamp.toString();
+        this.message = message;
+        this.status = status;
+        this.data = data;
+    }
     public ResponseDetails(String message, String status) {
         this.timestamp = LocalDateTime.now().toString();
         this.message = message;

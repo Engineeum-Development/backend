@@ -40,7 +40,7 @@ public class AuthController {
             var loginResponse = new LoginResponse("Welcome", token);
             return ResponseEntity
                     .ok()
-                    .body(new ResponseDetails<>(LocalDateTime.now().toString() ,
+                    .body(new ResponseDetails<>(LocalDateTime.now() ,
                             "Login Successful",
                             HttpStatus.OK.toString(),
                                     loginResponse)
