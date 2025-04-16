@@ -72,7 +72,7 @@ public class GenumUserController {
         try{
             GenumUserDTO userInfo =  userService.createNewUser(userCreationRequest);
             var response = new ResponseDetails<>(
-                    LocalDateTime.now(),
+                    LocalDateTime.now().toString(),
                     "User was created successfully",
                     HttpStatus.CREATED.toString(),
                     userInfo);
