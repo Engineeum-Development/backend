@@ -44,8 +44,7 @@ public class GenumApplication
     ObjectMapper objectMapper () {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
-        mapper.registerModule(new Jdk8Module());
-        mapper.registerModule(new GeoModule());
+        mapper.findAndRegisterModules();
         mapper.configure(SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS, false);
         return mapper;
     }
