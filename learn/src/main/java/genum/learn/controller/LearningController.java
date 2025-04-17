@@ -123,4 +123,11 @@ public class LearningController {
             return ResponseEntity.noContent().build();
         }
     }
+
+    @PostMapping("/lesson/review/")
+    public ResponseEntity<ReviewData> reviewLesson(@RequestBody ReviewRequest reviewRequest) {
+        var reviewData = learningService.reviewLesson(reviewRequest);
+        return ResponseEntity
+                .ok(reviewData);
+    }
 }

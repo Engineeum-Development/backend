@@ -13,6 +13,7 @@ import genum.shared.product.DTO.CourseDTO;
 import genum.shared.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
@@ -36,7 +37,7 @@ public class LearningService {
     private final LessonRepository lessonRepository;
     private final SecurityUtils securityUtils;
     private final RatingService ratingService;
-    private final ReviewRepository reviewRepository;
+    private final ReviewService reviewService;
     private final VideoService videoService;
     private final VideoUploadStatusRepository videoUploadStatusRepository;
     private final VideoDeleteStatusRepository videoDeleteStatusRepository;
@@ -140,9 +141,9 @@ public class LearningService {
 
     public CourseDetailedResponse getCourse(String courseID) {
         var course = productService.findCourseByReference(courseID);
-        var reviewData = reviewRepository.findAllByCourseId(courseID).stream()
+        var reviewData = reviewService.findAllReviewsByCourseId(courseID).stream()
                 .limit(20)
-                .map(review -> new ReviewData(review.getComment(), String.valueOf(review.getRating())))
+                .map(review -> new ReviewData(review.comment(), String.valueOf(review.rating())))
                 .collect(Collectors.toSet());
         return new CourseDetailedResponse(
                 course.name(),
@@ -184,5 +185,14 @@ public class LearningService {
         String userId = securityUtils.getCurrentAuthenticatedUserId();
         return productService.userIdHasEnrolledForCourse(courseID, userId);
 
+    }
+
+    public ReviewData reviewLesson(ReviewRequest reviewRequest) {
+        Lesson lesson = lessonRepository
+                .findByReferenceId(reviewRequest.lessonId())
+                .orElseThrow(LessonNotFoundException::new);
+
+        ReviewDTO reviewDTO = new ReviewDTO(lesson.getCourseId(), reviewRequest.rating(), reviewRequest.comment());
+        return reviewService.addReview(reviewDTO);
     }
 }
