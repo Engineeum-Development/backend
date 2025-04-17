@@ -60,7 +60,7 @@ public class FlutterWavePaymentService implements PaymentService {
         CourseDTO course = productService.findCourseById(productRequest.getProductId());
         var payment = CoursePayment.builder()
                 .courseId(course.referenceId())
-                .paymentInitializationDate(LocalDateTime.now())
+                .paymentInitializationDate(LocalDateTime.now().toString())
                 .paymentValue(course.price())
                 .userid(user.getEmail())
                 .paymentPlatForm(PaymentPlatform.FLUTTER_WAVE)
@@ -94,13 +94,13 @@ public class FlutterWavePaymentService implements PaymentService {
                 PaymentEvent paymentEvent = new PaymentEvent(payment.toPaymentDTO(),
                         genum.payment.event.EventType.PAYMENT_SUCCESSFUL, null);
                 applicationEventPublisher.publishEvent(paymentEvent);
-                return new PaymentResponse(LocalDateTime.now(), PaymentStatus.PENDING, Map.of(
+                return new PaymentResponse(LocalDateTime.now().toString(), PaymentStatus.PENDING, Map.of(
                         "message", "Payment initialization was a success",
                         "authorization_url", response.getBody().data().link()));
             } else {
                 payment.setPaymentStatus(PaymentStatus.FAILED);
                 paymentRepository.save(payment);
-                return new PaymentResponse(LocalDateTime.now(), PaymentStatus.FAILED, Map.of(
+                return new PaymentResponse(LocalDateTime.now().toString(), PaymentStatus.FAILED, Map.of(
                         "message", "Payment initialization failed",
                         "status", "failed"
                 ));
@@ -109,7 +109,7 @@ public class FlutterWavePaymentService implements PaymentService {
         } else {
             payment.setPaymentStatus(PaymentStatus.FAILED);
             paymentRepository.save(payment);
-            return new PaymentResponse(LocalDateTime.now(), PaymentStatus.FAILED, Map.of(
+            return new PaymentResponse(LocalDateTime.now().toString(), PaymentStatus.FAILED, Map.of(
                     "message", "Payment initialization failed",
                     "status", "failed"
             ));
@@ -139,7 +139,7 @@ public class FlutterWavePaymentService implements PaymentService {
 
 
         if (!user.getEmail().equals(userEmail) || optionalPayment.isEmpty()) {
-            return new PaymentResponse(LocalDateTime.now(),
+            return new PaymentResponse(LocalDateTime.now().toString(),
                     PaymentStatus.FAILED,
                     Map.of("message", "This payment does not exist or user not authenticated",
                             "status", "failed"));
@@ -167,7 +167,7 @@ public class FlutterWavePaymentService implements PaymentService {
                 );
                 applicationEventPublisher.publishEvent(courseEvent);
                 return new PaymentResponse(
-                        LocalDateTime.now(),
+                        LocalDateTime.now().toString(),
                         PaymentStatus.COMPLETED,
                         Map.of("message", "The payment was a success",
                                 "status", "success"));
@@ -175,14 +175,14 @@ public class FlutterWavePaymentService implements PaymentService {
                 payment.setPaymentStatus(PaymentStatus.FAILED);
                 paymentRepository.save(payment);
                 return new PaymentResponse(
-                        LocalDateTime.now(),
+                        LocalDateTime.now().toString(),
                         PaymentStatus.FAILED,
                         Map.of("message", "The payment failed, please try again later",
                                 "status", "failed"));
             }
         } else {
             return new PaymentResponse(
-                    LocalDateTime.now(),
+                    LocalDateTime.now().toString(),
                     PaymentStatus.PENDING,
                     Map.of("message", "The Payment couldn't be verified,please try again",
                             "status", "failed"));
