@@ -113,6 +113,7 @@ public class GenumUserService {
             if (oneTimeTokenUserOptional.isPresent()){
                 var genumUser = oneTimeTokenUserOptional.get();
                 genumUser.setVerified(true);
+                genumUser.getCustomUserDetails().setAccountEnabled(true);
                 genumUserRepository.save(genumUser);
                 return "confirmed";
             } else {
