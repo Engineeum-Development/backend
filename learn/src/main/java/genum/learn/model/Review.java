@@ -1,5 +1,6 @@
 package genum.learn.model;
 
+import genum.learn.dto.ReviewDTO;
 import lombok.Getter;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
@@ -19,5 +20,9 @@ public class Review {
         this.rating = rating;
         this.userId = userId;
         this.courseId = courseId;
+    }
+
+    public ReviewDTO toDTO() {
+        return new ReviewDTO(this.courseId,this.rating,this.comment);
     }
 }

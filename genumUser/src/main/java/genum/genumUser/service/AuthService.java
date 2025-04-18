@@ -37,7 +37,7 @@ public class AuthService {
             updateUserLastLogin(((CustomUserDetails)authentication.getPrincipal()).getEmail());
             return addJWTtoHeader(servletResponse,authentication);
         } catch (AuthenticationException e) {
-            throw new LoginFailedException();
+            throw new LoginFailedException(e.getMessage());
         }
 
     }

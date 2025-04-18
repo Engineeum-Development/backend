@@ -28,7 +28,7 @@ public class CoursePayment {
     @Field("payment_value")
     private int paymentValue;
     private PaymentPlatform paymentPlatForm;
-    private LocalDateTime paymentInitializationDate;
+    private String paymentInitializationDate;
 
     public PaymentDTO toPaymentDTO() {
         return new PaymentDTO(this.userid, this.paymentStatus, this.paymentValue);
