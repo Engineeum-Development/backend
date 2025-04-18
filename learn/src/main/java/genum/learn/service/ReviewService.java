@@ -15,13 +15,11 @@ import java.util.List;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
-    private final RatingService ratingService;
     private final SecurityUtils securityUtils;
 
     public ReviewData addReview(ReviewDTO reviewDTO) {
         Review review = new Review(reviewDTO.comment(), reviewDTO.rating(), securityUtils.getCurrentAuthenticatedUserId(), reviewDTO.courseId());
         review = reviewRepository.save(review);
-        ratingService.updateRating(reviewDTO.courseId());
         return new ReviewData(reviewDTO.comment(), String.valueOf(review.getRating()));
     }
     public List<ReviewDTO> findAllReviewsByCourseId(String courseId) {
