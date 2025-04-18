@@ -67,7 +67,8 @@ public class UserWebSecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/actuator/**", "/favicon.ico").permitAll()
                         .requestMatchers("/api/auth/**", "/login/**").permitAll()
-                        .requestMatchers("/api/user/create", "api/user/confirm-email").permitAll()
+                        .requestMatchers("/api/user/create").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/user/confirm-token").permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/user/waiting-list").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/user/waiting-list").hasRole("ADMIN")
                         .anyRequest().authenticated())

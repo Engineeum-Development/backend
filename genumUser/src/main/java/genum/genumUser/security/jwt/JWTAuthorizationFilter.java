@@ -37,7 +37,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
         String requestUri = request.getRequestURI();
         if ( AUTH_PATHS.matcher(requestUri).matches() ||
                 ROOT_PATHS.matcher(requestUri).matches() ||
-                (USER_PATHS.matcher(requestUri).matches() && request.getMethod().equals("POST")) ||
+                USER_PATHS.matcher(requestUri).matches() ||
                 ACTUATOR_PATHS.matcher(requestUri).matches()
         ) {
             filterChain.doFilter(request,response);
