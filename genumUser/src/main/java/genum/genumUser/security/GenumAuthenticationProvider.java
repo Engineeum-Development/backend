@@ -29,8 +29,8 @@ public class GenumAuthenticationProvider extends DaoAuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws LoginFailedException {
-        if (isAccountLocked((String) authentication.getPrincipal()))
-            throw new LockedException("Your account is currently locked due to too many failed attempts. Please try again in " + getRemainingLockTime((String) authentication.getPrincipal()) + " minutes");
+        //if (isAccountLocked((String) authentication.getPrincipal()))
+        //    throw new LockedException("Your account is currently locked due to too many failed attempts. Please try again in " + getRemainingLockTime((String) authentication.getPrincipal()) + " minutes");
         UsernamePasswordAuthenticationToken authenticationToken = (UsernamePasswordAuthenticationToken) authentication;
         try {
             authenticationToken = (UsernamePasswordAuthenticationToken) super.authenticate(authentication);
