@@ -1,18 +1,22 @@
 FROM maven:3.9.9-eclipse-temurin-17-alpine as BUILDER
 
-WORKDIR .
+WORKDIR /app
 
 COPY . .
 
-RUN mvn clean install -Dmaven.test.skip=true -U
-RUN mvn clean package -Dmaven.test.skip=true
-
+RUN mvn install -Dmaven.test.skip=true
+RUN mvn clean package -pl app -am -Dmaven.test.skip=true
+RUN java -Djarmode=layertools -jar app/target/*.jar extract
 
 LABEL authors="divjazz, zipdemon"
 
-FROM eclipse-temurin:17-jre-alpine as FINAL
-WORKDIR .
+FROM gcr.io/distroless/java17 as FINAL
+WORKDIR /app
 EXPOSE 8080
-COPY --from=BUILDER ./**/target/*.jar .
+COPY --from=BUILDER /app/dependencies/ ./
+COPY --from=BUILDER /app/spring-boot-loader/ ./
+COPY --from=BUILDER /app/snapshot-dependencies/ ./
+COPY --from=BUILDER /app/application/ ./
 
-ENTRYPOINT ["java", "-jar", "app-0.0.1-SNAPSHOT.jar"]
+
+ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]
