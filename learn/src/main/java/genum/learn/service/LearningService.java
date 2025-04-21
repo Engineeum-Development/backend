@@ -180,7 +180,9 @@ public class LearningService {
     public void uploadVideoChunk(MultipartFile multipartFile, String uploadId, VideoChunkMetadata videoChunkMetadata) {
         try {
             File uploadDir = new File("uploads/temp/" + uploadId);
-            if (!uploadDir.exists()) uploadDir.mkdirs();
+            if (!uploadDir.exists()) {
+                boolean result = uploadDir.mkdirs();
+            }
             File chunkFile = new File(uploadDir, videoChunkMetadata.chunkIndex() + ".part");
             multipartFile.transferTo(chunkFile);
         } catch (IOException | SecurityException e) {
@@ -227,8 +229,10 @@ public class LearningService {
                     .convertAndSend("/topic/upload-status/%s".formatted(uploadId), new VideoUploadStatusMessage(uploadId, VideoUploadStatus.FAILED.toString(), 0, null, "Upload failed: %s".formatted(e.getMessage())));
             log.error("Video {} upload failed", videoId);
         } finally {
-            for (File part : parts) part.delete();
-            uploadDir.delete();
+            for (File part : parts) {
+                boolean deleted = part.delete();
+            }
+            boolean deleted = uploadDir.delete();
         }
 
     }
