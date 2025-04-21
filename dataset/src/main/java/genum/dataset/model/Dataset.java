@@ -9,13 +9,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
 @AllArgsConstructor
 @Data
 @NoArgsConstructor
-public class Dataset {
+public class Dataset implements Serializable {
 
     @Id
     private String id;

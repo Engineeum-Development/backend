@@ -3,6 +3,7 @@ package genum.dataset.service;
 import genum.dataset.DTO.CreateDatasetDTO;
 import genum.dataset.domain.DatasetMetadata;
 import genum.dataset.domain.DatasetType;
+import genum.dataset.enums.Visibility;
 import genum.dataset.model.Dataset;
 import genum.dataset.repository.DatasetRepository;
 import genum.genumUser.repository.GenumUserRepository;
@@ -46,12 +47,12 @@ public class DatasetsServiceImpl implements DatasetsService {
         DatasetType fileType = validateFileType(file);
         log.info("datasetType: {}", fileType);
         DatasetMetadata metadata = new DatasetMetadata(
-                createNewDatasetDTO.getDescription(),
-                createNewDatasetDTO.getTags(),
+                createNewDatasetDTO.description(),
+                createNewDatasetDTO.tags(),
                 file.getOriginalFilename(),
                 file.getSize(),
                 fileType,
-                createNewDatasetDTO.getVisibility()
+                Visibility.valueOf(createNewDatasetDTO.visibility().toUpperCase())
         );
         log.info("metadata: {}", metadata);
         String uploadUrl = datasetStorageService.storeDataSet(file, metadata);
@@ -60,7 +61,7 @@ public class DatasetsServiceImpl implements DatasetsService {
         dataset.setDatasetID(UUID.randomUUID().toString());
         dataset.setTags(metadata.getTags());
         dataset.setDatasetType(metadata.getContentType());
-        dataset.setVisibility(createNewDatasetDTO.getVisibility());
+        dataset.setVisibility(metadata.getVisibility());
         dataset.setTitle(file.getOriginalFilename());
         dataset.setUploadFileUrl(uploadUrl);
         dataset.setDownloads(0);

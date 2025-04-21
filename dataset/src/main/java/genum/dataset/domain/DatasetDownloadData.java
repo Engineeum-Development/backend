@@ -4,11 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.Serializable;
 import java.nio.file.Path;
 
 @AllArgsConstructor
 @Getter
-public class DatasetDownloadData {
+public class DatasetDownloadData implements Serializable {
     private DatasetMetadata datasetMetadata;
     private MultipartFile file;
 }
