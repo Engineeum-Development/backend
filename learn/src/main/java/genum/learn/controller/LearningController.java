@@ -1,5 +1,6 @@
 package genum.learn.controller;
 
+import genum.learn.domain.VideoChunkMetadata;
 import genum.learn.dto.*;
 import genum.learn.service.LearningService;
 import genum.shared.DTO.response.ResponseDetails;
@@ -9,6 +10,7 @@ import genum.shared.learn.exception.VideoNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +26,7 @@ import java.net.URI;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/api/learn")
 public class LearningController {
 
@@ -64,12 +67,30 @@ public class LearningController {
     }
 
     @PostMapping("/course")
-    public ResponseEntity<ResponseDetails<CourseResponse>> uploadCourse(@Valid @RequestBody CreateCourseRequest createCourseRequest, HttpServletRequest httpServletRequest) {
-        var courseResponse = learningService.uploadCourse(createCourseRequest);
+    public ResponseEntity<ResponseDetails<CourseResponse>> uploadCourse(@Valid @RequestBody CreateCourseRequest createCourseRequest,
+                                                                        HttpServletRequest httpServletRequest) {
+        CourseResponse courseResponse = learningService.uploadCourse(createCourseRequest);
         var responseDetails = new ResponseDetails<>("Successful",
                 HttpStatus.CREATED.toString(),
                 courseResponse);
         return ResponseEntity.created(URI.create(httpServletRequest.getRequestURI())).body(responseDetails);
+    }
+
+    @GetMapping("/lesson")
+    public ResponseEntity<ResponseDetails<Page<LessonResponse>>> getLessonsInCourse(@PageableDefault Pageable pageable,
+                                                                                    @RequestParam(value = "course_id") String courseId) {
+        Page<LessonResponse> lessonResponses = learningService.getAllLessonsForCourse(courseId, pageable);
+        ResponseDetails<Page<LessonResponse>> responseDetails = new ResponseDetails<>("Successful",
+                HttpStatus.OK.toString(), lessonResponses);
+        return ResponseEntity.ok(responseDetails);
+
+    }
+
+    @GetMapping("/lesson/{id}")
+    public ResponseEntity<ResponseDetails<LessonResponseFull>> getFullLesson(@PathVariable("id") String lessonId) {
+        LessonResponseFull lessonResponse = learningService.getFullLessonResponseByLessonId(lessonId);
+        var responseDetails = new ResponseDetails<>("Successful", HttpStatus.OK.toString(), lessonResponse);
+        return ResponseEntity.ok(responseDetails);
     }
 
     @PostMapping("/lesson")
@@ -80,16 +101,11 @@ public class LearningController {
         return ResponseEntity.created(URI.create(httpServletRequest.getRequestURI())).body(responseDetails);
     }
 
-    @GetMapping("/lesson/video/{id}")
-    public ResponseEntity<ResponseDetails<VideoUploadResponse>> getUploadStatus(@PathVariable("id") String videoId) {
-        var responseDetails = new ResponseDetails<>("Successful",
-                HttpStatus.OK.toString(),
-                learningService.getUploadStatus(videoId));
-        return ResponseEntity.ok(responseDetails);
-    }
-
     @PostMapping("/lesson/video")
-    public ResponseEntity<ResponseDetails<VideoUploadResponse>> uploadVideoForLesson(@RequestPart("metadata") VideoUploadRequest uploadRequest, @RequestPart("video") MultipartFile file, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<ResponseDetails<NonChunkedVideoUploadResponse>> uploadVideoForLesson(
+            @RequestPart("metadata") VideoUploadRequest uploadRequest,
+            @RequestPart("video") MultipartFile file,
+            HttpServletRequest httpServletRequest) {
 
         var MAX_FILE_SIZE = DataSize.parse(maxUploadSize);
         var file_data_size = DataSize.ofBytes(file.getSize());
@@ -100,9 +116,46 @@ public class LearningController {
         var responseDetails = new ResponseDetails<>("Successful",
                 HttpStatus.CREATED.toString(),
                 learningService.addVideoToLesson(uploadRequest, file));
+        return ResponseEntity
+                .created(URI.create(httpServletRequest.getRequestURI()))
+                .body(responseDetails);
 
-        return ResponseEntity.created(URI.create(httpServletRequest.getRequestURI())).body(responseDetails);
     }
+
+    @PostMapping("/lesson/video/chunked")
+    public ResponseEntity<ResponseDetails<ChunkedVideoUploadResponse>> uploadVideoChunk(
+            @RequestParam("video") MultipartFile file,
+            @RequestParam("uploadId") String uploadId,
+            @RequestParam("chunkIndex") int chunkIndex,
+            @RequestParam("totalChunks") int totalChunks,
+            @RequestParam("totalFileSize") long totalFileSize,
+            @RequestParam("OriginalFilename") String originalFilename
+    ) {
+        var MAX_FILE_SIZE = DataSize.parse(maxUploadSize);
+        var file_data_size = DataSize.ofBytes(totalFileSize);
+        if (file_data_size.toBytes() > MAX_FILE_SIZE.toBytes()) {
+            throw new UploadSizeLimitExceededException(file_data_size.toBytes(), MAX_FILE_SIZE.toBytes());
+        }
+        var chuckedMetadata = new VideoChunkMetadata(uploadId, chunkIndex, totalChunks, totalFileSize, originalFilename);
+        var responseDetails = new ResponseDetails<>("Successful",
+                HttpStatus.CREATED.toString(),
+                learningService.addChunkedVideoToLesson(file, chuckedMetadata ));
+        return ResponseEntity
+                .ok(responseDetails);
+    }
+    @PostMapping("/lesson/video/chunked/complete")
+    public ResponseEntity<ResponseDetails<NonChunkedVideoUploadResponse>> completeVideoUpload (
+            @RequestBody VideoUploadRequest uploadRequest,
+            @RequestParam String finalFilename,
+            @RequestParam("uploadId") String uploadId) {
+
+        var responseDetails = new ResponseDetails<>("Successful",
+                HttpStatus.CREATED.toString(),
+                learningService.addChunkedVideoToLesson(uploadRequest, finalFilename,uploadId));
+        return ResponseEntity
+                .ok(responseDetails);
+    }
+
 
     @DeleteMapping("/lesson/{id}")
     public ResponseEntity<Void> deleteLesson(@PathVariable("id") String lessonId) {

@@ -14,16 +14,15 @@ public class Video {
     @MongoId
     private String id;
     private String videoId;
-    private String seriesReference;
-    private int videoPositionInSeries;
+    private String lessonId;
     private String description;
     private String title;
     private String uploadVideoFileUrl;
 
-    public Video(String description, String title) {
-        this.videoPositionInSeries= 0;
+    public Video(String description, String title, String lessonId) {
         this.description = description;
         this.title = title;
         this.videoId = UUID.randomUUID().toString();
+        this.lessonId = lessonId;
     }
 }

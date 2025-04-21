@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 @Getter
 public class Review {
     private final String comment;
-    private final int rating;
+    private final double rating;
     private final String userId;
     private final String courseId;
     @MongoId
@@ -23,6 +23,6 @@ public class Review {
     }
 
     public ReviewDTO toDTO() {
-        return new ReviewDTO(this.courseId,this.rating,this.comment);
+        return new ReviewDTO(this.courseId,(int)this.rating,this.comment);
     }
 }

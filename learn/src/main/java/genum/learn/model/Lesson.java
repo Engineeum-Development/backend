@@ -6,13 +6,14 @@ import lombok.Setter;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
+import java.io.Serializable;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 
 @Document
 @Getter
-public class Lesson {
+public class Lesson implements Serializable {
     @MongoId
     private String id;
     @Setter

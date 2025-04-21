@@ -4,11 +4,12 @@ import genum.dataset.enums.Visibility;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Getter
 @Setter
-public class DatasetMetadata {
+public class DatasetMetadata implements Serializable {
     private String datasetId;
     private String description;
     private List<String> tags;
