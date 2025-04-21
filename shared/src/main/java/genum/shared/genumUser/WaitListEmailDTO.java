@@ -1,4 +1,6 @@
 package genum.shared.genumUser;
 
-public record WaitListEmailDTO(String email) {
+import java.io.Serializable;
+
+public record WaitListEmailDTO(String email) implements Serializable {
 }

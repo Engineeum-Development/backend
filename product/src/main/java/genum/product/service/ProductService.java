@@ -28,7 +28,7 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "courses_by_id_page", keyGenerator = "customPageableKeyGenerator")
+   // @Cacheable(value = "courses_by_id_page", keyGenerator = "customPageableKeyGenerator")
     public Page<CourseDTO> findCourseWithUploaderId(String id, Pageable pageable) {
         return productRepository.findAllByUploaderId(id, pageable).map(Course::toDTO);
     }
@@ -39,7 +39,7 @@ public class ProductService {
         return course.toDTO();
     }
 
-    @CachePut(value = "course_by_id", key = "#courseDTO.referenceId()")
+    @CachePut(value = "course_by_id", key = "#courseDTO.referenceId()", condition = "{T(java.util.Objects).nonNull(#courseDTO.referenceId())}")
     public CourseDTO createCourse(CourseDTO courseDTO) {
         Course course = new Course(courseDTO.name(),courseDTO.uploader(), courseDTO.description(), courseDTO.price());
         return productRepository.save(course).toDTO();

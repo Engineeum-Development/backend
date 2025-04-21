@@ -10,11 +10,6 @@
     </parent>
     <packaging>jar</packaging>
     <artifactId>shared</artifactId>
-
-    <dependencies>
-
-    </dependencies>
-
     <build>
 
         <plugins>
