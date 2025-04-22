@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -49,10 +50,13 @@ public class DatasetsServiceImpl implements DatasetsService {
         DatasetMetadata metadata = new DatasetMetadata(
                 createNewDatasetDTO.description(),
                 createNewDatasetDTO.tags(),
+                createNewDatasetDTO.datasetName(),
                 file.getOriginalFilename(),
                 file.getSize(),
                 fileType,
-                Visibility.valueOf(createNewDatasetDTO.visibility().toUpperCase())
+                Objects.nonNull(
+                        createNewDatasetDTO.visibility()) ?
+                        Visibility.valueOf(createNewDatasetDTO.visibility().toUpperCase()) : Visibility.PUBLIC
         );
         log.info("metadata: {}", metadata);
         String uploadUrl = datasetStorageService.storeDataSet(file, metadata);
@@ -66,6 +70,8 @@ public class DatasetsServiceImpl implements DatasetsService {
         dataset.setUploadFileUrl(uploadUrl);
         dataset.setDownloads(0);
         dataset.setUploader(user.getId());
+        dataset.setDatasetName(metadata.getDatasetName());
+        dataset.setDescription(metadata.getDescription());
         log.info("dataset: {}", dataset);
         return datasetsRepository.save(dataset).getDatasetID();
     }
@@ -108,9 +114,8 @@ public class DatasetsServiceImpl implements DatasetsService {
     @Cacheable(value = "dataset_metadata", key = "#id")
     @Override
     public DatasetMetadata getDatasetMetadataById(String id) {
-        Optional<Dataset> dataset = datasetsRepository.getDatasetByDatasetID(id);
-
-        return dataset.map(Dataset::toMetadata).orElseThrow(() -> new RuntimeException("Dataset not found with ID: " + id));
+        Dataset dataset = datasetsRepository.getDatasetByDatasetID(id).orElseThrow(() -> new DatasetNotFoundException(id));
+        return dataset.toMetadata();
     }
 
     @Override
@@ -136,7 +141,7 @@ public class DatasetsServiceImpl implements DatasetsService {
         if (datasetsRepository.existsByDatasetID(id)) {
             datasetsRepository.deleteByDatasetID(id);
         } else {
-         throw new DatasetNotFoundException("This dataset is not found or has been deleted");
+            throw new DatasetNotFoundException("This dataset is not found or has been deleted");
         }
     }
 
