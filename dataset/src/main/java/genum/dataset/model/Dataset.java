@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @AllArgsConstructor
@@ -21,6 +22,7 @@ public class Dataset implements Serializable {
     @Id
     private String id;
     private String datasetID;
+    private String datasetName;
     private String uploader;
     private String description;
     private String uploadFileUrl;
@@ -42,13 +44,13 @@ public class Dataset implements Serializable {
                 datasetID,
                 description,
                 tags,
+                datasetName,
                 title,
                 fileSize/1000,
                 datasetType,
                 visibility
         );
-
-       datasetMetadata.setLikes(usersThatLiked.size());
+       datasetMetadata.setLikes(Objects.nonNull(usersThatLiked)? usersThatLiked.size(): 0);
        return datasetMetadata;
     }
 

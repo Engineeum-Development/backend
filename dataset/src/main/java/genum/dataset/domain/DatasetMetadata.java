@@ -10,6 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 public class DatasetMetadata implements Serializable {
+    private String datasetName;
     private String datasetId;
     private String description;
     private List<String> tags;
@@ -19,15 +20,16 @@ public class DatasetMetadata implements Serializable {
     private DatasetType contentType;
     private long likes;
 
-    public DatasetMetadata(String description, List<String> tags,  String originalFilename,long fileSizeInBytes, DatasetType contentType, Visibility visibility) {
+    public DatasetMetadata(String description, List<String> tags,String datasetName,String originalFilename,long fileSizeInBytes, DatasetType contentType, Visibility visibility) {
         this.description = description;
         this.tags = tags;
         this.fileSizeInKBytes = fileSizeInBytes;
         this.originalFilename = originalFilename;
         this.contentType = contentType;
         this.visibility = visibility;
+        this.datasetName = datasetName;
     }
-    public DatasetMetadata(String datasetId, String description, List<String> tags, String originalFilename, long fileSizeInBytes, DatasetType contentType, Visibility visibility) {
+    public DatasetMetadata(String datasetId, String description, List<String> tags,String datasetName, String originalFilename, long fileSizeInBytes, DatasetType contentType, Visibility visibility) {
         this.description = description;
         this.tags = tags;
         this.fileSizeInKBytes = fileSizeInBytes;
@@ -35,5 +37,6 @@ public class DatasetMetadata implements Serializable {
         this.contentType = contentType;
         this.datasetId = datasetId;
         this.visibility = visibility;
+        this.datasetName = datasetName;
     }
 }
