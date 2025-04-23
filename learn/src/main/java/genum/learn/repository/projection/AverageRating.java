@@ -1,4 +1,4 @@
-package genum.learn.projection;
+package genum.learn.repository.projection;
 
 import java.io.Serializable;
 

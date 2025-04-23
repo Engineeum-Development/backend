@@ -179,7 +179,7 @@ public class LearningService {
 
     public void uploadVideoChunk(MultipartFile multipartFile, String uploadId, VideoChunkMetadata videoChunkMetadata) {
         try {
-            File uploadDir = new File("uploads/temp/" + uploadId);
+            File uploadDir = new File("/genum/video/uploads/temp/" + uploadId);
             if (!uploadDir.exists()) {
                 boolean result = uploadDir.mkdirs();
             }
@@ -203,15 +203,15 @@ public class LearningService {
                 .getVideoUploadStatusModelByVideoId(videoId)
                 .orElse(new VideoUploadStatusModel(videoId, VideoUploadStatus.PENDING));
 
-        File uploadDir = new File("uploads/temp/" + uploadId);
+        File uploadDir = new File("/genum/video/uploads/temp/" + uploadId);
         File[] parts = Objects.requireNonNull(uploadDir.listFiles());
         Arrays.sort(parts,
                 Comparator
                         .comparingInt(f -> Integer
                                 .parseInt(f.getName()
                                         .replace(".part", ""))));
-        File finalFile = new File("uploads/complete/" + finalFileName);
-        try (FileOutputStream fos = new FileOutputStream(finalFileName)) {
+        File finalFile = new File("/genum/video/uploads/temp/complete/" + finalFileName);
+        try (FileOutputStream fos = new FileOutputStream(finalFile)) {
             for (File part : parts) {
                 Files.copy(part.toPath(), fos);
             }
@@ -233,6 +233,7 @@ public class LearningService {
                 boolean deleted = part.delete();
             }
             boolean deleted = uploadDir.delete();
+            boolean finalFilePath = finalFile.delete();
         }
 
     }

@@ -1,7 +1,7 @@
 package genum.learn.repository;
 
 import genum.learn.model.Review;
-import genum.learn.projection.AverageRating;
+import genum.learn.repository.projection.AverageRating;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.Aggregation;

@@ -1,6 +1,6 @@
 package genum.learn.service;
 
-import genum.learn.projection.AverageRating;
+import genum.learn.repository.projection.AverageRating;
 import genum.learn.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

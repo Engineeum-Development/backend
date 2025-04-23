@@ -18,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import java.awt.print.Pageable;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
@@ -27,10 +28,14 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
     private final GenumUserRepository genumUserRepository;
+    //White-listed paths
     private static final Pattern ROOT_PATHS = Pattern.compile("^/$");
     private static final Pattern ACTUATOR_PATHS = Pattern.compile("^/(actuator|favicon.ico)(/.*)?");
     public static final Pattern USER_PATHS = Pattern.compile("^/api/user/(create|waiting-list|confirm-token)");
     public static final Pattern AUTH_PATHS = Pattern.compile("^/api/auth/.*|^/login/.*|^/oauth2/.*");
+    public static final Pattern DATASET_PATHS = Pattern.compile("^/api/dataset/(all|trending|download/.*)");
+    public static final Pattern WEBSOCKET_PATHS = Pattern.compile("/ws|/ws/.*");
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -38,7 +43,9 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
         if ( AUTH_PATHS.matcher(requestUri).matches() ||
                 ROOT_PATHS.matcher(requestUri).matches() ||
                 USER_PATHS.matcher(requestUri).matches() ||
-                ACTUATOR_PATHS.matcher(requestUri).matches()
+                ACTUATOR_PATHS.matcher(requestUri).matches() ||
+                DATASET_PATHS.matcher(requestUri).matches() ||
+                WEBSOCKET_PATHS.matcher(requestUri).matches()
         ) {
             filterChain.doFilter(request,response);
         } else {
@@ -49,7 +56,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
             } else {
                 var jwtToken = optionalToken.get();
                 var referenceId = jwtUtils.getClaimsValue(jwtToken, Claims::getSubject);
-                log.info(" = {}", referenceId);
+                log.info("User Authenticated = {}", referenceId);
                 if (referenceId != null || SecurityContextHolder.getContext().getAuthentication() == null) {
                     var userDetails = genumUserRepository
                             .findByCustomUserDetails_UserReferenceId(referenceId)
