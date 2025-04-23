@@ -51,7 +51,9 @@ public class UserWebSecurityConfiguration {
     private final JwtUtils jwtUtils;
     private static final String[] WHITE_LISTED_PATHS = {
             "/actuator/**","/favicon.ico","/api/auth/**",
-            "/login/**","/api/user/create","/api/dataset/*","/api/user/confirm-token","/ws/**"
+            "/login/**","/api/user/create","/api/dataset/all",
+            "/api/dataset/all/*","/api/user/confirm-token","/ws/**",
+            "/api/dataset/trending","/api/dataset/download/*"
     };
 
     @Bean
