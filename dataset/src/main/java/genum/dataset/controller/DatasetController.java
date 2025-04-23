@@ -84,7 +84,7 @@ public class DatasetController {
         return ResponseEntity.ok(responseDetails);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/all/{id}")
     public ResponseEntity<?> getDatasetById(@PathVariable String id) {
 
         DatasetDTO dataset = datasetsService.getDatasetDTOById(id);
