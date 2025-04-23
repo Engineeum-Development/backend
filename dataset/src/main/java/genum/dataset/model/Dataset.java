@@ -29,7 +29,7 @@ public class Dataset implements Serializable {
     private Visibility visibility;
     private List<String> tags;
     private DatasetType datasetType;
-    private String title;
+    private String fileName;
     private long fileSize;
     private int downloads;
     private Set<String> usersThatLiked;
@@ -41,14 +41,7 @@ public class Dataset implements Serializable {
 
     public DatasetMetadata toMetadata() {
        var datasetMetadata = new DatasetMetadata(
-                datasetID,
-                description,
-                tags,
-                datasetName,
-                title,
-                fileSize/1000,
-                datasetType,
-                visibility
+               datasetName, fileName,fileSize,datasetType,visibility
         );
        datasetMetadata.setLikes(Objects.nonNull(usersThatLiked)? usersThatLiked.size(): 0);
        return datasetMetadata;

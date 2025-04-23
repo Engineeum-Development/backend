@@ -26,7 +26,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -48,8 +47,6 @@ public class DatasetsServiceImpl implements DatasetsService {
         DatasetType fileType = validateFileType(file);
         log.info("datasetType: {}", fileType);
         DatasetMetadata metadata = new DatasetMetadata(
-                createNewDatasetDTO.description(),
-                createNewDatasetDTO.tags(),
                 createNewDatasetDTO.datasetName(),
                 file.getOriginalFilename(),
                 file.getSize(),
@@ -63,15 +60,15 @@ public class DatasetsServiceImpl implements DatasetsService {
         log.info("uploadUrl: {}", uploadUrl);
         var dataset = new Dataset();
         dataset.setDatasetID(UUID.randomUUID().toString());
-        dataset.setTags(metadata.getTags());
+        dataset.setTags(List.of());
         dataset.setDatasetType(metadata.getContentType());
         dataset.setVisibility(metadata.getVisibility());
-        dataset.setTitle(file.getOriginalFilename());
+        dataset.setFileName(file.getOriginalFilename());
         dataset.setUploadFileUrl(uploadUrl);
         dataset.setDownloads(0);
         dataset.setUploader(user.getId());
         dataset.setDatasetName(metadata.getDatasetName());
-        dataset.setDescription(metadata.getDescription());
+        dataset.setDescription("");
         log.info("dataset: {}", dataset);
         return datasetsRepository.save(dataset).getDatasetID();
     }
@@ -104,9 +101,9 @@ public class DatasetsServiceImpl implements DatasetsService {
         updatedDataSet.setDatasetID(id);
         updatedDataSet.setDatasetType(metadata.getContentType());
         updatedDataSet.setVisibility(metadata.getVisibility());
-        updatedDataSet.setTags(metadata.getTags());
-        updatedDataSet.setDescription(metadata.getDescription());
-        updatedDataSet.setTitle(metadata.getOriginalFilename());
+        updatedDataSet.setTags(List.of());
+        updatedDataSet.setDescription("");
+        updatedDataSet.setFileName(metadata.getOriginalFilename());
 
         return datasetsRepository.save(updatedDataSet);
     }
