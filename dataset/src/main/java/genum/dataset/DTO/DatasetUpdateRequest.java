@@ -1,13 +1,27 @@
 package genum.dataset.DTO;
 
-import genum.dataset.enums.Visibility;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
-import java.util.List;
+import genum.dataset.domain.Collaborator;
+import genum.dataset.domain.License;
+import genum.dataset.domain.Provenance;
+import genum.dataset.domain.Tag;
 
-public record DatasetUpdateRequest(
-        String datasetId,
+
+import java.io.Serializable;
+import java.util.Set;
+
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
+@JsonIgnoreProperties(ignoreUnknown = true)
+public record DatasetUpdateRequest (
+        Set<Collaborator> collaborators,
+        License license,
+        String doiCitation,
+        String subtitle,
+        Provenance provenance,
         String description,
         String visibility,
-        List<String> tags
-) {
+        Set<Tag> tags
+) implements Serializable {
 }

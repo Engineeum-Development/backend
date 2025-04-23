@@ -1,5 +1,6 @@
 package genum.app;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -43,6 +44,7 @@ public class GenumApplication
         mapper.registerModule(new JavaTimeModule());
         mapper.findAndRegisterModules();
         mapper.configure(SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS, false);
+        mapper.configure(JsonGenerator.Feature.IGNORE_UNKNOWN, true);
         return mapper;
     }
 

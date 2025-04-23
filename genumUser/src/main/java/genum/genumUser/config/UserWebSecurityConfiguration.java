@@ -21,6 +21,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -49,10 +50,15 @@ import java.util.List;
 @EnableWebSecurity
 @Configuration
 @RequiredArgsConstructor
+@EnableMethodSecurity
 @Slf4j
 public class UserWebSecurityConfiguration {
 
     private final JwtUtils jwtUtils;
+    private static final String[] WHITE_LISTED_PATHS = {
+            "/actuator/**","/favicon.ico","/api/auth/**",
+            "/login/**","/api/user/create","/api/dataset/*","/api/user/confirm-token","/ws/**"
+    };
 
     @Bean
     public SecurityFilterChain securityFilterChain (HttpSecurity http,
@@ -65,10 +71,7 @@ public class UserWebSecurityConfiguration {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/actuator/**", "/favicon.ico").permitAll()
-                        .requestMatchers("/api/auth/**", "/login/**").permitAll()
-                        .requestMatchers("/api/user/create").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/user/confirm-token").permitAll()
+                        .requestMatchers(WHITE_LISTED_PATHS).permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/user/waiting-list").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/user/waiting-list").hasRole("ADMIN")
                         .anyRequest().authenticated())
