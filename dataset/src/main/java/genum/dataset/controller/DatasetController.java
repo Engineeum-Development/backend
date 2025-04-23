@@ -129,9 +129,9 @@ public class DatasetController {
         }
     }
 
-    @PutMapping("/like/{datasetId}")
-    public ResponseEntity<?> likeDataset(@PathVariable String datasetId) {
-        datasetsService.likeDataset(datasetId);
-        return ResponseEntity.noContent().build();
+    @PutMapping("/upvote/{datasetId}")
+    public ResponseEntity<ResponseDetails<DatasetDTO>> upvoteDataset(@PathVariable String datasetId) {
+        var datasetDTO = datasetsService.upvoteDataset(datasetId);
+        return ResponseEntity.ok(new ResponseDetails<>("upvoted",HttpStatus.OK.toString(),datasetDTO));
     }
 }

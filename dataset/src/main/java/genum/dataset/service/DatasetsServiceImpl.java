@@ -78,7 +78,9 @@ public class DatasetsServiceImpl {
                     userWithIdFirstnameAndLastname.firstName(),
                     userWithIdFirstnameAndLastname.lastName())
             );
-            dataset.setCollaborators(Set.of(new Collaborator(currentUserId, CollaboratorPermission.OWNER)));
+            dataset.setCollaborators(Set.of(new Collaborator("%s %s".formatted(
+                    userWithIdFirstnameAndLastname.firstName(),
+                    userWithIdFirstnameAndLastname.lastName()),currentUserId, CollaboratorPermission.OWNER)));
             log.info("dataset: {}", dataset);
             return datasetsRepository.save(dataset).getDatasetID();
         } catch (IllegalArgumentException e) {
@@ -246,10 +248,10 @@ public class DatasetsServiceImpl {
     }
 
 
-    public void likeDataset(String id) {
+    public DatasetDTO upvoteDataset(String id) {
         Dataset dataset = getDatasetById(id);
         dataset.addUsersThatLiked(securityUtils.getCurrentAuthenticatedUserId());
-        datasetsRepository.save(dataset);
+        return datasetsRepository.save(dataset).toDTO();
     }
 
 

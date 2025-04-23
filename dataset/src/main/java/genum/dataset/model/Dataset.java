@@ -44,14 +44,14 @@ public class Dataset implements Serializable {
 
     private Set<Collaborator> collaborators;
 
-    private Set<String> usersThatUpvoted;
+    private Set<String> usersThatUpvote;
 
     {
-        usersThatUpvoted = new HashSet<>();
+        usersThatUpvote = new HashSet<>();
     }
 
     public void addUsersThatLiked(String userId) {
-        usersThatUpvoted.add(userId);
+        usersThatUpvote.add(userId);
     }
     public void addTags(Set<Tag> newTags) {
         this.tags.addAll(Objects.requireNonNull(newTags, "tags added can't be null"));
@@ -94,7 +94,7 @@ public class Dataset implements Serializable {
                 this.getDoiCitation(),
                 this.getProvenance(),
                 this.getCollaborators(),
-                this.getUsersThatUpvoted().size()
+                this.getUsersThatUpvote().size()
 
         );
     }
