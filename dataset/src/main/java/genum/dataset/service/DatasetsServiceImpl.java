@@ -9,12 +9,10 @@ import genum.dataset.enums.Visibility;
 import genum.dataset.model.Dataset;
 import genum.dataset.repository.DatasetRepository;
 import genum.genumUser.repository.GenumUserRepository;
-import genum.genumUser.repository.projection.GenumUserWithIDFirstNameLastName;
 import genum.shared.dataset.exception.DatasetNotFoundException;
 import genum.shared.genumUser.exception.BadRequestException;
-import genum.shared.genumUser.exception.GenumUserNotFoundException;
 import genum.shared.genumUser.exception.UserAlreadyExistsException;
-import genum.shared.security.CustomUserDetails;
+import genum.shared.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -24,7 +22,6 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -39,15 +36,16 @@ public class DatasetsServiceImpl {
     private final DatasetRepository datasetsRepository;
     private final DatasetStorageService datasetStorageService;
     private final GenumUserRepository genumUserRepository;
+    private final SecurityUtils securityUtils;
 
 
     @CacheEvict(value = "dataset_page", allEntries = true)
     public String createDataset(CreateDatasetRequest createNewDatasetDTO, MultipartFile file) throws IOException, IllegalArgumentException {
         try {
             log.info("entered create dataset");
-            var userCredentials = getAuthenticatedUserCredentials();
+            String currentUserId = securityUtils.getCurrentAuthenticatedUserId();
             var userWithIdFirstnameAndLastname = genumUserRepository
-                    .findByCustomUserDetails_UserReferenceIdReturningIdFirstAndName(userCredentials.getUserReferenceId())
+                    .findByCustomUserDetails_UserReferenceIdReturningIdFirstAndName(currentUserId)
                             .stream().findAny().orElseThrow(UserAlreadyExistsException::new);
             log.info("user with id firstname: {}", "userWithIdFirstnameAndLastname");
             DatasetType fileType = validateFileType(file);
@@ -61,7 +59,7 @@ public class DatasetsServiceImpl {
                             createNewDatasetDTO.visibility()) ?
                             Visibility.valueOf(createNewDatasetDTO.visibility().toUpperCase()) : Visibility.PUBLIC
             );
-            //String uploadUrl = datasetStorageService.storeDataSet(file, metadata);
+            String uploadUrl = datasetStorageService.storeDataSet(file, metadata);
             log.info("uploadUrl: {}","just testing");
             var dataset = new Dataset();
             dataset.setPendingActions(PendingActions.pendingActions);
@@ -70,18 +68,17 @@ public class DatasetsServiceImpl {
             dataset.setDatasetType(metadata.getContentType());
             dataset.setVisibility(metadata.getVisibility());
             dataset.setFileName(file.getOriginalFilename());
-            dataset.setUploadFileUrl("uploadUrl");
+            dataset.setUploadFileUrl(uploadUrl);
             dataset.setDownloads(0);
-            dataset.setUploaderId(userCredentials.getUserReferenceId());
+            dataset.setUploaderId(currentUserId);
             dataset.setDatasetName(metadata.getDatasetName());
             dataset.setDescription("");
             dataset.setDoiCitation("");
-//            dataset.setAuthorName("%s %s".formatted(
-//                    userWithIdFirstnameAndLastname.firstName(),
-//                    userWithIdFirstnameAndLastname.lastName())
-//            );
-            dataset.setAuthorName("Maduka Divine");
-            dataset.setCollaborators(Set.of(new Collaborator(userCredentials.getUserReferenceId(), CollaboratorPermission.OWNER)));
+            dataset.setAuthorName("%s %s".formatted(
+                    userWithIdFirstnameAndLastname.firstName(),
+                    userWithIdFirstnameAndLastname.lastName())
+            );
+            dataset.setCollaborators(Set.of(new Collaborator(currentUserId, CollaboratorPermission.OWNER)));
             log.info("dataset: {}", dataset);
             return datasetsRepository.save(dataset).getDatasetID();
         } catch (IllegalArgumentException e) {
@@ -250,10 +247,8 @@ public class DatasetsServiceImpl {
 
 
     public void likeDataset(String id) {
-        var userCredentials = getAuthenticatedUserCredentials();
-        String userId = genumUserRepository.findUserIdByEmail(userCredentials.getEmail());
         Dataset dataset = getDatasetById(id);
-        dataset.addUsersThatLiked(userId);
+        dataset.addUsersThatLiked(securityUtils.getCurrentAuthenticatedUserId());
         datasetsRepository.save(dataset);
     }
 
@@ -263,13 +258,6 @@ public class DatasetsServiceImpl {
         dataset.setDownloads(dataset.getDownloads() + 1);
         datasetsRepository.save(dataset);
         return dataset;
-    }
-
-    private CustomUserDetails getAuthenticatedUserCredentials() {
-        return (CustomUserDetails) SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getPrincipal();
     }
 
 }

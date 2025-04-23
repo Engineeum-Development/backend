@@ -22,7 +22,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         "genum.learn.repository",
         "genum.dataset.repository",
         "genum.genumUser.repository",
-        "genum.payment.repository", "genum.email.repository"})
+        "genum.payment.repository",
+        "genum.email.repository"})
 @ComponentScan(basePackages = {"genum.product",
         "genum.shared",
         "genum.learn",
