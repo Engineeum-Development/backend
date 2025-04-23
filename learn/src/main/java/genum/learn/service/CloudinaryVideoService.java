@@ -7,7 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @AllArgsConstructor
 @Service
@@ -20,6 +21,19 @@ public class CloudinaryVideoService implements VideoService{
                 file.getBytes(),
                 ObjectUtils.asMap(
                         "public_id", file.getOriginalFilename(),
+                        "overwrite", false,
+                        "resource_type", "video"
+                )
+        );
+        return uploadResult.get("secure_url").toString();
+    }
+
+    @Override
+    public String uploadVideo(Path path) throws IOException {
+        var uploadResult = cloudinary.uploader().uploadLarge(
+                Files.readAllBytes(path),
+                ObjectUtils.asMap(
+                        "public_id", path.toFile().getName(),
                         "overwrite", false,
                         "resource_type", "video"
                 )

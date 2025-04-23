@@ -7,20 +7,17 @@ import genum.genumUser.security.Oauth2SuccessHandler;
 import genum.genumUser.security.jwt.JWTAuthorizationFilter;
 import genum.genumUser.security.jwt.JwtUtils;
 import genum.genumUser.security.jwt.LogoutHandlingFilter;
-import genum.genumUser.service.GenumUserService;
-import genum.genumUser.service.OauthUserService;
-import genum.shared.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -35,10 +32,8 @@ import org.springframework.security.oauth2.client.web.AuthorizationRequestReposi
 import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -49,25 +44,27 @@ import java.util.List;
 @EnableWebSecurity
 @Configuration
 @RequiredArgsConstructor
+@EnableMethodSecurity
 @Slf4j
 public class UserWebSecurityConfiguration {
 
     private final JwtUtils jwtUtils;
+    private static final String[] WHITE_LISTED_PATHS = {
+            "/actuator/**","/favicon.ico","/api/auth/**",
+            "/login/**","/api/user/create","/api/dataset/*","/api/user/confirm-token","/ws/**"
+    };
 
     @Bean
     public SecurityFilterChain securityFilterChain (HttpSecurity http,
                                                     JWTAuthorizationFilter jwtAuthorizationFilter,
                                                     LogoutHandlingFilter logoutHandlingFilter,
                                                     CorsConfigurationSource corsConfigurationSource,
-                                                    OauthUserService oauthUserService,
                                                     Oauth2SuccessHandler oauth2SuccessHandler) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/actuator/**", "/favicon.ico").permitAll()
-                        .requestMatchers("/api/auth/**", "/login/**").permitAll()
-                        .requestMatchers("/api/user/create").permitAll()
+                        .requestMatchers(WHITE_LISTED_PATHS).permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/user/waiting-list").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/user/waiting-list").hasRole("ADMIN")
                         .anyRequest().authenticated())
@@ -75,8 +72,7 @@ public class UserWebSecurityConfiguration {
                 .addFilterBefore(logoutHandlingFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Client(Customizer.withDefaults())
                 .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(oauth -> oauth.oidcUserService(this.oidcUserService())
-                                .userService(oauthUserService))
+                        .userInfoEndpoint(oauth -> oauth.oidcUserService(this.oidcUserService()))
                         .successHandler(oauth2SuccessHandler)
                         .failureHandler(this.oauth2AuthenticationFailureHandler()))
                 .build();

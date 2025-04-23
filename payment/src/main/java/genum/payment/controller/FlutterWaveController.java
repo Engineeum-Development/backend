@@ -1,11 +1,10 @@
 package genum.payment.controller;
 
+import genum.payment.service.PaymentService;
 import genum.shared.payment.constants.PaymentStatus;
 import genum.shared.payment.domain.PaymentResponse;
 import genum.shared.payment.domain.ProductRequest;
-import genum.payment.service.PaymentService;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -33,7 +32,7 @@ public class FlutterWaveController {
         if (status.equals("successful")) {
             return paymentService.verifyPayment(reference, transactionId);
         } else {
-            return new PaymentResponse(LocalDateTime.now(),
+            return new PaymentResponse(LocalDateTime.now().toString(),
                     PaymentStatus.FAILED, Map.of(
                     "message", "Payment failed, please try again",
                     "status", "failed"));

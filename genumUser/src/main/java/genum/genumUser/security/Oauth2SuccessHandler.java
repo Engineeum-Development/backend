@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
@@ -30,14 +29,21 @@ public class Oauth2SuccessHandler extends SavedRequestAwareAuthenticationSuccess
     private String frontendUrl;
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
-        DefaultOidcUser oAuth2User = (DefaultOidcUser) authentication.getPrincipal();
-        String email = oAuth2User.getEmail();
+        DefaultOidcUser oidcUser = (DefaultOidcUser) authentication.getPrincipal();
+        String email = oidcUser.getEmail();
+        Gender gender;
+
+        try {
+            gender = Gender.valueOf(oidcUser.getGender());
+        } catch (IllegalArgumentException e) {
+            gender = Gender.OTHER;
+        }
         var oauthUser = GenumUser.builder()
-                .lastName(oAuth2User.getFamilyName())
-                .firstName(oAuth2User.getGivenName())
-                .country(oAuth2User.getClaimAsString("country"))
-                .isVerified(oAuth2User.getEmailVerified())
-                .gender(Gender.MALE)
+                .lastName(oidcUser.getFamilyName())
+                .firstName(oidcUser.getGivenName())
+                .country(oidcUser.getClaimAsString("country"))
+                .isVerified(oidcUser.getEmailVerified())
+                .gender(gender)
                 .customUserDetails(new CustomUserDetails("{OauthUser}", email))
                 .build();
         var user = genumUserService.getUserByEmail(email);

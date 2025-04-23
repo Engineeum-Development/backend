@@ -76,7 +76,7 @@ public class PaystackPaymentService implements PaymentService {
             if (Objects.requireNonNull(response.getBody()).status.equals("true")) {
                 var payment = CoursePayment.builder()
                         .courseId(course.referenceId())
-                        .paymentInitializationDate(LocalDateTime.now())
+                        .paymentInitializationDate(LocalDateTime.now().toString())
                         .paymentValue(course.price())
                         .userid(user.getEmail())
                         .paymentPlatForm(PaymentPlatform.PAYSTACK)
@@ -84,18 +84,18 @@ public class PaystackPaymentService implements PaymentService {
                         .build();
                 payment = paymentRepository.save(payment);
                 paymentId = payment.getId();
-                return new PaymentResponse(LocalDateTime.now(),
+                return new PaymentResponse(LocalDateTime.now().toString(),
                         PaymentStatus.PENDING,
                         Map.of("message","Payment initialization was a success",
                                 "authorization_url", response.getBody().data.authorizationUrl,
                                 "access_code", response.getBody().data().accessCode(),
                                 "reference", response.getBody().data().reference()));
             } else {
-                return new PaymentResponse(LocalDateTime.now(), PaymentStatus.FAILED, Map.of("message","The payment of %s initialization failed please try again".formatted(paymentId)));
+                return new PaymentResponse(LocalDateTime.now().toString(), PaymentStatus.FAILED, Map.of("message","The payment of %s initialization failed please try again".formatted(paymentId)));
             }
 
         } else {
-            return new PaymentResponse(LocalDateTime.now(), PaymentStatus.FAILED, Map.of("Message", "Was not able to reach the provider please try again later"));
+            return new PaymentResponse(LocalDateTime.now().toString(), PaymentStatus.FAILED, Map.of("Message", "Was not able to reach the provider please try again later"));
         }
 
     }
@@ -136,17 +136,17 @@ public class PaystackPaymentService implements PaymentService {
                 applicationEventPublisher.publishEvent(paymentEvent);
 
 
-                return new PaymentResponse(LocalDateTime.now(), payment.getPaymentStatus(), Map.of("message", "Payment Success: Congratulations you can now access the course"));
+                return new PaymentResponse(LocalDateTime.now().toString(), payment.getPaymentStatus(), Map.of("message", "Payment Success: Congratulations you can now access the course"));
 
             } else if (responseData.status.equals("failed")) {
                 payment.setPaymentStatus(PaymentStatus.FAILED);
-                return new PaymentResponse(LocalDateTime.now(), payment.getPaymentStatus(), Map.of("message", "Payment Failed: Please Try again"));
+                return new PaymentResponse(LocalDateTime.now().toString(), payment.getPaymentStatus(), Map.of("message", "Payment Failed: Please Try again"));
             } else {
-                return new PaymentResponse(LocalDateTime.now(), payment.getPaymentStatus(), Map.of("message", "Payment Pending: Please check again"));
+                return new PaymentResponse(LocalDateTime.now().toString(), payment.getPaymentStatus(), Map.of("message", "Payment Pending: Please check again"));
             }
 
         } else {
-            return new PaymentResponse(LocalDateTime.now(), payment.getPaymentStatus(), Map.of("message", "Verification failed: Please try again"));
+            return new PaymentResponse(LocalDateTime.now().toString(), payment.getPaymentStatus(), Map.of("message", "Verification failed: Please try again"));
         }
 
     }

@@ -69,7 +69,7 @@ public class GenumUserService {
                     .lastName(userCreationRequest.lastName())
                     .createdDate(LocalDateTime.now())
                     .country(userCreationRequest.country())
-                    .gender(Gender.valueOf(userCreationRequest.gender()))
+                    .gender(Gender.valueOf(userCreationRequest.gender().toUpperCase()))
                     .customUserDetails(userDetails)
                     .build();
 
@@ -96,9 +96,8 @@ public class GenumUserService {
         user.getCustomUserDetails().setLastLogin(LocalDateTime.now());
         genumUserRepository.save(user);
     }
-    //TODO: Need to periodically delete expired oneTimeTokens
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public String confirmOTT(String token) {
+    public String confirmOTT(String token) throws GenumUserNotFoundException, OTTNotFoundException{
         // only returns otts that are not yet expired
         var oneTimeTokenOptional = oneTimeTokenRepository
                 .findOneTimeTokenByToken(token)
@@ -113,6 +112,7 @@ public class GenumUserService {
             if (oneTimeTokenUserOptional.isPresent()){
                 var genumUser = oneTimeTokenUserOptional.get();
                 genumUser.setVerified(true);
+                genumUser.getCustomUserDetails().setAccountEnabled(true);
                 genumUserRepository.save(genumUser);
                 return "confirmed";
             } else {

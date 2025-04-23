@@ -34,7 +34,7 @@ public class CustomUserDetails implements UserDetails {
         this.accountExpired = false;
         this.accountCredentialsExpired = false;
         this.accountLocked = false;
-        this.accountEnabled = true;
+        this.accountEnabled = false;
         this.userStatus = UserStatus.ACTIVE;
     }
 

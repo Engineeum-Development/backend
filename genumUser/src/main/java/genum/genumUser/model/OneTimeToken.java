@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 @Document(value = "OTP")
 @Getter
 @Setter
-
 public class OneTimeToken {
     @Id
     private String id;
