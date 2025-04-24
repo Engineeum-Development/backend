@@ -34,7 +34,7 @@ public class Oauth2SuccessHandler extends SavedRequestAwareAuthenticationSuccess
         Gender gender;
 
         try {
-            gender = Gender.valueOf(oidcUser.getGender());
+            gender = Gender.fromValue(oidcUser.getGender());
         } catch (IllegalArgumentException e) {
             gender = Gender.OTHER;
         }

@@ -12,7 +12,6 @@ public record DatasetDTO(
         String name,
         String subtitle,
         String description,
-        String uploaderName,
         String thumbnailURL,
         String fileDownloadUrl,
         Set<Tag> tags,
@@ -23,7 +22,9 @@ public record DatasetDTO(
         String doiCitation,
         Provenance provenance,
         Set<Collaborator> collaborators,
-        long upvotes
+        long upvotes,
+        Set<Author> authors,
+        Coverage coverage
 
 
 ) implements Serializable {

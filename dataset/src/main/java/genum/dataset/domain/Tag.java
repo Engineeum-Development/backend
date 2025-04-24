@@ -2,6 +2,7 @@ package genum.dataset.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import genum.dataset.enums.TagCategory;
 
 import java.io.Serializable;
 

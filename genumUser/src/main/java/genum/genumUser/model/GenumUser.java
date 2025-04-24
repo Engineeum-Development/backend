@@ -31,7 +31,7 @@ public class GenumUser{
 
 
     public GenumUserDTO toUserDTO() {
-        return new GenumUserDTO(this.customUserDetails.getEmail(), this.getFirstName(), this.getLastName(), this.getGender().name());
+        return new GenumUserDTO(this.customUserDetails.getEmail(), this.getFirstName(), this.getLastName(), this.getGender());
     }
 
 }

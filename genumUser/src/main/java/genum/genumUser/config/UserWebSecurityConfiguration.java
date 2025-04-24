@@ -53,7 +53,8 @@ public class UserWebSecurityConfiguration {
             "/actuator/**","/favicon.ico","/api/auth/**",
             "/login/**","/api/user/create","/api/dataset/all",
             "/api/dataset/all/*","/api/user/confirm-token","/ws/**",
-            "/api/dataset/trending","/api/dataset/download/*"
+            "/api/dataset/trending","/api/dataset/download/*",
+            "/api/dataset/license","/api/dataset/tag",
     };
 
     @Bean
