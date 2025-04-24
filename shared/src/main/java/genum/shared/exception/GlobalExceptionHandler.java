@@ -2,6 +2,7 @@ package genum.shared.exception;
 
 
 import genum.shared.DTO.response.ResponseDetails;
+import genum.shared.dataset.exception.DatasetNotFoundException;
 import genum.shared.genumUser.exception.BadRequestException;
 import genum.shared.genumUser.exception.GenumUserNotFoundException;
 import genum.shared.genumUser.exception.OTTNotFoundException;
@@ -106,5 +107,12 @@ public class GlobalExceptionHandler{
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ResponseDetails<>(ex.getMessage(), HttpStatus.BAD_REQUEST.toString()));
+    }
+
+    @ExceptionHandler(DatasetNotFoundException.class)
+    public ResponseEntity<ResponseDetails<String>> handleDatasetNotFoundException(DatasetNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ResponseDetails<>(ex.getMessage(), HttpStatus.NOT_FOUND.toString()));
     }
 }
