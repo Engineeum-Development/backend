@@ -7,6 +7,7 @@ import genum.genumUser.security.Oauth2SuccessHandler;
 import genum.genumUser.security.jwt.JWTAuthorizationFilter;
 import genum.genumUser.security.jwt.JwtUtils;
 import genum.genumUser.security.jwt.LogoutHandlingFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -53,7 +54,8 @@ public class UserWebSecurityConfiguration {
             "/actuator/**","/favicon.ico","/api/auth/**",
             "/login/**","/api/user/create","/api/dataset/all",
             "/api/dataset/all/*","/api/user/confirm-token","/ws/**",
-            "/api/dataset/trending","/api/dataset/download/*"
+            "/api/dataset/trending","/api/dataset/download/*",
+            "/api/dataset/license","/api/dataset/tag",
     };
 
     @Bean
@@ -72,11 +74,14 @@ public class UserWebSecurityConfiguration {
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(logoutHandlingFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(((request, response, authException) -> {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied: %s".formatted(authException.getMessage()));
+                })))
                 .oauth2Client(Customizer.withDefaults())
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(oauth -> oauth.oidcUserService(this.oidcUserService()))
                         .successHandler(oauth2SuccessHandler)
-                        .failureHandler(this.oauth2AuthenticationFailureHandler()))
+                )
                 .build();
     }
 
@@ -87,12 +92,6 @@ public class UserWebSecurityConfiguration {
     @Bean
     public AuthorizationRequestRepository<OAuth2AuthorizationRequest> auth2AuthorizationRequestRepository() {
         return new HttpSessionOAuth2AuthorizationRequestRepository();
-    }
-
-    private AuthenticationFailureHandler oauth2AuthenticationFailureHandler(){
-        return (((request, response, exception) -> {
-            log.error("Oauth2 authentication failed:", exception);
-        }));
     }
 
     @Bean

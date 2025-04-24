@@ -3,6 +3,8 @@ package genum.dataset.controller;
 import genum.dataset.DTO.CreateDatasetRequest;
 import genum.dataset.DTO.DatasetDTO;
 import genum.dataset.DTO.DatasetUpdateRequest;
+import genum.dataset.domain.License;
+import genum.dataset.domain.Tag;
 import genum.dataset.service.DatasetsServiceImpl;
 import genum.shared.DTO.response.ResponseDetails;
 import genum.shared.dataset.exception.DatasetNotFoundException;
@@ -28,6 +30,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/dataset")
@@ -117,6 +120,17 @@ public class DatasetController {
     public ResponseEntity<Page<DatasetDTO>> trending(@PageableDefault(size = 20) Pageable pageable) {
         Page<DatasetDTO> trendingDatasets = datasetsService.trending(pageable);
         return ResponseEntity.ok(trendingDatasets);
+    }
+
+    @GetMapping("/tag")
+    public ResponseEntity<ResponseDetails<Set<Tag>>> getAllTags(){
+        var responseDetails = new ResponseDetails<>("tags", HttpStatus.OK.toString(), datasetsService.getAllTags());
+        return ResponseEntity.ok(responseDetails);
+    }
+    @GetMapping("/license")
+    public ResponseEntity<ResponseDetails<Set<License>>> getAllLicenses(){
+        var responseDetails = new ResponseDetails<>("tags", HttpStatus.OK.toString(), datasetsService.getAllLicences());
+        return ResponseEntity.ok(responseDetails);
     }
 
     @GetMapping("/download/{datasetId}")

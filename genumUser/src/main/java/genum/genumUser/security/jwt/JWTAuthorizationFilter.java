@@ -33,7 +33,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
     private static final Pattern ACTUATOR_PATHS = Pattern.compile("^/(actuator|favicon.ico)(/.*)?");
     public static final Pattern USER_PATHS = Pattern.compile("^/api/user/(create|waiting-list|confirm-token)");
     public static final Pattern AUTH_PATHS = Pattern.compile("^/api/auth/.*|^/login/.*|^/oauth2/.*");
-    public static final Pattern DATASET_PATHS = Pattern.compile("^/api/dataset/(all|all/.*|trending|download/.*)");
+    public static final Pattern DATASET_PATHS = Pattern.compile("^/api/dataset/(all|all/.*|trending|tag|license|download/.*)");
     public static final Pattern WEBSOCKET_PATHS = Pattern.compile("/ws|/ws/.*");
 
 
