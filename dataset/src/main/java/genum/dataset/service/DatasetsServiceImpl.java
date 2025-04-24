@@ -79,7 +79,6 @@ public class DatasetsServiceImpl {
             dataset.setCollaborators(Set.of(new Collaborator("%s %s".formatted(
                     userWithIdFirstnameAndLastname.firstName(),
                     userWithIdFirstnameAndLastname.lastName()),currentUserId, CollaboratorPermission.OWNER)));
-            log.info("dataset: {}", dataset);
             return datasetsRepository.save(dataset).getDatasetID();
         } catch (IllegalArgumentException e) {
             throw new BadRequestException(e.getMessage());
@@ -205,7 +204,6 @@ public class DatasetsServiceImpl {
     }
 
     @Cacheable(value = "dataset", key = "#id")
-
     public DatasetDTO getDatasetDTOById(String id) {
         Dataset dataset = datasetsRepository.getDatasetByDatasetID(id).orElseThrow(() -> new DatasetNotFoundException(id));
         return dataset.toDTO();

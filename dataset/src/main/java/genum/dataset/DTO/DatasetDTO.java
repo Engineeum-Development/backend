@@ -6,7 +6,7 @@ import genum.dataset.domain.*;
 import java.io.Serializable;
 import java.util.Set;
 
-@JsonInclude(JsonInclude.Include.NON_DEFAULT)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record DatasetDTO(
         String datasetId,
         String name,
