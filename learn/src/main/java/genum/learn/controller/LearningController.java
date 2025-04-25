@@ -122,41 +122,6 @@ public class LearningController {
 
     }
 
-    @PostMapping("/lesson/video/chunked")
-    public ResponseEntity<ResponseDetails<ChunkedVideoUploadResponse>> uploadVideoChunk(
-            @RequestParam("video") MultipartFile file,
-            @RequestParam("uploadId") String uploadId,
-            @RequestParam("chunkIndex") int chunkIndex,
-            @RequestParam("totalChunks") int totalChunks,
-            @RequestParam("totalFileSize") long totalFileSize,
-            @RequestParam("OriginalFilename") String originalFilename
-    ) {
-        var MAX_FILE_SIZE = DataSize.parse(maxUploadSize);
-        var file_data_size = DataSize.ofBytes(totalFileSize);
-        if (file_data_size.toBytes() > MAX_FILE_SIZE.toBytes()) {
-            throw new UploadSizeLimitExceededException(file_data_size.toBytes(), MAX_FILE_SIZE.toBytes());
-        }
-        var chuckedMetadata = new VideoChunkMetadata(uploadId, chunkIndex, totalChunks, totalFileSize, originalFilename);
-        var responseDetails = new ResponseDetails<>("Successful",
-                HttpStatus.CREATED.toString(),
-                learningService.addChunkedVideoToLesson(file, chuckedMetadata ));
-        return ResponseEntity
-                .ok(responseDetails);
-    }
-    @PostMapping("/lesson/video/chunked/complete")
-    public ResponseEntity<ResponseDetails<NonChunkedVideoUploadResponse>> completeVideoUpload (
-            @RequestBody VideoUploadRequest uploadRequest,
-            @RequestParam String finalFilename,
-            @RequestParam("uploadId") String uploadId) {
-
-        var responseDetails = new ResponseDetails<>("Successful",
-                HttpStatus.CREATED.toString(),
-                learningService.addChunkedVideoToLesson(uploadRequest, finalFilename,uploadId));
-        return ResponseEntity
-                .ok(responseDetails);
-    }
-
-
     @DeleteMapping("/lesson/{id}")
     public ResponseEntity<Void> deleteLesson(@PathVariable("id") String lessonId) {
         try {

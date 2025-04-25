@@ -54,8 +54,6 @@ public class LearningService {
     private final VideoService videoService;
     private final VideoUploadStatusRepository videoUploadStatusRepository;
     private final VideoDeleteStatusRepository videoDeleteStatusRepository;
-    private final SimpMessagingTemplate messagingTemplate;
-
     public Page<CourseResponse> getAllCourses(Pageable pageable) {
         var courses = productService.findAllCourses(pageable);
         return courses.map(courseDTO -> new CourseResponse(courseDTO.referenceId(),
@@ -121,33 +119,11 @@ public class LearningService {
         return getVideoUploadResponse(file, video);
     }
 
-    public NonChunkedVideoUploadResponse addChunkedVideoToLesson(VideoUploadRequest uploadRequest, String originalFileName, String uploadId) {
-        if (!lessonRepository.existsByReferenceId(uploadRequest.lessonId())) throw new LessonNotFoundException();
-        var video = new Video(uploadRequest.description(), uploadRequest.title(), uploadRequest.lessonId());
-        return getFinalChunkedVideoResponse(video, originalFileName, uploadId);
-    }
-
-    public ChunkedVideoUploadResponse addChunkedVideoToLesson(MultipartFile file, VideoChunkMetadata metadata) {
-        return getChunkedVideoResponse(file, metadata);
-    }
-
     private NonChunkedVideoUploadResponse getVideoUploadResponse(MultipartFile file, Video video) {
         var videoId = videoRepository.save(video).getVideoId();
         final String uploadId = UUID.randomUUID().toString();
         CompletableFuture.runAsync(() -> uploadVideo(file, videoId, uploadId));
         return new NonChunkedVideoUploadResponse(video.getVideoId(), uploadId);
-    }
-
-    private ChunkedVideoUploadResponse getChunkedVideoResponse(MultipartFile file, VideoChunkMetadata videoChunkMetadata) {
-        final String uploadId = videoChunkMetadata.uploadId();
-        CompletableFuture.runAsync(() -> uploadVideoChunk(file, uploadId, videoChunkMetadata));
-        return new ChunkedVideoUploadResponse(videoChunkMetadata.chunkIndex(), uploadId, VideoUploadStatus.PENDING);
-    }
-
-    private NonChunkedVideoUploadResponse getFinalChunkedVideoResponse(Video video, String originalFileName, String uploadId) {
-        var videoId = videoRepository.save(video).getVideoId();
-        CompletableFuture.runAsync(() -> uploadFinalVideoChunk(uploadId, videoId, originalFileName));
-        return new NonChunkedVideoUploadResponse(videoId, uploadId);
     }
 
 
@@ -158,86 +134,17 @@ public class LearningService {
                 .orElse(new VideoUploadStatusModel(videoId, VideoUploadStatus.PENDING));
         try {
             log.info("Started sending video {}", videoId);
-
             var uploadUrl = videoService.uploadVideo(multipartFile);
             video.setUploadVideoFileUrl(uploadUrl);
             videoRepository.save(video);
-            messagingTemplate
-                    .convertAndSend("/topic/upload-status/%s".formatted(uploadId), new VideoUploadStatusMessage(uploadId, VideoUploadStatus.SUCCESS.toString(), 100, uploadUrl, null));
-            videoUpload.setVideoUploadStatus(VideoUploadStatus.SUCCESS);
             log.info("Video {} was successfully uploaded", videoId);
 
         } catch (IOException | VideoNotFoundException e) {
             videoUpload.setVideoUploadStatus(VideoUploadStatus.FAILED);
-            messagingTemplate
-                    .convertAndSend("/topic/upload-status/%s".formatted(uploadId), new VideoUploadStatusMessage(uploadId, VideoUploadStatus.FAILED.toString(), 0, null, "Upload failed: %s".formatted(e.getMessage())));
-            log.error("Video {} upload failed", videoId);
         } finally {
             videoUploadStatusRepository.save(videoUpload);
         }
     }
-
-    public void uploadVideoChunk(MultipartFile multipartFile, String uploadId, VideoChunkMetadata videoChunkMetadata) {
-        try {
-            File uploadDir = new File("/genum/video/uploads/temp/" + uploadId);
-            if (!uploadDir.exists()) {
-                boolean result = uploadDir.mkdirs();
-            }
-            File chunkFile = new File(uploadDir, videoChunkMetadata.chunkIndex() + ".part");
-            multipartFile.transferTo(chunkFile);
-        } catch (IOException | SecurityException e) {
-            messagingTemplate.convertAndSend("/topic/upload-status/%s".formatted(uploadId),
-                    new ChunkedVideoUploadStatusMessage(uploadId,
-                            VideoUploadStatus.FAILED.toString(),
-                            videoChunkMetadata.chunkIndex(),
-                            "Upload failed: %s".formatted(e.getMessage()
-                            )
-                    )
-            );
-        }
-    }
-
-    public void uploadFinalVideoChunk(String uploadId, String videoId, String finalFileName) {
-        var video = videoRepository.findByVideoId(videoId).orElseThrow(VideoNotFoundException::new);
-        var videoUpload = videoUploadStatusRepository
-                .getVideoUploadStatusModelByVideoId(videoId)
-                .orElse(new VideoUploadStatusModel(videoId, VideoUploadStatus.PENDING));
-
-        File uploadDir = new File("/genum/video/uploads/temp/" + uploadId);
-        File[] parts = Objects.requireNonNull(uploadDir.listFiles());
-        Arrays.sort(parts,
-                Comparator
-                        .comparingInt(f -> Integer
-                                .parseInt(f.getName()
-                                        .replace(".part", ""))));
-        File finalFile = new File("/genum/video/uploads/temp/complete/" + finalFileName);
-        try (FileOutputStream fos = new FileOutputStream(finalFile)) {
-            for (File part : parts) {
-                Files.copy(part.toPath(), fos);
-            }
-            var uploadUrl = videoService.uploadVideo(finalFile.toPath());
-            video.setUploadVideoFileUrl(uploadUrl);
-            videoUpload.setVideoUploadStatus(VideoUploadStatus.SUCCESS);
-
-            messagingTemplate
-                    .convertAndSend("/topic/upload-status/%s".formatted(uploadId), new VideoUploadStatusMessage(uploadId, VideoUploadStatus.SUCCESS.toString(), 100, uploadUrl, null));
-
-
-        } catch (IOException e) {
-            videoUpload.setVideoUploadStatus(VideoUploadStatus.FAILED);
-            messagingTemplate
-                    .convertAndSend("/topic/upload-status/%s".formatted(uploadId), new VideoUploadStatusMessage(uploadId, VideoUploadStatus.FAILED.toString(), 0, null, "Upload failed: %s".formatted(e.getMessage())));
-            log.error("Video {} upload failed", videoId);
-        } finally {
-            for (File part : parts) {
-                boolean deleted = part.delete();
-            }
-            boolean deleted = uploadDir.delete();
-            boolean finalFilePath = finalFile.delete();
-        }
-
-    }
-
 
     public CourseDetailedResponse getCourse(String courseID) {
         var course = productService.findCourseByReference(courseID);
