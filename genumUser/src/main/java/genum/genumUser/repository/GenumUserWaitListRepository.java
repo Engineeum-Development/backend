@@ -15,5 +15,5 @@ public interface GenumUserWaitListRepository extends MongoRepository<WaitListEma
     public boolean existsByEmail(String email);
 
     @Query(value = "{}", fields = "{ email:  1}")
-    public Page<WaitListEmailDTO> findAllProjectedBy(Pageable pageable);
+    public Page<WaitListEmailDTO> findPagedWaitingList(Pageable pageable);
 }

@@ -6,6 +6,7 @@ import genum.dataset.DTO.DatasetUpdateRequest;
 import genum.dataset.domain.License;
 import genum.dataset.domain.Tag;
 import genum.dataset.service.DatasetsServiceImpl;
+import genum.shared.DTO.response.PageResponse;
 import genum.shared.DTO.response.ResponseDetails;
 import genum.shared.dataset.exception.DatasetNotFoundException;
 import genum.shared.exception.UploadSizeLimitExceededException;
@@ -101,8 +102,8 @@ public class DatasetController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<Page<DatasetDTO>> getAllDatasets(@PageableDefault(size = 20, sort = {"datasetId"}) Pageable pageable) {
-        var datasets = datasetsService.getAllDatasets(pageable);
+    public ResponseEntity<PageResponse<DatasetDTO>> getAllDatasets(@PageableDefault(size = 20, sort = {"datasetId"}) Pageable pageable) {
+        var datasets = PageResponse.from(datasetsService.getAllDatasets(pageable));
         return ResponseEntity.ok(datasets);
     }
 
@@ -117,8 +118,8 @@ public class DatasetController {
     }
 //    @PreAuthorize("permitAll()")
     @GetMapping("/trending")
-    public ResponseEntity<Page<DatasetDTO>> trending(@PageableDefault(size = 20) Pageable pageable) {
-        Page<DatasetDTO> trendingDatasets = datasetsService.trending(pageable);
+    public ResponseEntity<PageResponse<DatasetDTO>> trending(@PageableDefault(size = 20) Pageable pageable) {
+        var trendingDatasets = PageResponse.from(datasetsService.trending(pageable));
         return ResponseEntity.ok(trendingDatasets);
     }
 

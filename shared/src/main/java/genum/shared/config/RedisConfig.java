@@ -30,7 +30,7 @@ public class RedisConfig {
     public RedisCacheConfiguration cacheConfiguration() {
         return RedisCacheConfiguration.defaultCacheConfig()
 		.prefixCacheNameWith("genum::")
-                .entryTtl(Duration.ofMinutes(5))
+                .entryTtl(Duration.ofMinutes(20))
                 .serializeValuesWith(
                         RedisSerializationContext
                                 .SerializationPair

@@ -34,7 +34,6 @@ import org.springframework.security.oauth2.client.web.HttpSessionOAuth2Authoriza
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -49,34 +48,36 @@ import java.util.List;
 @Slf4j
 public class UserWebSecurityConfiguration {
 
-    private final JwtUtils jwtUtils;
     private static final String[] WHITE_LISTED_PATHS = {
-            "/actuator/**","/favicon.ico","/api/auth/**",
-            "/login/**","/api/user/create","/api/dataset/all",
-            "/api/dataset/all/*","/api/user/confirm-token","/ws/**",
-            "/api/dataset/trending","/api/dataset/download/*",
-            "/api/dataset/license","/api/dataset/tag",
+            "/actuator/**", "/favicon.ico", "/api/auth/**",
+            "/login/**", "/api/user/create", "/api/dataset/all",
+            "/api/dataset/all/*", "/api/user/confirm-token", "/ws/**",
+            "/api/dataset/trending", "/api/dataset/download/*",
+            "/api/dataset/license", "/api/dataset/tag",
     };
+    private final JwtUtils jwtUtils;
 
     @Bean
-    public SecurityFilterChain securityFilterChain (HttpSecurity http,
-                                                    JWTAuthorizationFilter jwtAuthorizationFilter,
-                                                    LogoutHandlingFilter logoutHandlingFilter,
-                                                    CorsConfigurationSource corsConfigurationSource,
-                                                    Oauth2SuccessHandler oauth2SuccessHandler) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   JWTAuthorizationFilter jwtAuthorizationFilter,
+                                                   LogoutHandlingFilter logoutHandlingFilter,
+                                                   CorsConfigurationSource corsConfigurationSource,
+                                                   Oauth2SuccessHandler oauth2SuccessHandler) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(WHITE_LISTED_PATHS).permitAll()
-                        .requestMatchers(HttpMethod.POST,"/api/user/waiting-list").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/user/waiting-list").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/user/waiting-list").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(logoutHandlingFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(((request, response, authException) -> {
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied: %s".formatted(authException.getMessage()));
-                })))
+                .exceptionHandling(exceptionHandling -> exceptionHandling
+                        .authenticationEntryPoint((
+                                (request, response, authException) -> response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied: %s".formatted(authException.getMessage()))
+                        ))
+                )
                 .oauth2Client(Customizer.withDefaults())
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(oauth -> oauth.oidcUserService(this.oidcUserService()))
@@ -99,7 +100,7 @@ public class UserWebSecurityConfiguration {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowedOriginPatterns(List.of("*"));
         corsConfiguration.setAllowedHeaders(List.of("*"));
-        corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT","DELETE", "OPTIONS"));
+        corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         corsConfiguration.setAllowCredentials(true);
         corsConfiguration.setExposedHeaders(List.of("Authorization"));
 
@@ -109,14 +110,14 @@ public class UserWebSecurityConfiguration {
     }
 
     @Bean
-    public JWTAuthorizationFilter jwtAuthorizationFilter (GenumUserRepository userRepository) {
+    public JWTAuthorizationFilter jwtAuthorizationFilter(GenumUserRepository userRepository) {
         return new JWTAuthorizationFilter(jwtUtils, userRepository);
     }
+
     @Bean
     public UserDetailsService userDetailsService(GenumUserRepository userRepository) {
         return new CustomUserDetailService(userRepository);
     }
-
 
 
     @Bean
@@ -130,6 +131,7 @@ public class UserWebSecurityConfiguration {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
+
     @Bean
     public LogoutHandlingFilter logoutHandlingFilter() {
         return new LogoutHandlingFilter();

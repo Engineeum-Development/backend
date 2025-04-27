@@ -1,8 +1,11 @@
 package genum.shared.security;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import genum.shared.constant.Role;
 import genum.shared.constant.UserStatus;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -15,6 +18,9 @@ import java.util.UUID;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CustomUserDetails implements UserDetails {
     private String password;
     private String email;
@@ -36,11 +42,23 @@ public class CustomUserDetails implements UserDetails {
         this.accountLocked = false;
         this.accountEnabled = false;
         this.userStatus = UserStatus.ACTIVE;
+        this.role = Role.USER;
+    }
+    public CustomUserDetails(String password, String email, boolean admin) {
+        this.password = password;
+        this.email = email;
+        this.userReferenceId = UUID.randomUUID().toString();
+        this.accountExpired = false;
+        this.accountCredentialsExpired = false;
+        this.accountLocked = false;
+        this.accountEnabled = false;
+        this.userStatus = UserStatus.ACTIVE;
+        this.role = admin ? Role.ADMIN : Role.USER;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + Role.USER.name()));
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + this.role.name()));
     }
 
     public UserStatus getUserStatus() {
