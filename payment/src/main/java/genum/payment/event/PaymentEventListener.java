@@ -17,7 +17,7 @@ public class PaymentEventListener {
         switch (paymentEvent.getEventType()) {
             case PAYMENT_FAILED -> {}
             case PAYMENT_SUCCESSFUL -> {
-                productService.enrollCurrentUser(paymentEvent.getPayment().userId());
+                productService.enrollCurrentUser(paymentEvent.getPayment().courseId());
             }
         }
     }

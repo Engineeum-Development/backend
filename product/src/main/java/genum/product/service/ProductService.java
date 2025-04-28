@@ -6,6 +6,7 @@ import genum.shared.product.DTO.CourseDTO;
 import genum.shared.product.exception.ProductNotFoundException;
 import genum.shared.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -52,7 +53,7 @@ public class ProductService {
         return productRepository.existsByReferenceIdAndEnrolledUsersContaining(courseId, userId);
     }
 
-    @CachePut(value = "user_enrolled", key = "#courseReferenceId+#securityUtils.currentAuthenticatedUserId")
+    @CacheEvict(value = "user_enrolled",key = "(@securityUtils.getCurrentAuthenticatedUserId())+''+#courseReferenceId")
     public void enrollCurrentUser(String courseReferenceId) {
         var currentUserId = securityUtils.getCurrentAuthenticatedUserId();
         var course = productRepository.findByReferenceId(courseReferenceId).orElseThrow(ProductNotFoundException::new);

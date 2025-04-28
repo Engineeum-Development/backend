@@ -7,5 +7,5 @@ import genum.shared.payment.domain.ProductRequest;
 public interface PaymentService {
     PaymentResponse initializePayment(ProductRequest productRequest);
 
-    PaymentResponse verifyPayment(String reference, String paymentId);
+    PaymentResponse verifyPayment(String reference);
 }
