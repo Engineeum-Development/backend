@@ -10,6 +10,7 @@ import java.io.IOException;
 @Service
 public interface DatasetStorageService {
 
-    public String storeDataSet(MultipartFile file, DatasetMetadata metadata) throws IOException;
-    public MultipartFile getDataSet(String fileUrl) throws RuntimeException;
+    String storeDataSet(MultipartFile file, DatasetMetadata metadata) throws IOException;
+    String deleteDataset(String id) throws IOException;
+
 }

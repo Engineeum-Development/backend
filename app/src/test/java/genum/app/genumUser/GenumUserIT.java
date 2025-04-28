@@ -8,7 +8,6 @@ import genum.genumUser.model.GenumUser;
 import genum.genumUser.model.OneTimeToken;
 import genum.genumUser.model.WaitListEmail;
 import genum.shared.constant.Gender;
-import genum.shared.constant.Role;
 import genum.shared.security.CustomUserDetails;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,8 +87,6 @@ public class GenumUserIT extends BaseDatabaseIntegration {
             , "");
 
     private final OneTimeToken validOneTimeToken = new OneTimeToken("validOneTimeToken", "insideDb@gmail.com");
-
-    private final OneTimeToken invalidOneTimeToken = new OneTimeToken("invalidOneTimeToken", "notInsideDb@gmail.com");
 
 
     /* ========================================= ITest for user creation =============================================*/

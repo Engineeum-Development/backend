@@ -64,8 +64,6 @@ public class GenumUserServiceTest {
     private ApplicationEventPublisher eventPublisher;
     @Mock
     private GenumUserWaitListRepository waitListRepository;
-    @Captor
-    private ArgumentCaptor<GenumUser> genumUserArgumentCaptor;
 
     private final UserCreationRequest validUserCreationRequest = new UserCreationRequest("me",
             "me",
@@ -90,17 +88,6 @@ public class GenumUserServiceTest {
             .country(validUserCreationRequest.country())
             .gender(Gender.fromValue(validUserCreationRequest.gender()))
             .isVerified(false).build();
-
-    @BeforeEach
-    void setup() {
-        genumUserService = new GenumUserService(genumUserRepository,
-                passwordEncoder,
-                transactionTemplate,
-                oneTimeTokenRepository,
-                eventPublisher,
-                waitListRepository
-        );
-    }
 
     /*=========================================== Tests for createNewUser()===========================================*/
     @Test

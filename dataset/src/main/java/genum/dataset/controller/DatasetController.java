@@ -5,7 +5,7 @@ import genum.dataset.DTO.DatasetDTO;
 import genum.dataset.DTO.DatasetUpdateRequest;
 import genum.dataset.domain.License;
 import genum.dataset.domain.Tag;
-import genum.dataset.service.DatasetsServiceImpl;
+import genum.dataset.service.DatasetService;
 import genum.shared.DTO.response.PageResponse;
 import genum.shared.DTO.response.ResponseDetails;
 import genum.shared.dataset.exception.DatasetNotFoundException;
@@ -15,13 +15,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.unit.DataSize;
 import org.springframework.web.bind.annotation.*;
@@ -40,7 +38,7 @@ import java.util.Set;
 public class DatasetController {
 
 
-    private final DatasetsServiceImpl datasetsService;
+    private final DatasetService datasetService;
     @Value("${dataset.upload.max-file-size}")
     private String maxUploadSize;
     private final SecurityUtils securityUtils;
@@ -56,7 +54,7 @@ public class DatasetController {
             throw new UploadSizeLimitExceededException(file_data_size.toBytes(), MAX_FILE_SIZE.toBytes());
         }
         try {
-            var createdDatasetId = datasetsService.createDataset(createDatasetRequest, file);
+            var createdDatasetId = datasetService.createDataset(createDatasetRequest, file);
             var responseDetails = new ResponseDetails<>(
                     LocalDateTime.now(),
                     "Dataset created successfully.",
@@ -79,7 +77,7 @@ public class DatasetController {
         """)
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateDataset(@PathVariable String id, @Valid @RequestBody DatasetUpdateRequest updatedDataset) {
-        DatasetDTO updated = datasetsService.updateDataset(id, updatedDataset);
+        DatasetDTO updated = datasetService.updateDataset(id, updatedDataset);
         var responseDetails = new ResponseDetails<>(
                 LocalDateTime.now(),
                 "Dataset updated successfully.",
@@ -91,7 +89,7 @@ public class DatasetController {
     @GetMapping("/all/{id}")
     public ResponseEntity<?> getDatasetById(@PathVariable String id) {
 
-        DatasetDTO dataset = datasetsService.getDatasetDTOById(id);
+        DatasetDTO dataset = datasetService.getDatasetDTOById(id);
         ResponseDetails<DatasetDTO> responseDetails = new ResponseDetails<>(
                 LocalDateTime.now(),
                 "Dataset found",
@@ -103,41 +101,43 @@ public class DatasetController {
 
     @GetMapping("/all")
     public ResponseEntity<PageResponse<DatasetDTO>> getAllDatasets(@PageableDefault(size = 20, sort = {"datasetId"}) Pageable pageable) {
-        var datasets = PageResponse.from(datasetsService.getAllDatasets(pageable));
+        var datasets = PageResponse.from(datasetService.getAllDatasets(pageable));
         return ResponseEntity.ok(datasets);
     }
 
     @DeleteMapping("/delete/{datasetId}")
     public ResponseEntity<?> deleteDataset(@PathVariable String datasetId) {
         try {
-            datasetsService.deleteDataset(datasetId);
+            datasetService.deleteDataset(datasetId);
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (DatasetNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
         }
     }
 //    @PreAuthorize("permitAll()")
     @GetMapping("/trending")
     public ResponseEntity<PageResponse<DatasetDTO>> trending(@PageableDefault(size = 20) Pageable pageable) {
-        var trendingDatasets = PageResponse.from(datasetsService.trending(pageable));
+        var trendingDatasets = PageResponse.from(datasetService.trending(pageable));
         return ResponseEntity.ok(trendingDatasets);
     }
 
     @GetMapping("/tag")
     public ResponseEntity<ResponseDetails<Set<Tag>>> getAllTags(){
-        var responseDetails = new ResponseDetails<>("tags", HttpStatus.OK.toString(), datasetsService.getAllTags());
+        var responseDetails = new ResponseDetails<>("tags", HttpStatus.OK.toString(), datasetService.getAllTags());
         return ResponseEntity.ok(responseDetails);
     }
     @GetMapping("/license")
     public ResponseEntity<ResponseDetails<Set<License>>> getAllLicenses(){
-        var responseDetails = new ResponseDetails<>("tags", HttpStatus.OK.toString(), datasetsService.getAllLicences());
+        var responseDetails = new ResponseDetails<>("tags", HttpStatus.OK.toString(), datasetService.getAllLicences());
         return ResponseEntity.ok(responseDetails);
     }
 
     @GetMapping("/download/{datasetId}")
     public ResponseEntity<?> downloadDataset(@PathVariable String datasetId) {
         try {
-            String datasetDownloadURL = datasetsService.downloadDataset(datasetId);
+            String datasetDownloadURL = datasetService.downloadDataset(datasetId);
             return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(datasetDownloadURL)).build();
         } catch (DatasetNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -146,7 +146,7 @@ public class DatasetController {
 
     @PutMapping("/upvote/{datasetId}")
     public ResponseEntity<ResponseDetails<DatasetDTO>> upvoteDataset(@PathVariable String datasetId) {
-        var datasetDTO = datasetsService.upvoteDataset(datasetId);
+        var datasetDTO = datasetService.upvoteDataset(datasetId);
         return ResponseEntity.ok(new ResponseDetails<>("upvoted",HttpStatus.OK.toString(),datasetDTO));
     }
 }

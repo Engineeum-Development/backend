@@ -30,7 +30,7 @@ public class CloudinaryDatasetService implements DatasetStorageService {
     }
 
     @Override
-    public MultipartFile getDataSet(String fileUrl) throws RuntimeException {
-        return null;
+    public String deleteDataset(String id) throws IOException {
+        return "deleted";
     }
 }
