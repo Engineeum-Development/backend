@@ -2,7 +2,6 @@ package genum.payment.service;
 
 import genum.payment.config.PaymentProperties;
 import genum.payment.constant.PaymentPlatform;
-import genum.payment.domain.PaystackDomain;
 import genum.payment.event.EventType;
 import genum.payment.event.PaymentEvent;
 import genum.payment.model.CoursePayment;
@@ -16,7 +15,6 @@ import genum.shared.payment.exception.PaymentNotFoundException;
 import genum.shared.payment.exception.PaymentUserAuthenticationFailed;
 import genum.shared.product.DTO.CourseDTO;
 import genum.shared.security.CustomUserDetails;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -30,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 

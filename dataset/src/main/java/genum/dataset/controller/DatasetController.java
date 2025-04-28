@@ -41,7 +41,6 @@ public class DatasetController {
     private final DatasetService datasetService;
     @Value("${dataset.upload.max-file-size}")
     private String maxUploadSize;
-    private final SecurityUtils securityUtils;
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createDataset(@Valid @RequestPart("metadata") CreateDatasetRequest createDatasetRequest,
@@ -77,7 +76,7 @@ public class DatasetController {
         """)
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateDataset(@PathVariable String id, @Valid @RequestBody DatasetUpdateRequest updatedDataset) {
-        DatasetDTO updated = datasetService.updateDataset(id, updatedDataset);
+        datasetService.updateDataset(id, updatedDataset);
         var responseDetails = new ResponseDetails<>(
                 LocalDateTime.now(),
                 "Dataset updated successfully.",

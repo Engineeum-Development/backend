@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class AtomicIntegerDeserializer extends JsonDeserializer<AtomicInteger> {
 
     @Override
-    public AtomicInteger deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+    public AtomicInteger deserialize(JsonParser p, DeserializationContext ctxt) throws IOException{
         return new AtomicInteger(p.getIntValue());
     }
 }

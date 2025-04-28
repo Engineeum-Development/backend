@@ -73,7 +73,7 @@ public class GlobalExceptionHandler{
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ResponseDetails<String>> handleBadCredentialsException(BadCredentialsException badCredentialsException) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ResponseDetails<>("invalid credentials, Please try again with correct credentials", HttpStatus.UNAUTHORIZED.toString()));
+                .body(new ResponseDetails<>("Invalid credentials: Please try again with correct credentials, %s".formatted(badCredentialsException.getMessage()), HttpStatus.UNAUTHORIZED.toString()));
     }
     @ExceptionHandler(LoginFailedException.class)
     public ResponseEntity<ResponseDetails<String>> handleLoginFailedException(LoginFailedException ex) {
