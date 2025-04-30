@@ -3,6 +3,8 @@ package genum.dataset.controller;
 import genum.dataset.DTO.CreateDatasetRequest;
 import genum.dataset.DTO.DatasetDTO;
 import genum.dataset.DTO.DatasetUpdateRequest;
+import genum.dataset.domain.License;
+import genum.dataset.domain.Tag;
 import genum.dataset.service.DatasetsServiceImpl;
 import genum.shared.DTO.response.ResponseDetails;
 import genum.shared.dataset.exception.DatasetNotFoundException;
@@ -28,6 +30,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/dataset")
@@ -84,7 +87,7 @@ public class DatasetController {
         return ResponseEntity.ok(responseDetails);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/all/{id}")
     public ResponseEntity<?> getDatasetById(@PathVariable String id) {
 
         DatasetDTO dataset = datasetsService.getDatasetDTOById(id);
@@ -119,6 +122,17 @@ public class DatasetController {
         return ResponseEntity.ok(trendingDatasets);
     }
 
+    @GetMapping("/tag")
+    public ResponseEntity<ResponseDetails<Set<Tag>>> getAllTags(){
+        var responseDetails = new ResponseDetails<>("tags", HttpStatus.OK.toString(), datasetsService.getAllTags());
+        return ResponseEntity.ok(responseDetails);
+    }
+    @GetMapping("/license")
+    public ResponseEntity<ResponseDetails<Set<License>>> getAllLicenses(){
+        var responseDetails = new ResponseDetails<>("tags", HttpStatus.OK.toString(), datasetsService.getAllLicences());
+        return ResponseEntity.ok(responseDetails);
+    }
+
     @GetMapping("/download/{datasetId}")
     public ResponseEntity<?> downloadDataset(@PathVariable String datasetId) {
         try {
@@ -129,9 +143,9 @@ public class DatasetController {
         }
     }
 
-    @PutMapping("/like/{datasetId}")
-    public ResponseEntity<?> likeDataset(@PathVariable String datasetId) {
-        datasetsService.likeDataset(datasetId);
-        return ResponseEntity.noContent().build();
+    @PutMapping("/upvote/{datasetId}")
+    public ResponseEntity<ResponseDetails<DatasetDTO>> upvoteDataset(@PathVariable String datasetId) {
+        var datasetDTO = datasetsService.upvoteDataset(datasetId);
+        return ResponseEntity.ok(new ResponseDetails<>("upvoted",HttpStatus.OK.toString(),datasetDTO));
     }
 }

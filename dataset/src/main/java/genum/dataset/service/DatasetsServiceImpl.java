@@ -4,6 +4,8 @@ import genum.dataset.DTO.CreateDatasetRequest;
 import genum.dataset.DTO.DatasetDTO;
 import genum.dataset.DTO.DatasetUpdateRequest;
 import genum.dataset.domain.*;
+import genum.dataset.enums.CollaboratorPermission;
+import genum.dataset.enums.DatasetType;
 import genum.dataset.enums.PendingActionEnum;
 import genum.dataset.enums.Visibility;
 import genum.dataset.model.Dataset;
@@ -74,12 +76,9 @@ public class DatasetsServiceImpl {
             dataset.setDatasetName(metadata.getDatasetName());
             dataset.setDescription("");
             dataset.setDoiCitation("");
-            dataset.setAuthorName("%s %s".formatted(
+            dataset.setCollaborators(Set.of(new Collaborator("%s %s".formatted(
                     userWithIdFirstnameAndLastname.firstName(),
-                    userWithIdFirstnameAndLastname.lastName())
-            );
-            dataset.setCollaborators(Set.of(new Collaborator(currentUserId, CollaboratorPermission.OWNER)));
-            log.info("dataset: {}", dataset);
+                    userWithIdFirstnameAndLastname.lastName()),currentUserId, CollaboratorPermission.OWNER)));
             return datasetsRepository.save(dataset).getDatasetID();
         } catch (IllegalArgumentException e) {
             throw new BadRequestException(e.getMessage());
@@ -164,10 +163,26 @@ public class DatasetsServiceImpl {
                         collaboratorComparator);
 
                 if (changeInCollaborators){
-                    existingDataset.setTags(updateRequest.tags());
+                    existingDataset.setCollaborators(updateRequest.collaborators());
                 } else {
                     existingDataset.addCollaborators(updateRequest.collaborators());
                 }
+            }
+            if (Objects.nonNull(updateRequest.authors())) {
+                var authorComparator = new EqualsComparator<Author>();
+                boolean changeInAuthors = !Arrays.equals(
+                        existingDataset.getAuthors().toArray(Author[]::new),
+                        updateRequest.authors().toArray(Author[]::new),
+                        authorComparator);
+
+                if (changeInAuthors){
+                    existingDataset.setAuthors(updateRequest.authors());
+                } else {
+                    existingDataset.addAuthors(updateRequest.authors());
+                }
+            }
+            if (Objects.nonNull(updateRequest.coverage())) {
+                existingDataset.setCoverage(updateRequest.coverage());
             }
 
             if (Objects.nonNull(updateRequest.doiCitation())) {
@@ -183,13 +198,12 @@ public class DatasetsServiceImpl {
             }
 
             return datasetsRepository.save(existingDataset);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             throw new BadRequestException(e.getMessage());
         }
     }
 
     @Cacheable(value = "dataset", key = "#id")
-
     public DatasetDTO getDatasetDTOById(String id) {
         Dataset dataset = datasetsRepository.getDatasetByDatasetID(id).orElseThrow(() -> new DatasetNotFoundException(id));
         return dataset.toDTO();
@@ -244,12 +258,20 @@ public class DatasetsServiceImpl {
         return dataset.getUploadFileUrl();
 
     }
+    @Cacheable(value = "dataset_tags")
+    public Set<Tag> getAllTags() {
+        return DatasetTags.getTags();
+    }
+    @Cacheable(value = "dataset_licenses")
+    public Set<License> getAllLicences() {
+        return Licenses.getLicenses();
+    }
 
 
-    public void likeDataset(String id) {
+    public DatasetDTO upvoteDataset(String id) {
         Dataset dataset = getDatasetById(id);
         dataset.addUsersThatLiked(securityUtils.getCurrentAuthenticatedUserId());
-        datasetsRepository.save(dataset);
+        return datasetsRepository.save(dataset).toDTO();
     }
 
 

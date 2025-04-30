@@ -3,10 +3,7 @@ package genum.dataset.DTO;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import genum.dataset.domain.Collaborator;
-import genum.dataset.domain.License;
-import genum.dataset.domain.Provenance;
-import genum.dataset.domain.Tag;
+import genum.dataset.domain.*;
 
 
 import java.io.Serializable;
@@ -22,6 +19,8 @@ public record DatasetUpdateRequest (
         Provenance provenance,
         String description,
         String visibility,
-        Set<Tag> tags
+        Set<Tag> tags,
+        Set<Author> authors,
+        Coverage coverage
 ) implements Serializable {
 }

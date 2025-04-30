@@ -2,6 +2,7 @@ package genum.dataset.model;
 
 import genum.dataset.DTO.DatasetDTO;
 import genum.dataset.domain.*;
+import genum.dataset.enums.DatasetType;
 import genum.dataset.enums.PendingActionEnum;
 import genum.dataset.enums.Visibility;
 import lombok.AllArgsConstructor;
@@ -40,27 +41,30 @@ public class Dataset implements Serializable {
     private License license;
     private String doiCitation;
     private Provenance provenance;
-    private String authorName;
+    private Set<Author> authors;
+    private Coverage coverage;
 
     private Set<Collaborator> collaborators;
 
-    private Set<String> usersThatUpvoted;
+    private Set<String> usersThatUpvote;
 
     {
-        usersThatUpvoted = new HashSet<>();
+        usersThatUpvote = new HashSet<>();
+        authors = new HashSet<>();
+        tags = new HashSet<>();
     }
 
     public void addUsersThatLiked(String userId) {
-        usersThatUpvoted.add(userId);
+        usersThatUpvote.add(userId);
     }
     public void addTags(Set<Tag> newTags) {
         this.tags.addAll(Objects.requireNonNull(newTags, "tags added can't be null"));
     }
-    public void addCollaborator(Collaborator collaborator) {
-        this.collaborators.add(Objects.requireNonNull(collaborator, "Collaborator id can't be null"));
-    }
     public void addCollaborators(Set<Collaborator> collaborators) {
-        this.collaborators.addAll(Objects.requireNonNull(collaborators, "Collaborators id can't be null"));
+        this.collaborators.addAll(Objects.requireNonNull(collaborators, "Collaborators can't be null"));
+    }
+    public void addAuthors(Set<Author> author) {
+        this.authors.addAll(Objects.requireNonNull(author,"Authors can't be null"));
     }
     public void removePendingAction(PendingActionEnum pendingActionEnum) {
         pendingActions.remove(
@@ -83,7 +87,6 @@ public class Dataset implements Serializable {
                 this.getDatasetName(),
                 this.getDatasetSubtitle(),
                 this.getDescription(),
-                this.getAuthorName(),
                 this.getDatasetThumbnailImageUrl(),
                 this.getUploadFileUrl(),
                 this.getTags(),
@@ -94,7 +97,9 @@ public class Dataset implements Serializable {
                 this.getDoiCitation(),
                 this.getProvenance(),
                 this.getCollaborators(),
-                this.getUsersThatUpvoted().size()
+                this.getUsersThatUpvote().size(),
+                this.getAuthors(),
+                this.getCoverage()
 
         );
     }

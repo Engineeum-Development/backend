@@ -1,11 +1,11 @@
 package genum.dataset.domain;
 
+import genum.dataset.enums.DatasetType;
 import genum.dataset.enums.Visibility;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.List;
 
 @Getter
 @Setter
