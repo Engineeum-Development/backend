@@ -7,6 +7,7 @@ import genum.shared.genumUser.exception.BadRequestException;
 import genum.shared.genumUser.exception.GenumUserNotFoundException;
 import genum.shared.genumUser.exception.OTTNotFoundException;
 import genum.shared.genumUser.exception.UserAlreadyExistsException;
+import genum.shared.product.exception.ProductNotFoundException;
 import genum.shared.security.exception.InvalidTokenException;
 import genum.shared.security.exception.LoginFailedException;
 import genum.shared.security.exception.TokenNotFoundException;
@@ -72,7 +73,7 @@ public class GlobalExceptionHandler{
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ResponseDetails<String>> handleBadCredentialsException(BadCredentialsException badCredentialsException) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ResponseDetails<>("invalid credentials, Please try again with correct credentials", HttpStatus.UNAUTHORIZED.toString()));
+                .body(new ResponseDetails<>("Invalid credentials: Please try again with correct credentials, %s".formatted(badCredentialsException.getMessage()), HttpStatus.UNAUTHORIZED.toString()));
     }
     @ExceptionHandler(LoginFailedException.class)
     public ResponseEntity<ResponseDetails<String>> handleLoginFailedException(LoginFailedException ex) {
@@ -111,6 +112,13 @@ public class GlobalExceptionHandler{
 
     @ExceptionHandler(DatasetNotFoundException.class)
     public ResponseEntity<ResponseDetails<String>> handleDatasetNotFoundException(DatasetNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ResponseDetails<>(ex.getMessage(), HttpStatus.NOT_FOUND.toString()));
+    }
+
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<ResponseDetails<String>> handleProductNotFoundException(ProductNotFoundException ex) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(new ResponseDetails<>(ex.getMessage(), HttpStatus.NOT_FOUND.toString()));

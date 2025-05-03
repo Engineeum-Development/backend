@@ -2,6 +2,7 @@ package genum.shared.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -26,11 +27,12 @@ public class RedisConfig {
         return template;
     }
 
-    @Bean
-    public RedisCacheConfiguration cacheConfiguration() {
+    @Bean("generalCacheConfig")
+    @Primary
+    public RedisCacheConfiguration generalCacheConfiguration() {
         return RedisCacheConfiguration.defaultCacheConfig()
 		.prefixCacheNameWith("genum::")
-                .entryTtl(Duration.ofMinutes(5))
+                .entryTtl(Duration.ofMinutes(20))
                 .serializeValuesWith(
                         RedisSerializationContext
                                 .SerializationPair

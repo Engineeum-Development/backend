@@ -1,17 +1,19 @@
 package genum.payment.controller;
 
+import genum.payment.domain.PaystackWebhook;
+import genum.payment.service.PaymentService;
 import genum.shared.payment.domain.PaymentResponse;
 import genum.shared.payment.domain.ProductRequest;
-import genum.payment.service.PaymentService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
+
 
 @RestController
+@Slf4j
 @RequestMapping("api/payment/paystack")
 public class PaystackController {
 
@@ -22,13 +24,20 @@ public class PaystackController {
         this.paymentService = paymentService;
     }
 
-    @PostMapping("initialize")
+    @PostMapping("/initialize")
     public PaymentResponse initializeTransaction(@RequestBody ProductRequest productRequest) {
-        return paymentService.initializePayment(productRequest);
+        var paymentResponse = paymentService.initializePayment(productRequest);
+        log.info("Payment response: {}", paymentResponse);
+        return paymentResponse;
     }
-    @GetMapping(value = "verify")
-    public PaymentResponse verifyTransaction(@RequestParam("reference") String reference,
-                                                     @RequestParam("payment_id") String paymentId){
-        return paymentService.verifyPayment(reference, paymentId);
+    @GetMapping(value = "/verify")
+    public PaymentResponse verifyTransaction(@RequestParam("txref") String reference){
+        return paymentService.verifyPayment(reference);
+    }
+
+    @PostMapping("/webhook")
+    public ResponseEntity<Void> handleWebhook(@RequestBody PaystackWebhook webHook) {
+        paymentService.handleWebHook(webHook);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

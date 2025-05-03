@@ -1,16 +1,8 @@
 package genum.genumUser.service;
 
 import genum.genumUser.controller.UserCreationRequest;
-
 import genum.genumUser.event.UserEvent;
 import genum.genumUser.event.UserEventType;
-
-import genum.shared.constant.Role;
-import genum.shared.genumUser.exception.BadRequestException;
-import genum.shared.genumUser.exception.GenumUserNotFoundException;
-import genum.shared.genumUser.exception.OTTNotFoundException;
-import genum.shared.genumUser.exception.UserAlreadyExistsException;
-
 import genum.genumUser.model.GenumUser;
 import genum.genumUser.model.OneTimeToken;
 import genum.genumUser.model.WaitListEmail;
@@ -18,17 +10,20 @@ import genum.genumUser.repository.GenumUserRepository;
 import genum.genumUser.repository.GenumUserWaitListRepository;
 import genum.genumUser.repository.OneTimeTokenRepository;
 import genum.shared.constant.Gender;
+import genum.shared.constant.Role;
 import genum.shared.genumUser.GenumUserDTO;
 import genum.shared.genumUser.WaitListEmailDTO;
+import genum.shared.genumUser.exception.BadRequestException;
+import genum.shared.genumUser.exception.GenumUserNotFoundException;
+import genum.shared.genumUser.exception.OTTNotFoundException;
+import genum.shared.genumUser.exception.UserAlreadyExistsException;
 import genum.shared.security.CustomUserDetails;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,7 +32,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
-
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -57,8 +51,8 @@ public class GenumUserService {
 
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public GenumUserDTO createNewUser(@Valid UserCreationRequest userCreationRequest) {
-        if (genumUserRepository.existsByCustomUserDetailsEmail(userCreationRequest.email())){
+    public GenumUserDTO createNewUser(UserCreationRequest userCreationRequest) {
+        if (genumUserRepository.existsByCustomUserDetailsEmail(userCreationRequest.email())) {
             throw new UserAlreadyExistsException();
         }
         try {
@@ -73,31 +67,30 @@ public class GenumUserService {
                     .customUserDetails(userDetails)
                     .build();
 
-            var registeredUserOut = transactionTemplate.execute((action) -> {
-                var registeredUser = genumUserRepository.save(user);
-                var otp = new OneTimeToken(UUID.randomUUID().toString(), registeredUser.getCustomUserDetails().getEmail());
-                var userEvent = new UserEvent(registeredUser, UserEventType.USER_REGISTRATION, Map.of("token",otp.getToken()));
-                eventPublisher.publishEvent(userEvent);
-                oneTimeTokenRepository.save(otp);
-                return registeredUser;
-            });
-            assert registeredUserOut != null;
-            return registeredUserOut.toUserDTO();
+            var registeredUser = genumUserRepository.save(user);
+            var otp = new OneTimeToken(UUID.randomUUID().toString(), registeredUser.getCustomUserDetails().getEmail());
+            var userEvent = new UserEvent(registeredUser, UserEventType.USER_REGISTRATION, Map.of("token", otp.getToken()));
+            eventPublisher.publishEvent(userEvent);
+            oneTimeTokenRepository.save(otp);
+
+            return registeredUser.toUserDTO();
 
         } catch (IllegalArgumentException illegalArgumentException) {
             throw new BadRequestException(illegalArgumentException.getMessage());
         }
 
     }
-    public void incrementUserLastLogin(String email) {
+
+    public void incrementUserLastLogin(String email) throws GenumUserNotFoundException {
         var user = genumUserRepository
                 .findByCustomUserDetailsEmail(email)
                 .orElseThrow(GenumUserNotFoundException::new);
         user.getCustomUserDetails().setLastLogin(LocalDateTime.now());
         genumUserRepository.save(user);
     }
+
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public String confirmOTT(String token) throws GenumUserNotFoundException, OTTNotFoundException{
+    public String confirmOTT(String token) throws GenumUserNotFoundException, OTTNotFoundException {
         // only returns otts that are not yet expired
         var oneTimeTokenOptional = oneTimeTokenRepository
                 .findOneTimeTokenByToken(token)
@@ -109,7 +102,7 @@ public class GenumUserService {
                     .map(email -> genumUserRepository
                             .findByCustomUserDetailsEmail(email)
                             .orElseThrow(GenumUserNotFoundException::new));
-            if (oneTimeTokenUserOptional.isPresent()){
+            if (oneTimeTokenUserOptional.isPresent()) {
                 var genumUser = oneTimeTokenUserOptional.get();
                 genumUser.setVerified(true);
                 genumUser.getCustomUserDetails().setAccountEnabled(true);
@@ -122,38 +115,38 @@ public class GenumUserService {
             throw new OTTNotFoundException();
         }
     }
+
     @CacheEvict(value = "waiting_lists", allEntries = true)
     public String addEmailToWaitingList(String email, String firstName, String lastName) {
         if (waitListRepository.existsByEmail(email)) {
             throw new UserAlreadyExistsException();
-        }else {
+        } else {
             waitListRepository.save(new WaitListEmail(email, lastName, firstName));
-            var userEvent = new UserEvent(null, UserEventType.WAITING_LIST_ADDED, Map.of("email", email,"firstname", firstName));
+            var userEvent = new UserEvent(null, UserEventType.WAITING_LIST_ADDED, Map.of("email", email, "firstname", firstName));
             eventPublisher.publishEvent(userEvent);
             return "Email successfully saved";
         }
     }
-    @Cacheable(value = "waiting_lists" , keyGenerator = "customPageableKeyGenerator")
+
+    @Cacheable(value = "waiting_lists", keyGenerator = "customPageableKeyGenerator")
     @Transactional(readOnly = true)
     public Page<WaitListEmailDTO> getWaitListEmails(Pageable pageable) {
-        return waitListRepository.findAllProjectedBy(pageable);
+        return waitListRepository.findPagedWaitingList(pageable);
     }
 
     public Optional<GenumUser> getUserByEmail(String email) {
         return genumUserRepository.findByCustomUserDetailsEmail(email);
     }
+
     public GenumUser saveOauthUser(GenumUser user) {
         return genumUserRepository.save(user);
     }
 
-    @Transactional(readOnly = true)
-    public boolean isUserExists(String email){return genumUserRepository.existsByCustomUserDetailsEmail(email);}
-
     /*
-    * Clears all the expired OTTs every 28 days
-    * */
+     * Clears all the expired OTTs every 28 days
+     * */
     @Scheduled(timeUnit = TimeUnit.DAYS, fixedRate = 28)
-    public void deleteExpiredOTTsScheduled () {
+    public void deleteExpiredOTTsScheduled() {
         while (true) {
             var oneTimeTokenIDs = oneTimeTokenRepository
                     .findTop50ByExpiryBeforeOrderByExpiryDesc(LocalDateTime.now())

@@ -6,6 +6,7 @@ import genum.dataset.enums.DatasetType;
 import genum.dataset.enums.PendingActionEnum;
 import genum.dataset.enums.Visibility;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -14,9 +15,11 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @AllArgsConstructor
 @Data
+@Builder
 @NoArgsConstructor
 public class Dataset implements Serializable {
 
@@ -36,7 +39,7 @@ public class Dataset implements Serializable {
     private String fileName;
 
     private long fileSize;
-    private int downloads;
+    private AtomicInteger downloads;
 
     private License license;
     private String doiCitation;
@@ -49,9 +52,11 @@ public class Dataset implements Serializable {
     private Set<String> usersThatUpvote;
 
     {
-        usersThatUpvote = new HashSet<>();
-        authors = new HashSet<>();
         tags = new HashSet<>();
+        pendingActions = new HashSet<>();
+        collaborators = new HashSet<>();
+        usersThatUpvote = new HashSet<>();
+
     }
 
     public void addUsersThatLiked(String userId) {
@@ -82,6 +87,12 @@ public class Dataset implements Serializable {
 
 
     public DatasetDTO toDTO() {
+        if (Objects.isNull(usersThatUpvote)) setUsersThatUpvote(new HashSet<>());
+        if (Objects.isNull(tags)) setTags(new HashSet<>());
+        if (Objects.isNull(pendingActions)) setTags(new HashSet<>());
+        if (Objects.isNull(collaborators)) setTags(new HashSet<>());
+        if (Objects.isNull(authors)) setAuthors(new HashSet<>());
+        if (Objects.isNull(downloads)) setDownloads(new AtomicInteger());
         return new DatasetDTO(
                 this.getDatasetID(),
                 this.getDatasetName(),
@@ -92,7 +103,7 @@ public class Dataset implements Serializable {
                 this.getTags(),
                 this.getPendingActions(),
                 this.getDatasetType().toString(),
-                this.getDownloads(),
+                this.getDownloads().get(),
                 this.getLicense(),
                 this.getDoiCitation(),
                 this.getProvenance(),

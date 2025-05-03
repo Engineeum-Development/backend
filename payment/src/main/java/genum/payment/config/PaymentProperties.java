@@ -10,10 +10,10 @@ import org.springframework.stereotype.Component;
 @Getter
 @Setter
 public class PaymentProperties {
-    private String paystack_apiKey;
-    private String paystack_gatewayUrl;
+    private String paystack_ApiKey;
+    private String paystack_CallbackUrl;
     private String flutterWave_SecretKey;
     private String flutterWave_PublicKey;
     private String flutterWave_EncryptionKey;
-    private String flutterWave_RedirectUrl;
+    private String flutterWave_CallBackUrl;
 }

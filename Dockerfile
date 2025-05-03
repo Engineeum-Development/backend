@@ -12,7 +12,7 @@ LABEL authors="divjazz, zipdemon"
 
 FROM gcr.io/distroless/java17 as FINAL
 WORKDIR /app
-EXPOSE 8080
+
 COPY --from=BUILDER /app/dependencies/ ./
 COPY --from=BUILDER /app/spring-boot-loader/ ./
 COPY --from=BUILDER /app/snapshot-dependencies/ ./

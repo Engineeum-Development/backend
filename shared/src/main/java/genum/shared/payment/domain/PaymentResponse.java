@@ -1,9 +1,8 @@
 package genum.shared.payment.domain;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import genum.shared.payment.constants.PaymentStatus;
 
-import java.time.LocalDateTime;
-import java.util.Map;
-
-public record PaymentResponse(String time, PaymentStatus status, Map<String,String> info) {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public record PaymentResponse(String time, PaymentStatus status, PaymentResponseData data) {
 }

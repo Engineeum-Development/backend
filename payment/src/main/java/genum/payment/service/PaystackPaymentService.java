@@ -2,6 +2,8 @@ package genum.payment.service;
 
 import genum.payment.config.PaymentProperties;
 import genum.payment.constant.PaymentPlatform;
+import genum.payment.domain.PaystackWebhook;
+import genum.payment.domain.WebHook;
 import genum.payment.event.EventType;
 import genum.payment.event.PaymentEvent;
 import genum.payment.model.CoursePayment;
@@ -9,13 +11,14 @@ import genum.payment.repository.PaymentRepository;
 import genum.product.service.ProductService;
 import genum.shared.payment.constants.PaymentStatus;
 import genum.shared.payment.domain.PaymentResponse;
+import genum.shared.payment.domain.PaymentResponseData;
 import genum.shared.payment.domain.ProductRequest;
 import genum.shared.payment.exception.PaymentNotFoundException;
 import genum.shared.payment.exception.PaymentUserAuthenticationFailed;
 import genum.shared.product.DTO.CourseDTO;
 import genum.shared.security.CustomUserDetails;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -27,14 +30,17 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
+
+import static genum.payment.domain.PaystackDomain.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PaystackPaymentService implements PaymentService {
 
-    public static final String PAYMENT_BASE_URL = "https://api.paystack.co";
+    public static final String PAYMENT_BASE_URL = "https://api.paystack.co/";
     public static final String INITIALIZE_TRANSACTION_URL = PAYMENT_BASE_URL + "/transaction/initialize";
     public static final String VERIFY_TRANSACTION_URL = PAYMENT_BASE_URL + "transaction/verify/";
     public static final String LIST_TRANSACTIONS_URL = PAYMENT_BASE_URL + "/transaction";
@@ -54,26 +60,30 @@ public class PaystackPaymentService implements PaymentService {
             throw new PaymentUserAuthenticationFailed();
         }
         var user = (CustomUserDetails) authentication.getPrincipal();
-        CourseDTO course = productService.findCourseById(productRequest.getProductId());
-
+        CourseDTO course = productService.findCourseByReference(productRequest.productId());
+        String transactionRef = UUID.randomUUID().toString();
         var amountInBaseUnits = course.price() * 100;
 
 
         InitializeTransaction initializeTransaction = InitializeTransaction.builder()
                 .amount(String.valueOf(amountInBaseUnits))
                 .email(user.getEmail())
-                .reference(course.referenceId())
-                .currency("USD")
+                .reference(transactionRef)
+                .currency("NGN")
                 .build();
+
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", paymentProperties.getPaystack_apiKey());
+        headers.set("Authorization", "Bearer " + paymentProperties.getPaystack_ApiKey());
         headers.set("Content-Type", "application/json");
+        log.info("Authorization: {}", paymentProperties.getPaystack_ApiKey());
 
         HttpEntity<InitializeTransaction> initializeTransactionHttpEntity = new HttpEntity<>(initializeTransaction, headers);
         var response = restTemplate.exchange(INITIALIZE_TRANSACTION_URL, HttpMethod.POST, initializeTransactionHttpEntity, InitializeTransactionResponse.class);
-        String paymentId = null;
+
+        String transactionReference = null;
         if (response.getStatusCode().is2xxSuccessful()){
-            if (Objects.requireNonNull(response.getBody()).status.equals("true")) {
+
+            if (Objects.requireNonNull(response.getBody()).status().equals("true")) {
                 var payment = CoursePayment.builder()
                         .courseId(course.referenceId())
                         .paymentInitializationDate(LocalDateTime.now().toString())
@@ -81,50 +91,48 @@ public class PaystackPaymentService implements PaymentService {
                         .userid(user.getEmail())
                         .paymentPlatForm(PaymentPlatform.PAYSTACK)
                         .paymentStatus(PaymentStatus.PENDING)
+                        .transactionReference(transactionRef)
                         .build();
-                payment = paymentRepository.save(payment);
-                paymentId = payment.getId();
+                transactionRef = paymentRepository.save(payment).getTransactionReference();
                 return new PaymentResponse(LocalDateTime.now().toString(),
                         PaymentStatus.PENDING,
-                        Map.of("message","Payment initialization was a success",
-                                "authorization_url", response.getBody().data.authorizationUrl,
-                                "access_code", response.getBody().data().accessCode(),
-                                "reference", response.getBody().data().reference()));
+                        PaymentResponseData.builder()
+                                .message("Payment initialization was a success")
+                                .authorizationUrl(response.getBody().data().authorizationUrl())
+                                .accessCode(response.getBody().data().accessCode())
+                                .reference(transactionRef)
+                                .build());
             } else {
-                return new PaymentResponse(LocalDateTime.now().toString(), PaymentStatus.FAILED, Map.of("message","The payment of %s initialization failed please try again".formatted(paymentId)));
+                return new PaymentResponse(LocalDateTime.now().toString(), PaymentStatus.FAILED, PaymentResponseData.builder().message("Payment failed: Try Again").build());
             }
 
         } else {
-            return new PaymentResponse(LocalDateTime.now().toString(), PaymentStatus.FAILED, Map.of("Message", "Was not able to reach the provider please try again later"));
+            return new PaymentResponse(LocalDateTime.now().toString(), PaymentStatus.FAILED, PaymentResponseData.builder().message("Payment failed: Was not able to reach the provider please try again later").build());
         }
 
     }
 
     @Override
     @Transactional
-    public PaymentResponse verifyPayment(String reference, String paymentId) {
+    public PaymentResponse verifyPayment(String transactionReference) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new PaymentUserAuthenticationFailed();
         }
-
-        var user = (CustomUserDetails) authentication.getPrincipal();
         var payment = paymentRepository
-                .findById(paymentId)
+                .findByTransactionReference(transactionReference)
                 .orElseThrow(PaymentNotFoundException::new);
-        var courseRefId = payment.getCourseId();
-        var courseDTO = productService.findCourseByReference(courseRefId);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", paymentProperties.getPaystack_apiKey());
+        headers.set("Authorization", "Bearer " + paymentProperties.getPaystack_ApiKey());
         headers.set("Content-Type", "application/json");
 
         var initializeTransactionHttpEntity = new HttpEntity<>(headers);
-        var response = restTemplate.exchange(VERIFY_TRANSACTION_URL+reference,HttpMethod.GET,initializeTransactionHttpEntity, VerifyTransactionResponse.class);
+        var response = restTemplate.exchange(VERIFY_TRANSACTION_URL+transactionReference,HttpMethod.GET,initializeTransactionHttpEntity, VerifyTransactionResponse.class);
         if (response.getStatusCode().is2xxSuccessful()){
-            var responseData = response.getBody();
+            var responseData = Objects.requireNonNull(response.getBody()).data();
             assert responseData != null;
-            if (responseData.status.equals("success")) {
+            if (responseData.status().equals("success")) {
                 payment.setPaymentStatus(PaymentStatus.COMPLETED);
                 payment = paymentRepository.save(payment);
 
@@ -136,57 +144,48 @@ public class PaystackPaymentService implements PaymentService {
                 applicationEventPublisher.publishEvent(paymentEvent);
 
 
-                return new PaymentResponse(LocalDateTime.now().toString(), payment.getPaymentStatus(), Map.of("message", "Payment Success: Congratulations you can now access the course"));
+                return new PaymentResponse(LocalDateTime.now().toString(), payment.getPaymentStatus(), PaymentResponseData.builder().message("Payment Success: Congratulations you can now access the course").build());
 
-            } else if (responseData.status.equals("failed")) {
+            } else if (responseData.status().equals("failed")) {
                 payment.setPaymentStatus(PaymentStatus.FAILED);
-                return new PaymentResponse(LocalDateTime.now().toString(), payment.getPaymentStatus(), Map.of("message", "Payment Failed: Please Try again"));
+                return new PaymentResponse(LocalDateTime.now().toString(), payment.getPaymentStatus(), PaymentResponseData.builder().message("Payment Failed: Please Try again").build());
             } else {
-                return new PaymentResponse(LocalDateTime.now().toString(), payment.getPaymentStatus(), Map.of("message", "Payment Pending: Please check again"));
+                return new PaymentResponse(LocalDateTime.now().toString(), payment.getPaymentStatus(), PaymentResponseData.builder().message("Payment Pending: Please check back later").build());
             }
 
         } else {
-            return new PaymentResponse(LocalDateTime.now().toString(), payment.getPaymentStatus(), Map.of("message", "Verification failed: Please try again"));
+            return new PaymentResponse(LocalDateTime.now().toString(), payment.getPaymentStatus(), PaymentResponseData.builder().message("Verification failed: Please try again").build());
         }
 
     }
 
-    @Builder
-    private record InitializeTransaction(String amount, String email, String reference, String currency) {
+    @Override
+    public String handleWebHook(WebHook webhook){
+
+        PaystackWebhook paystackWebhook = (PaystackWebhook) webhook;
+        if (paystackWebhook.event().equalsIgnoreCase("charge.success")) {
+            if (paystackWebhook.data().status().equalsIgnoreCase("success")){
+                int amountPayed = paystackWebhook.data().amount();
+                String transactionRef = paystackWebhook.data().reference();
+                CoursePayment payment =  paymentRepository.findByTransactionReference(transactionRef).orElseThrow(PaymentNotFoundException::new);
+                CourseDTO courseDTO = productService.findCourseByReference(payment.getCourseId());
+                if (courseDTO.price() == amountPayed) {
+                    payment.setPaymentStatus(PaymentStatus.COMPLETED);
+                    paymentRepository.save(payment);
+
+                    var paymentEvent = new PaymentEvent(
+                            payment.toPaymentDTO(),
+                            EventType.PAYMENT_SUCCESSFUL,
+                            null
+                    );
+                    applicationEventPublisher.publishEvent(paymentEvent);
+                    return "ok";
+                }
+                return "ok";
+            }
+            return "failed";
+        }
+        return "unsupported-event";
     }
 
-    private record VerifyTransactionAuthorization(
-            String authorizationCode,
-            String channel,
-            String bank,
-            String countryCode
-    ){}
-    private record VerifyTransactionResponse(
-            String status,
-            String message,
-            VerifyTransactionData data
-    ){}
-    private record VerifyTransactionData(
-            long id,
-            String status,
-            String reference,
-            int amount,
-            String receiptNumber,
-            String currency,
-            int requestedAmount,
-            VerifyTransactionAuthorization authorization
-    ){}
-    private record InitializeTransactionResponse(
-            String status,
-            String message,
-            InitializeTransactionData data
-    ) {
-    }
-
-    private record InitializeTransactionData(
-            String authorizationUrl,
-            String accessCode,
-            String reference
-    ) {
-    }
 }

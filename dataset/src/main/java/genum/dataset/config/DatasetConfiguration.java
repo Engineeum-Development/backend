@@ -1,10 +1,6 @@
 package genum.dataset.config;
 
 import com.cloudinary.Cloudinary;
-import genum.dataset.repository.DatasetRepository;
-import genum.dataset.service.DatasetStorageService;
-import genum.dataset.service.DatasetsServiceImpl;
-import genum.genumUser.repository.GenumUserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

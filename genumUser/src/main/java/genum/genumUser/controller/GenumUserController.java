@@ -2,14 +2,12 @@ package genum.genumUser.controller;
 
 
 import genum.genumUser.service.GenumUserService;
+import genum.shared.DTO.response.PageResponse;
 import genum.shared.DTO.response.ResponseDetails;
 import genum.shared.genumUser.GenumUserDTO;
 import genum.shared.genumUser.WaitListEmailDTO;
-import genum.shared.genumUser.exception.GenumUserNotFoundException;
-import genum.shared.genumUser.exception.OTTNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -28,13 +26,13 @@ public class GenumUserController {
 
 
     @GetMapping("/waiting-list")
-    public Page<WaitListEmailDTO> getWaitListEmails(@PageableDefault(size = 20, direction = Sort.Direction.ASC) Pageable pageable) {
-        return userService.getWaitListEmails(pageable);
+    public PageResponse<WaitListEmailDTO> getWaitListEmails(@PageableDefault(size = 20, direction = Sort.Direction.ASC) Pageable pageable) {
+        return PageResponse.from(userService.getWaitListEmails(pageable));
     }
 
     @PostMapping("/waiting-list")
-    public ResponseEntity<ResponseDetails<String>> addToWaitList(@RequestBody @Valid WishlistRequest wishlistRequest) {
-        var response = userService.addEmailToWaitingList(wishlistRequest.email(), wishlistRequest.firstName(), wishlistRequest.lastName());
+    public ResponseEntity<ResponseDetails<String>> addToWaitList(@RequestBody @Valid WaitingListRequest waitingListRequest) {
+        var response = userService.addEmailToWaitingList(waitingListRequest.email(), waitingListRequest.firstName(), waitingListRequest.lastName());
         var responseDetail = new ResponseDetails<String>(LocalDateTime.now(), response, HttpStatus.CREATED.toString());
         return new ResponseEntity<>(responseDetail, HttpStatus.CREATED);
     }
