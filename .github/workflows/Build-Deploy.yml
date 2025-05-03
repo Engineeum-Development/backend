@@ -31,6 +31,8 @@ jobs:
       env:
         ACTIVE_PROFILE: test
       run: mv ./app/src/main/resources/application-test.properties.EXAMPLE ./app/src/main/resources/application-test.properties
+    - name: clean and install dependencies
+      run: mvn clean install -Dmaven.test.skip=true
     - name: Run unit tests
       run: mvn test
     - name: Run integration tests
