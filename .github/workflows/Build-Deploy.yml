@@ -27,6 +27,10 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
+    - name: rename application properties
+      env:
+        ACTIVE_PROFILE: test
+      run: mv /app/src/main/resources/application-test.properties.EXAMPLE /app/src/main/resources/application-test.properties
     - name: Run unit tests
       run: mvn test
     - name: Run integration tests
