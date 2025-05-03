@@ -12,5 +12,5 @@ LABEL authors="divjazz, zipdemon"
 
 FROM gcr.io/distroless/java17 as FINAL
 WORKDIR /app
-COPY --from=BUILDER /app/target/app-0.0.1-SNAPSHOT.jar ./run/
+COPY --from=BUILDER ./app/target/app-0.0.1-SNAPSHOT.jar ./run/
 ENTRYPOINT ["java", "-jar", "./run/app-0.0.1-SNAPSHOT.jar"]
