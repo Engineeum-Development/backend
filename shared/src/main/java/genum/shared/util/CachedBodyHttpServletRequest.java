@@ -12,7 +12,7 @@ public class CachedBodyHttpServletRequest extends HttpServletRequestWrapper {
     public CachedBodyHttpServletRequest(HttpServletRequest request) throws IOException {
         super(request);
         InputStream requestInputStream = request.getInputStream();
-        this.cachedBody = getInputStream().readAllBytes();
+        this.cachedBody = requestInputStream.readAllBytes();
     }
 
     @Override
