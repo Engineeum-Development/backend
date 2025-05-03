@@ -31,6 +31,7 @@ jobs:
       env:
         ACTIVE_PROFILE: test
       run: |
+        echo ${ACTIVE_PROFILE} 
         mv ./app/src/main/resources/application-test.properties.EXAMPLE ./app/src/main/resources/application-test.properties
         cat ./app/src/main/resources/application-test.properties
     - name: clean and install dependencies
