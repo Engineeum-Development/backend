@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import genum.payment.config.PaymentProperties;
 import genum.payment.constant.PaymentPlatform;
+import genum.payment.domain.WebHook;
 import genum.payment.event.PaymentEvent;
 import genum.payment.model.CoursePayment;
 import genum.payment.repository.PaymentRepository;
@@ -188,6 +189,11 @@ public class FlutterWavePaymentService implements PaymentService {
 //                    Map.of("message", "The Payment couldn't be verified,please try again",
 //                            "status", "failed"));
 //        }
+        return null;
+    }
+
+    @Override
+    public String handleWebHook(WebHook webHook) {
         return null;
     }
 

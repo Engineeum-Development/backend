@@ -2,6 +2,8 @@ package genum.payment.service;
 
 import genum.payment.config.PaymentProperties;
 import genum.payment.constant.PaymentPlatform;
+import genum.payment.domain.PaystackWebhook;
+import genum.payment.domain.WebHook;
 import genum.payment.event.EventType;
 import genum.payment.event.PaymentEvent;
 import genum.payment.model.CoursePayment;
@@ -155,6 +157,35 @@ public class PaystackPaymentService implements PaymentService {
             return new PaymentResponse(LocalDateTime.now().toString(), payment.getPaymentStatus(), PaymentResponseData.builder().message("Verification failed: Please try again").build());
         }
 
+    }
+
+    @Override
+    public String handleWebHook(WebHook webhook){
+
+        PaystackWebhook paystackWebhook = (PaystackWebhook) webhook;
+        if (paystackWebhook.event().equalsIgnoreCase("charge.success")) {
+            if (paystackWebhook.data().status().equalsIgnoreCase("success")){
+                int amountPayed = paystackWebhook.data().amount();
+                String transactionRef = paystackWebhook.data().reference();
+                CoursePayment payment =  paymentRepository.findByTransactionReference(transactionRef).orElseThrow(PaymentNotFoundException::new);
+                CourseDTO courseDTO = productService.findCourseByReference(payment.getCourseId());
+                if (courseDTO.price() == amountPayed) {
+                    payment.setPaymentStatus(PaymentStatus.COMPLETED);
+                    paymentRepository.save(payment);
+
+                    var paymentEvent = new PaymentEvent(
+                            payment.toPaymentDTO(),
+                            EventType.PAYMENT_SUCCESSFUL,
+                            null
+                    );
+                    applicationEventPublisher.publishEvent(paymentEvent);
+                    return "ok";
+                }
+                return "ok";
+            }
+            return "failed";
+        }
+        return "unsupported-event";
     }
 
 }

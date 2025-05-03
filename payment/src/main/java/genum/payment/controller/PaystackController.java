@@ -37,6 +37,7 @@ public class PaystackController {
 
     @PostMapping("/webhook")
     public ResponseEntity<Void> handleWebhook(@RequestBody PaystackWebhook webHook) {
+        paymentService.handleWebHook(webHook);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

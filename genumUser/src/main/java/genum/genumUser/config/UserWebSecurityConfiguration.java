@@ -4,6 +4,7 @@ import genum.genumUser.repository.GenumUserRepository;
 import genum.genumUser.security.CustomUserDetailService;
 import genum.genumUser.security.GenumAuthenticationProvider;
 import genum.genumUser.security.Oauth2SuccessHandler;
+import genum.genumUser.security.interceptor.PaystackWebHookInterceptor;
 import genum.genumUser.security.jwt.JWTAuthorizationFilter;
 import genum.genumUser.security.jwt.JwtUtils;
 import genum.genumUser.security.jwt.LogoutHandlingFilter;
@@ -38,6 +39,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
@@ -46,16 +49,23 @@ import java.util.List;
 @RequiredArgsConstructor
 @EnableMethodSecurity
 @Slf4j
-public class UserWebSecurityConfiguration {
+public class UserWebSecurityConfiguration implements WebMvcConfigurer {
 
     private static final String[] WHITE_LISTED_PATHS = {
             "/actuator/**", "/favicon.ico", "/api/auth/**",
             "/login/**", "/api/user/create", "/api/dataset/all",
             "/api/dataset/all/*", "/api/user/confirm-token", "/ws/**",
             "/api/dataset/trending", "/api/dataset/download/*",
-            "/api/dataset/license", "/api/dataset/tag",
+            "/api/dataset/license", "/api/dataset/tag","/api/payment/*/webhook",
     };
     private final JwtUtils jwtUtils;
+
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new PaystackWebHookInterceptor())
+                .addPathPatterns("/api/payment/paystack/webhook");
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,

@@ -35,6 +35,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
     public static final Pattern AUTH_PATHS = Pattern.compile("^/api/auth/.*|^/login/.*|^/oauth2/.*");
     public static final Pattern DATASET_PATHS = Pattern.compile("^/api/dataset/(all|all/.*|trending|tag|license|download/.*)");
     public static final Pattern WEBSOCKET_PATHS = Pattern.compile("/ws|/ws/.*");
+    public static final Pattern PAYMENT_PATHS = Pattern.compile("/api/payment/(paystack|flutterwave)/webhook");
 
 
     @Override
@@ -45,7 +46,8 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
                 USER_PATHS.matcher(requestUri).matches() ||
                 ACTUATOR_PATHS.matcher(requestUri).matches() ||
                 DATASET_PATHS.matcher(requestUri).matches() ||
-                WEBSOCKET_PATHS.matcher(requestUri).matches()
+                WEBSOCKET_PATHS.matcher(requestUri).matches() ||
+                PAYMENT_PATHS.matcher(requestUri).matches()
         ) {
             filterChain.doFilter(request,response);
         } else {
