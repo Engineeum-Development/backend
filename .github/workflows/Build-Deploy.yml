@@ -30,7 +30,9 @@ jobs:
     - name: rename application properties
       env:
         ACTIVE_PROFILE: test
-      run: mv ./app/src/main/resources/application-test.properties.EXAMPLE ./app/src/main/resources/application-test.properties
+      run: |
+        mv ./app/src/main/resources/application-test.properties.EXAMPLE ./app/src/main/resources/application-test.properties
+        cat ./app/src/main/resources/application-test.properties
     - name: clean and install dependencies
       run: mvn clean install -Dmaven.test.skip=true
     - name: Run unit tests
