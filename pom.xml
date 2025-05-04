@@ -141,6 +141,13 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>test</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                     <configuration>
                         <includes>
                             <include>**/*Test.java</include>
@@ -174,7 +181,7 @@
                             <include>**/*ITCase.java</include>
                         </includes>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                        <reportsDirectory>${project.build.directory}/test-reports</reportsDirectory>
+                        <reportsDirectory>${project.build.directory}/test-reports/</reportsDirectory>
                     </configuration>
                 </plugin>
                 <plugin>
