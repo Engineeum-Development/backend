@@ -162,8 +162,6 @@
                     <version>3.5.2</version>
                     <executions>
                         <execution>
-                            <id>integration-test</id>
-                            <phase>integration-test</phase>
                             <goals>
                                 <goal>integration-test</goal>
                                 <goal>verify</goal>
@@ -175,6 +173,8 @@
                             <include>**/*IT.java</include>
                             <include>**/*ITCase.java</include>
                         </includes>
+                        <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                        <reportsDirectory>${project.build.directory}/test-reports</reportsDirectory>
                     </configuration>
                 </plugin>
                 <plugin>
