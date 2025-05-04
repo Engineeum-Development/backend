@@ -61,7 +61,7 @@ public class GenumUserIT extends BaseDatabaseIntegration {
     private final UserCreationRequest existsUserCreationRequest = new UserCreationRequest(
             "Firstname",
             "Lastname",
-            "email2@gmail.com",
+            "insideDb@gmail.com",
             "Password",
             "Nigeria",
             "Male"
