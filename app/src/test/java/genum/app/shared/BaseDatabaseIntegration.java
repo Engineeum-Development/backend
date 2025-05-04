@@ -21,17 +21,10 @@ public abstract class BaseDatabaseIntegration {
     @Container
     static RedisContainer redisContainer = new RedisContainer(DockerImageName.parse("redis:8.0-M03-alpine"))
             .withExposedPorts(6379);
-    @BeforeAll
-    static void setup(){
+    static {
         mongoDBContainer.start();
 
         redisContainer.start();
-    }
-    @AfterAll
-    static void close() {
-        mongoDBContainer.close();
-
-        redisContainer.close();
     }
 
     @DynamicPropertySource
