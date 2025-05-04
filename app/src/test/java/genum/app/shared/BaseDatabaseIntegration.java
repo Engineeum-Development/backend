@@ -1,6 +1,7 @@
 package genum.app.shared;
 
 import com.redis.testcontainers.RedisContainer;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -21,5 +22,11 @@ public abstract class BaseDatabaseIntegration {
     @Container
     @ServiceConnection
     static RedisContainer redisContainer = new RedisContainer(DockerImageName.parse("redis:8.0-M03-alpine"));
+
+    @BeforeAll
+    static void setupMongoReplicaSet() {
+        mongoDBContainer.start();
+        redisContainer.start();
+    }
 
 }
