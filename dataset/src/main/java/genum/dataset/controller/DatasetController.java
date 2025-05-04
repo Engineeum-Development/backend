@@ -76,11 +76,12 @@ public class DatasetController {
         """)
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateDataset(@PathVariable String id, @Valid @RequestBody DatasetUpdateRequest updatedDataset) {
-        datasetService.updateDataset(id, updatedDataset);
+        var datasetDTO = datasetService.updateDataset(id, updatedDataset);
         var responseDetails = new ResponseDetails<>(
                 LocalDateTime.now(),
                 "Dataset updated successfully.",
-                HttpStatus.OK.toString()
+                HttpStatus.OK.toString(),
+                datasetDTO
         );
         return ResponseEntity.ok(responseDetails);
     }

@@ -109,24 +109,20 @@ public class DatasetService {
             if (Objects.nonNull(updateRequest.description())) {
                 if (existingDataset.getDescription() == null || existingDataset.getDescription().isBlank()) {
                     existingDataset.setDescription(updateRequest.description());
-                    existingDataset.addPendingAction(PendingActionEnum.ADD_DESCRIPTION);
-                } else if (!existingDataset.getDescription().equals(updateRequest.description())) {
-                    existingDataset.setDescription(updateRequest.description());
-                } else {
-                    existingDataset.setDescription(updateRequest.description());
                     existingDataset.removePendingAction(PendingActionEnum.ADD_DESCRIPTION);
+                }
+                if (!existingDataset.getDescription().equals(updateRequest.description())) {
+                    existingDataset.setDescription(updateRequest.description());
                 }
             }
 
             if (Objects.nonNull(updateRequest.subtitle())) {
                 if (existingDataset.getDatasetSubtitle() == null || existingDataset.getDatasetSubtitle().isBlank()) {
                     existingDataset.setDatasetSubtitle(updateRequest.subtitle());
-                    existingDataset.addPendingAction(PendingActionEnum.ADD_SUBTITLE);
-                } else if (!existingDataset.getDatasetSubtitle().equals(updateRequest.subtitle())) {
-                    existingDataset.setDatasetSubtitle(updateRequest.subtitle());
-                } else {
-                    existingDataset.setDatasetSubtitle(updateRequest.subtitle());
                     existingDataset.removePendingAction(PendingActionEnum.ADD_SUBTITLE);
+                }
+                if (!existingDataset.getDatasetSubtitle().equals(updateRequest.subtitle())) {
+                    existingDataset.setDatasetSubtitle(updateRequest.subtitle());
                 }
             }
 
@@ -138,10 +134,17 @@ public class DatasetService {
                         tagComparator);
 
                 if (existingDataset.getTags().isEmpty()) {
-                    existingDataset.setTags(updateRequest.tags());
+                    existingDataset.setTags(Set.of());
                     existingDataset.addPendingAction(PendingActionEnum.ADD_TAGS);
                 } else if (changeInTags) {
-                    existingDataset.addTags(updateRequest.tags());
+                    // if the update tags does not contain tags from the existing tags,
+                    // override existing tags to update tags
+                    // else just append them unto the existing tags
+                    if (!updateRequest.tags().containsAll(existingDataset.getTags())) {
+                        existingDataset.setTags(updateRequest.tags());
+                    } else {
+                        existingDataset.addTags(updateRequest.tags());
+                    }
                 } else {
                     existingDataset.setTags(updateRequest.tags());
                     existingDataset.removePendingAction(PendingActionEnum.ADD_TAGS);
@@ -156,8 +159,6 @@ public class DatasetService {
                         collaboratorComparator);
 
                 if (changeInCollaborators) {
-                    existingDataset.setCollaborators(updateRequest.collaborators());
-                } else {
                     existingDataset.addCollaborators(updateRequest.collaborators());
                 }
             }
@@ -169,30 +170,46 @@ public class DatasetService {
                         authorComparator);
 
                 if (changeInAuthors) {
-                    existingDataset.setAuthors(updateRequest.authors());
-                } else {
-                    existingDataset.addAuthors(updateRequest.authors());
+
+                    if (!updateRequest.authors().containsAll(existingDataset.getAuthors())) {
+                        existingDataset.setAuthors(updateRequest.authors());
+                    } else {
+                        existingDataset.addAuthors(updateRequest.authors());
+                    }
                 }
             }
             if (Objects.nonNull(updateRequest.coverage())) {
-                existingDataset.setCoverage(updateRequest.coverage());
+
+                if (!updateRequest.coverage().equals(existingDataset.getCoverage())) {
+                    existingDataset.setCoverage(updateRequest.coverage());
+                }
             }
 
             if (Objects.nonNull(updateRequest.doiCitation())) {
-                existingDataset.setDoiCitation(updateRequest.doiCitation());
+
+                if (!updateRequest.doiCitation().equals(existingDataset.getDoiCitation())) {
+                    existingDataset.setDoiCitation(updateRequest.doiCitation());
+                }
             }
 
             if (Objects.nonNull(updateRequest.license())) {
-                existingDataset.setLicense(updateRequest.license());
+
+                if (!updateRequest.license().equals(existingDataset.getLicense())) {
+                    existingDataset.setLicense(updateRequest.license());
+                }
             }
 
             if (Objects.nonNull(updateRequest.provenance())) {
-                existingDataset.setProvenance(updateRequest.provenance());
+                if (!updateRequest.provenance().equals(existingDataset.getProvenance())) {
+                    existingDataset.setProvenance(updateRequest.provenance());
+                }
             }
 
             return datasetsRepository.save(existingDataset).toDTO();
-        } catch (IllegalArgumentException | NullPointerException e) {
+        } catch (IllegalArgumentException e) {
             throw new BadRequestException(e.getMessage());
+        } catch (NullPointerException e) {
+            throw new RuntimeException(e.getMessage());
         }
     }
 

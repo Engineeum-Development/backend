@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import genum.dataset.domain.*;
+import lombok.Builder;
 
 
 import java.io.Serializable;
@@ -11,6 +12,7 @@ import java.util.Set;
 
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Builder
 public record DatasetUpdateRequest (
         Set<Collaborator> collaborators,
         License license,

@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 public enum Visibility {
 
-    PUBLIC ("Public"), PRIVATE("private");
+    PUBLIC ("Public"), PRIVATE("Private");
 
     @JsonValue
     private final String value;
@@ -17,7 +17,7 @@ public enum Visibility {
     }
 
     @JsonCreator
-    public static Visibility fromValue(String value) {
+    public static Visibility fromValue(String value) throws IllegalArgumentException {
         for (Visibility visibility : Visibility.values()) {
             if (visibility.value.equalsIgnoreCase(value)) {
                 return visibility;
