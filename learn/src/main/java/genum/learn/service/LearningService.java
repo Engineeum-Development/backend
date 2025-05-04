@@ -15,6 +15,7 @@ import genum.learn.repository.VideoDeleteStatusRepository;
 import genum.learn.repository.VideoRepository;
 import genum.learn.repository.VideoUploadStatusRepository;
 import genum.product.service.ProductService;
+import genum.shared.Sse.service.SseEmitterService;
 import genum.shared.learn.exception.LessonNotFoundException;
 import genum.shared.learn.exception.VideoNotFoundException;
 import genum.shared.product.DTO.CourseDTO;
@@ -50,6 +51,7 @@ public class LearningService {
     private final VideoService videoService;
     private final VideoUploadStatusRepository videoUploadStatusRepository;
     private final VideoDeleteStatusRepository videoDeleteStatusRepository;
+    private final SseEmitterService sseEmitterService;
     public Page<CourseResponse> getAllCourses(Pageable pageable) {
         var courses = productService.findAllCourses(pageable);
         return courses.map(courseDTO -> new CourseResponse(courseDTO.referenceId(),
@@ -112,13 +114,14 @@ public class LearningService {
     public NonChunkedVideoUploadResponse addVideoToLesson(VideoUploadRequest uploadRequest, MultipartFile file) {
         if (!lessonRepository.existsByReferenceId(uploadRequest.lessonId())) throw new LessonNotFoundException();
         var video = new Video(uploadRequest.description(), uploadRequest.title(), uploadRequest.lessonId());
-        return getVideoUploadResponse(file, video);
+        sseEmitterService.sendProgress(uploadRequest.uploadId(),0);
+        return getVideoUploadResponse(file, video, uploadRequest.uploadId());
     }
 
-    private NonChunkedVideoUploadResponse getVideoUploadResponse(MultipartFile file, Video video) {
+    private NonChunkedVideoUploadResponse getVideoUploadResponse(MultipartFile file, Video video, String uploadId) {
         var videoId = videoRepository.save(video).getVideoId();
-        final String uploadId = UUID.randomUUID().toString();
         CompletableFuture.runAsync(() -> uploadVideo(file, videoId, uploadId));
+        sseEmitterService.sendProgress(uploadId, 20);
         return new NonChunkedVideoUploadResponse(video.getVideoId(), uploadId);
     }
 
@@ -130,13 +133,17 @@ public class LearningService {
                 .orElse(new VideoUploadStatusModel(videoId, VideoUploadStatus.PENDING));
         try {
             log.info("Started sending video {}", videoId);
+            sseEmitterService.sendProgress(uploadId, 50);
             var uploadUrl = videoService.uploadVideo(multipartFile);
             video.setUploadVideoFileUrl(uploadUrl);
             videoRepository.save(video);
             log.info("Video {} was successfully uploaded", videoId);
+            sseEmitterService.sendProgress(uploadId, 100);
+            sseEmitterService.completeEmitter(uploadId, true);
 
         } catch (IOException | VideoNotFoundException e) {
             videoUpload.setVideoUploadStatus(VideoUploadStatus.FAILED);
+            sseEmitterService.completeEmitter(uploadId, false);
         } finally {
             videoUploadStatusRepository.save(videoUpload);
         }

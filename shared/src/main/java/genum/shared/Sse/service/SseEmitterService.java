@@ -1,6 +1,6 @@
-package genum.learn.service;
+package genum.shared.Sse.service;
 
-import genum.learn.dto.ProgressEvent;
+import genum.shared.Sse.ProgressEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 

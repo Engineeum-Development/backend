@@ -1,9 +1,9 @@
 package genum.app.shared;
 
 import com.redis.testcontainers.RedisContainer;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MongoDBContainer;
@@ -16,17 +16,29 @@ import org.testcontainers.utility.DockerImageName;
 @Testcontainers
 public abstract class BaseDatabaseIntegration {
     @Container
-    @ServiceConnection
     static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:8.0.0-rc20")
             .withCommand("mongod","--replSet" ,"rs0", "--bind_ip_all");
     @Container
-    @ServiceConnection
-    static RedisContainer redisContainer = new RedisContainer(DockerImageName.parse("redis:8.0-M03-alpine"));
-
+    static RedisContainer redisContainer = new RedisContainer(DockerImageName.parse("redis:8.0-M03-alpine"))
+            .withExposedPorts(6379);
     @BeforeAll
-    static void setupMongoReplicaSet() {
+    static void setup(){
         mongoDBContainer.start();
+
         redisContainer.start();
     }
+    @AfterAll
+    static void close() {
+        mongoDBContainer.close();
 
+        redisContainer.close();
+    }
+
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+
+        registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
+        registry.add("spring.redis.host",redisContainer::getHost);
+        registry.add("spring.redis.port", () -> redisContainer.getMappedPort(6379).toString());
+    }
 }
