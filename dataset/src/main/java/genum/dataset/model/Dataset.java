@@ -32,6 +32,7 @@ public class Dataset implements Serializable {
     private String uploaderId;
     private String datasetThumbnailImageUrl;
     private String uploadFileUrl;
+    private String filePublicId;
     private Visibility visibility;
     private Set<Tag> tags;
     private Set<PendingAction> pendingActions;

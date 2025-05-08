@@ -10,9 +10,11 @@ import genum.dataset.model.Dataset;
 import genum.dataset.repository.DatasetRepository;
 import genum.genumUser.repository.GenumUserRepository;
 import genum.genumUser.repository.projection.GenumUserWithIDFirstNameLastName;
+import genum.shared.DTO.response.PageResponse;
 import genum.shared.dataset.exception.DatasetNotFoundException;
 import genum.shared.genumUser.exception.BadRequestException;
 import genum.shared.security.SecurityUtils;
+import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -208,7 +210,7 @@ public class DatasetServiceTest {
 
         var page = datasetService.getAllDatasets(Pageable.ofSize(10));
 
-        assertThat(page).isNotEmpty();
+        assertThat(page).isNot(new Condition<>(PageResponse::empty,"Page should not be empty"));
 
         then(datasetsRepository).should(times(1)).findAll(any(Pageable.class));
     }

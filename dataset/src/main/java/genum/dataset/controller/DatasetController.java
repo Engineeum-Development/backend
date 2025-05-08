@@ -72,7 +72,7 @@ public class DatasetController {
     }
 
     @PreAuthorize("""
-        #updatedDataset.collaborators()[0].collaboratorId().equals(securityUtils.currentAuthenticatedUserId)
+        @datasetPermissionEvaluator.isUserPermitted(#updatedDataset)
         """)
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateDataset(@PathVariable String id, @Valid @RequestBody DatasetUpdateRequest updatedDataset) {
@@ -87,7 +87,7 @@ public class DatasetController {
     }
 
     @GetMapping("/all/{id}")
-    public ResponseEntity<?> getDatasetById(@PathVariable String id) {
+    public ResponseEntity<ResponseDetails<DatasetDTO>> getDatasetById(@PathVariable String id) {
 
         DatasetDTO dataset = datasetService.getDatasetDTOById(id);
         ResponseDetails<DatasetDTO> responseDetails = new ResponseDetails<>(
@@ -100,13 +100,13 @@ public class DatasetController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<PageResponse<DatasetDTO>> getAllDatasets(@PageableDefault(size = 20, sort = {"datasetId"}) Pageable pageable) {
-        var datasets = PageResponse.from(datasetService.getAllDatasets(pageable));
+    public ResponseEntity<PageResponse<DatasetDTO>> getAllDatasets(@PageableDefault(size = 20, sort = {"name"}) Pageable pageable) {
+        var datasets = datasetService.getAllDatasets(pageable);
         return ResponseEntity.ok(datasets);
     }
 
-    @DeleteMapping("/delete/{datasetId}")
-    public ResponseEntity<?> deleteDataset(@PathVariable String datasetId) {
+    @DeleteMapping("/{datasetId}")
+    public ResponseEntity<Void> deleteDataset(@PathVariable String datasetId) {
         try {
             datasetService.deleteDataset(datasetId);
             return ResponseEntity.status(HttpStatus.OK).build();
@@ -119,7 +119,7 @@ public class DatasetController {
 //    @PreAuthorize("permitAll()")
     @GetMapping("/trending")
     public ResponseEntity<PageResponse<DatasetDTO>> trending(@PageableDefault(size = 20) Pageable pageable) {
-        var trendingDatasets = PageResponse.from(datasetService.trending(pageable));
+        var trendingDatasets = datasetService.trending(pageable);
         return ResponseEntity.ok(trendingDatasets);
     }
 

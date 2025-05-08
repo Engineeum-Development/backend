@@ -13,13 +13,13 @@ public class DatasetMetadata implements Serializable {
     private String datasetName;
     private Visibility visibility;
     private long fileSizeInKBytes;
-    private String originalFilename;
+    private String userId;
     private DatasetType contentType;
     private long likes;
 
-    public DatasetMetadata(String datasetName,String originalFilename,long fileSizeInBytes, DatasetType contentType, Visibility visibility) {
+    public DatasetMetadata(String datasetName,String userId,long fileSizeInBytes, DatasetType contentType, Visibility visibility) {
         this.fileSizeInKBytes = fileSizeInBytes;
-        this.originalFilename = originalFilename;
+        this.userId = userId;
         this.contentType = contentType;
         this.visibility = visibility;
         this.datasetName = datasetName;

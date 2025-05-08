@@ -11,10 +11,13 @@ import genum.dataset.enums.Visibility;
 import genum.dataset.model.Dataset;
 import genum.dataset.repository.DatasetRepository;
 import genum.genumUser.repository.GenumUserRepository;
+import genum.shared.DTO.response.PageResponse;
+import genum.shared.DTO.response.Sort;
 import genum.shared.dataset.exception.DatasetNotFoundException;
 import genum.shared.genumUser.exception.BadRequestException;
 import genum.shared.genumUser.exception.UserAlreadyExistsException;
 import genum.shared.security.SecurityUtils;
+import genum.shared.security.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -50,13 +53,13 @@ public class DatasetService {
             String currentUserId = securityUtils.getCurrentAuthenticatedUserId();
             var userWithIdFirstnameAndLastname = genumUserRepository
                     .findByCustomUserDetails_UserReferenceIdReturningIdFirstAndName(currentUserId)
-                    .stream().findAny().orElseThrow(UserAlreadyExistsException::new);
-            log.info("user with id firstname: {}", "userWithIdFirstnameAndLastname");
+                    .stream().findAny().orElseThrow(UserNotFoundException::new);
+            log.info("user with firstname: {}", userWithIdFirstnameAndLastname.firstName());
             DatasetType fileType = validateFileType(file);
             log.info("datasetType: {}", fileType);
             DatasetMetadata metadata = new DatasetMetadata(
                     createNewDatasetDTO.datasetName(),
-                    file.getOriginalFilename(),
+                    currentUserId,
                     file.getSize(),
                     fileType,
                     Objects.nonNull(
@@ -76,6 +79,7 @@ public class DatasetService {
             dataset.setDownloads(new AtomicInteger());
             dataset.setUploaderId(currentUserId);
             dataset.setDatasetName(metadata.getDatasetName());
+            dataset.setFilePublicId(metadata.getDatasetName()+currentUserId);
             dataset.setDescription("");
             dataset.setDoiCitation("");
             dataset.setCollaborators(Set.of(new Collaborator("%s %s".formatted(
@@ -222,22 +226,35 @@ public class DatasetService {
 
 
     @Cacheable(value = "dataset_page", keyGenerator = "customPageableKeyGenerator")
-    public Page<DatasetDTO> getAllDatasets(Pageable pageable) {
+    public PageResponse<DatasetDTO> getAllDatasets(Pageable pageable) {
         Page<Dataset> page = datasetsRepository.findAll(pageable);
-        return new PageImpl<>(
-                page.stream()
-                        .map(Dataset::toDTO)
-                        .collect(Collectors.toList()),
-                page.getPageable(),
-                page.getTotalElements());
+        List<DatasetDTO> datasetDTOS = page
+                .getContent()
+                .stream()
+                .map(Dataset::toDTO)
+                .toList();
+        return new PageResponse<>(
+                datasetDTOS,
+                page.getTotalPages(),
+                page.getTotalElements(),
+                page.isLast(),
+                page.getSize(),
+                page.getNumber(),
+                new Sort(page.getSort().isEmpty(),page.getSort().isSorted()),
+                page.getNumberOfElements(),
+                page.isFirst(),
+                page.isEmpty()
+                );
     }
 
 
     @CacheEvict(value = "dataset", key = "#id")
     public void deleteDataset(String id) throws DatasetNotFoundException, IOException {
-        if (datasetsRepository.existsByDatasetID(id)) {
+        var datasetOptional = datasetsRepository.getDatasetByDatasetID(id);
+        if (datasetOptional.isPresent()) {
+            var dataset = datasetOptional.get();
+            datasetStorageService.deleteDataset(dataset.getFilePublicId());
             datasetsRepository.deleteByDatasetID(id);
-            datasetStorageService.deleteDataset(id);
         } else {
             throw new DatasetNotFoundException("This dataset is not found or has been deleted");
         }
@@ -245,13 +262,13 @@ public class DatasetService {
 
 
     @Cacheable(value = "trending_dataset_page",keyGenerator = "customPageableKeyGenerator")
-    public Page<DatasetDTO> trending(Pageable pageable) {
+    public PageResponse<DatasetDTO> trending(Pageable pageable) {
         List<DatasetDTO> datasets = datasetsRepository.findTop100ByOrderByDownloadsDesc().stream()
                 .map(Dataset::toDTO)
                 .collect(Collectors.toList());
         int start = Math.min((int) pageable.getOffset(), datasets.size());
         int end = Math.min((start + pageable.getPageSize()), datasets.size());
-        return new PageImpl<>(datasets.subList(start, end), pageable, datasets.size());
+        return PageResponse.from( new PageImpl<>(datasets.subList(start, end), pageable, datasets.size()));
 
     }
 
