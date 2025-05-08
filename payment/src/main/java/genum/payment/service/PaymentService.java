@@ -10,5 +10,5 @@ public interface PaymentService {
 
     PaymentResponse verifyPayment(String reference);
 
-    String handleWebHook(WebHook webHook);
+    boolean handleWebHook(WebHook webHook);
 }

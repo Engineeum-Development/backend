@@ -193,8 +193,8 @@ public class FlutterWavePaymentService implements PaymentService {
     }
 
     @Override
-    public String handleWebHook(WebHook webHook) {
-        return null;
+    public boolean handleWebHook(WebHook webHook) {
+        return false;
     }
 
 

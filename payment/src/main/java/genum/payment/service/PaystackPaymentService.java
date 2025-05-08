@@ -160,7 +160,7 @@ public class PaystackPaymentService implements PaymentService {
     }
 
     @Override
-    public String handleWebHook(WebHook webhook){
+    public boolean handleWebHook(WebHook webhook){
 
         PaystackWebhook paystackWebhook = (PaystackWebhook) webhook;
         if (paystackWebhook.event().equalsIgnoreCase("charge.success")) {
@@ -179,13 +179,13 @@ public class PaystackPaymentService implements PaymentService {
                             null
                     );
                     applicationEventPublisher.publishEvent(paymentEvent);
-                    return "ok";
+                    return true;
                 }
-                return "ok";
+                return false;
             }
-            return "failed";
+            return false;
         }
-        return "unsupported-event";
+        return false;
     }
 
 }
