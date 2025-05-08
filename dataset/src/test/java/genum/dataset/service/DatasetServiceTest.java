@@ -48,6 +48,7 @@ public class DatasetServiceTest {
             .authors(new HashSet<>())
             .collaborators(new HashSet<>())
             .usersThatUpvote(new HashSet<>())
+            .filePublicId("url to download file")
             .build();
     private final CreateDatasetRequest createDatasetRequest = new CreateDatasetRequest(
             "datasetName", Visibility.PRIVATE.getValue()
