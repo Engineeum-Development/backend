@@ -218,19 +218,19 @@ public class DatasetServiceTest {
     /* ================================================== Test for deleteDataset() ================================== */
     @Test
     void shouldDeleteDatesetById() throws IOException {
-        given(datasetsRepository.existsByDatasetID(anyString())).willReturn(true);
+        given(datasetsRepository.getDatasetByDatasetID(anyString())).willReturn(Optional.of(datasetReturned));
         given(datasetStorageService.deleteDataset(anyString())).willReturn("deleted");
 
         datasetService.deleteDataset(UUID.randomUUID().toString());
 
         then(datasetStorageService).should(times(1)).deleteDataset(anyString());
-        then(datasetsRepository).should(times(1)).existsByDatasetID(anyString());
+        then(datasetsRepository).should(times(1)).getDatasetByDatasetID(anyString());
 
     }
 
     @Test
     void shouldThrowDatasetNotFoundExceptionIfNotFound() throws IOException {
-        given(datasetsRepository.existsByDatasetID(anyString())).willReturn(false);
+        given(datasetsRepository.getDatasetByDatasetID(anyString())).willReturn(Optional.empty());
 
         assertThatExceptionOfType(DatasetNotFoundException.class)
                 .isThrownBy(() -> datasetService.deleteDataset(UUID.randomUUID().toString()));
