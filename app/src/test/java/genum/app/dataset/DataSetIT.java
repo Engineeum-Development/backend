@@ -26,6 +26,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -38,6 +39,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -98,7 +100,7 @@ public class DataSetIT extends BaseDatabaseIntegration {
         datasetTemplate.remove(genumUser, "users");
     }
     @Test
-    void givenValidFileAndRequestBodyShouldCreateADatabase() throws Exception {
+    void givenValidFileAndRequestBodyShouldCreateADataset() throws Exception {
         MockMultipartFile metadataPart = new MockMultipartFile(
                 "metadata",
                 "metadata",
@@ -333,5 +335,66 @@ public class DataSetIT extends BaseDatabaseIntegration {
                 get("/api/dataset/trending")
         ).andExpect(status().isOk());
     }
+
+    /* ====================================== Test getting all tags ================================================= */
+    @Test
+    void shouldGetAllTagsOffered() throws Exception {
+        mockMvc.perform(
+                get("/api/dataset/tag")
+        ).andExpect(status().isOk());
+    }
+
+    /* ====================================== Test getting all licenses ============================================= */
+
+    @Test
+    void shouldGetAllLicensesOffered() throws Exception {
+        mockMvc.perform(
+                get("/api/dataset/license")
+        ).andExpect(status().isOk());
+    }
+
+    /* ====================================== Test Dataset Download ================================================= */
+    @Autowired
+    private JacksonTester<ResponseDetails<Map<String, String>>> datasetCreationResponse;
+
+    void givenADatasetThatExistsShouldBeAbleToDownload() throws Exception {
+        MockMultipartFile metadataPart = new MockMultipartFile(
+                "metadata",
+                "metadata",
+                "application/json",
+                validJsonCreateDatasetRequest.write(validCreateDatasetRequest).getJson().getBytes(StandardCharsets.UTF_8)
+        );
+        MockMultipartFile filePart = new MockMultipartFile(
+                "file",
+                "data.csv",
+                "text/csv",
+                "a,b,c\n1,2,3".getBytes(StandardCharsets.UTF_8)
+        );
+
+
+        MockHttpServletResponse response = mockMvc.perform(
+                multipart("/api/dataset/upload")
+                        .file(metadataPart)
+                        .file(filePart)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .with(user(userDetails))
+        ).andExpect(status().isCreated()).andReturn().getResponse();
+
+        Map<String, String> responseMap = datasetCreationResponse
+                .parse(response.getContentAsString(StandardCharsets.UTF_8))
+                .getObject().getData();
+        var datasetId = responseMap.get("datasetId");
+
+
+        mockMvc.perform(
+                get("/api.dataset/download/%s".formatted(datasetId))
+        ).andExpect(status().isFound());
+
+
+
+
+    }
+
+
 
 }

@@ -1,6 +1,7 @@
 package genum.learn.service;
 
 import genum.course.service.CourseService;
+import genum.genumUser.service.GenumUserService;
 import genum.learn.dto.*;
 import genum.learn.enums.VideoDeleteStatus;
 import genum.learn.enums.VideoUploadStatus;
@@ -30,6 +31,7 @@ import java.io.IOException;
 
 import java.time.LocalDateTime;
 
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -48,6 +50,7 @@ public class LearningService {
     private final VideoUploadStatusRepository videoUploadStatusRepository;
     private final VideoDeleteStatusRepository videoDeleteStatusRepository;
     private final SseEmitterService sseEmitterService;
+    private final GenumUserService genumUserService;
     public Page<CourseResponse> getAllCourses(Pageable pageable) {
         var courses = courseService.findAllCourses(pageable);
         return courses.map(courseDTO -> new CourseResponse(courseDTO.referenceId(),
@@ -68,7 +71,9 @@ public class LearningService {
 
     public Page<LessonResponse> getAllLessonsForCourse(String courseId, Pageable pageable) {
         var lessons = lessonRepository.findAllByCourseId(courseId, pageable);
-        return lessons.map(lesson -> new LessonResponse(lesson.getReferenceId(), lesson.getTitle(), lesson.getDescription()));
+        return lessons.map(lesson -> new LessonResponse(lesson.getReferenceId(),
+                lesson.getTitle(),
+                lesson.getDescription()));
     }
 
     public LessonResponseFull getFullLessonResponseByLessonId(String lessonId) {
@@ -83,7 +88,11 @@ public class LearningService {
                     fullLesson.getContent(),
                     videoUrl);
         } catch (VideoNotFoundException e) {
-            return new LessonResponseFull(fullLesson.getReferenceId(), fullLesson.getTitle(), fullLesson.getDescription(), fullLesson.getContent(), null);
+            return new LessonResponseFull(fullLesson.getReferenceId(),
+                    fullLesson.getTitle(),
+                    fullLesson.getDescription(),
+                    fullLesson.getContent(),
+                    null);
         }
     }
 
@@ -97,15 +106,41 @@ public class LearningService {
                 createCourseRequest.description(),
                 LocalDateTime.now().toString());
         courseDTO = courseService.createCourse(courseDTO);
-        return new CourseResponse(courseDTO.referenceId(), courseDTO.name(), courseDTO.numberOfEnrolledUsers(), 0);
+        return new CourseResponse(courseDTO.referenceId(),
+                courseDTO.name(),
+                courseDTO.numberOfEnrolledUsers(),
+                0);
     }
 
     public LessonResponse uploadLesson(CreateLessonRequest createLessonRequest) {
-        var lesson = new Lesson(createLessonRequest.title(), createLessonRequest.description(), createLessonRequest.content(), createLessonRequest.courseId());
+        var lesson = new Lesson(createLessonRequest.title(),
+                createLessonRequest.description(), createLessonRequest.content(),
+                createLessonRequest.courseId());
         lesson = lessonRepository.save(lesson);
         return new LessonResponse(lesson.getReferenceId(), lesson.getTitle(), lesson.getDescription());
     }
 
+    public LessonResponse updateLesson(String lessonId, LessonUpdateRequest lessonUpdateRequest) {
+        Lesson lesson = lessonRepository.findByReferenceId(lessonId).orElseThrow(LessonNotFoundException::new);
+
+        if (Objects.nonNull(lessonUpdateRequest.content())) {
+            if (!lesson.getContent().equalsIgnoreCase(lessonUpdateRequest.content())) {
+                lesson.setContent(lessonUpdateRequest.content());
+            }
+        }
+        if (Objects.nonNull(lessonUpdateRequest.description())) {
+            if (!lesson.getDescription().equalsIgnoreCase(lessonUpdateRequest.description())) {
+                lesson.setDescription(lessonUpdateRequest.description());
+            }
+        }
+        if (Objects.nonNull(lessonUpdateRequest.title())) {
+            if (!lesson.getTitle().equalsIgnoreCase(lessonUpdateRequest.title())) {
+                lesson.setTitle(lessonUpdateRequest.title());
+            }
+        }
+        lessonRepository.save(lesson);
+        return new LessonResponse(lesson.getReferenceId(),lesson.getTitle(),lesson.getDescription());
+    }
     @Transactional
     public NonChunkedVideoUploadResponse addVideoToLesson(VideoUploadRequest uploadRequest, MultipartFile file) {
         if (!lessonRepository.existsByReferenceId(uploadRequest.lessonId())) throw new LessonNotFoundException();
@@ -145,13 +180,18 @@ public class LearningService {
         }
     }
 
-    public CourseDetailedResponse getCourse(String courseID) {
+    public CourseResponseFull getCourse(String courseID) {
         var course = courseService.findCourseByReference(courseID);
         var reviewData = reviewService.findAllReviewsByCourseId(courseID, Pageable.ofSize(20)).stream()
                 .limit(20)
-                .map(review -> new ReviewData(review.comment(), String.valueOf(review.rating())))
+                .map(review -> {
+                    var firstNameLastName = genumUserService.getUserFirstNameAndLastNameWithId(review.reviewerId());
+                    return new ReviewData(
+                            "%s %s".formatted(firstNameLastName.firstName(), firstNameLastName.lastName()),
+                            review.comment(), review.rating());
+                })
                 .collect(Collectors.toSet());
-        return new CourseDetailedResponse(
+        return new CourseResponseFull(
                 course.name(),
                 course.description(),
                 course.uploader(),
@@ -193,7 +233,8 @@ public class LearningService {
                 .findByReferenceId(reviewRequest.lessonId())
                 .orElseThrow(LessonNotFoundException::new);
 
-        ReviewDTO reviewDTO = new ReviewDTO(lesson.getCourseId(), reviewRequest.rating(), reviewRequest.comment());
+        ReviewDTO reviewDTO = new ReviewDTO(securityUtils.getCurrentAuthenticatedUserId(),
+                lesson.getCourseId(), reviewRequest.rating(), reviewRequest.comment());
         return reviewService.addReview(reviewDTO);
     }
 }

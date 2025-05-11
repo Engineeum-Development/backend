@@ -1,5 +1,7 @@
 package genum.learn.service;
 
+import genum.genumUser.repository.projection.GenumUserWithIDFirstNameLastName;
+import genum.genumUser.service.GenumUserService;
 import genum.learn.dto.ReviewDTO;
 import genum.learn.dto.ReviewData;
 import genum.learn.model.Review;
@@ -15,12 +17,16 @@ import java.util.List;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
-    private final SecurityUtils securityUtils;
+    private final GenumUserService genumUserService;
 
     public ReviewData addReview(ReviewDTO reviewDTO) {
-        Review review = new Review(reviewDTO.comment(), reviewDTO.rating(), securityUtils.getCurrentAuthenticatedUserId(), reviewDTO.courseId());
+        Review review = new Review(reviewDTO.comment(), reviewDTO.rating(), reviewDTO.reviewerId(), reviewDTO.courseId());
         review = reviewRepository.save(review);
-        return new ReviewData(reviewDTO.comment(), String.valueOf(review.getRating()));
+        GenumUserWithIDFirstNameLastName firstNameLastName = genumUserService.getUserFirstNameAndLastNameWithId(reviewDTO.reviewerId());
+        return new ReviewData(
+                "%s %s".formatted(firstNameLastName.firstName(), firstNameLastName.lastName()),
+                reviewDTO.comment(),
+                (int) review.getRating());
     }
     public List<ReviewDTO> findAllReviewsByCourseId(String courseId, Pageable pageable) {
         var reviews = reviewRepository.findAllByCourseId(courseId, pageable);

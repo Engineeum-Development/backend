@@ -9,6 +9,7 @@ import genum.genumUser.model.WaitListEmail;
 import genum.genumUser.repository.GenumUserRepository;
 import genum.genumUser.repository.GenumUserWaitListRepository;
 import genum.genumUser.repository.OneTimeTokenRepository;
+import genum.genumUser.repository.projection.GenumUserWithIDFirstNameLastName;
 import genum.shared.constant.Gender;
 import genum.shared.constant.Role;
 import genum.shared.genumUser.GenumUserDTO;
@@ -140,6 +141,10 @@ public class GenumUserService {
 
     public GenumUser saveOauthUser(GenumUser user) {
         return genumUserRepository.save(user);
+    }
+
+    public GenumUserWithIDFirstNameLastName getUserFirstNameAndLastNameWithId(String userId) {
+        return genumUserRepository.findByCustomUserDetails_UserReferenceIdReturningIdFirstAndName(userId).stream().findAny().orElseThrow(GenumUserNotFoundException::new);
     }
 
     /*

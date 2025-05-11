@@ -1,6 +1,5 @@
 package genum.learn.controller;
 
-import genum.learn.domain.VideoChunkMetadata;
 import genum.learn.dto.*;
 import genum.learn.service.LearningService;
 import genum.shared.DTO.response.ResponseDetails;
@@ -51,7 +50,7 @@ public class LearningController {
     }
 
     @GetMapping("/course/{id}")
-    public ResponseEntity<ResponseDetails<CourseDetailedResponse>> getCourse(@PathVariable("id") String courseId) {
+    public ResponseEntity<ResponseDetails<CourseResponseFull>> getCourse(@PathVariable("id") String courseId) {
         var responseDetails = new ResponseDetails<>("Successful",
                 HttpStatus.OK.toString(),
                 learningService.getCourse(courseId));
@@ -94,11 +93,24 @@ public class LearningController {
     }
 
     @PostMapping("/lesson")
-    public ResponseEntity<ResponseDetails<LessonResponse>> uploadLesson(@RequestBody @Valid CreateLessonRequest createLessonRequest, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<ResponseDetails<LessonResponse>> uploadLesson(
+            @RequestBody @Valid CreateLessonRequest createLessonRequest,
+            HttpServletRequest httpServletRequest) {
         var responseDetails = new ResponseDetails<>("Successful",
                 HttpStatus.CREATED.toString(),
                 learningService.uploadLesson(createLessonRequest));
         return ResponseEntity.created(URI.create(httpServletRequest.getRequestURI())).body(responseDetails);
+    }
+
+    @PutMapping("/lesson/{id}")
+    public ResponseEntity<ResponseDetails<LessonResponse>> updateLesson(
+            @PathVariable("id") String id,
+            @RequestBody LessonUpdateRequest lessonUpdateRequest) {
+        var responseDetails = new ResponseDetails<>("Successful",
+                HttpStatus.OK.toString(),
+                learningService.updateLesson(id, lessonUpdateRequest));
+        return ResponseEntity.ok(responseDetails);
+
     }
 
     @PostMapping("/lesson/video")

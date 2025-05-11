@@ -116,7 +116,7 @@ public class DatasetController {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
         }
     }
-//    @PreAuthorize("permitAll()")
+
     @GetMapping("/trending")
     public ResponseEntity<PageResponse<DatasetDTO>> trending(@PageableDefault(size = 20) Pageable pageable) {
         var trendingDatasets = datasetService.trending(pageable);
@@ -130,7 +130,7 @@ public class DatasetController {
     }
     @GetMapping("/license")
     public ResponseEntity<ResponseDetails<Set<License>>> getAllLicenses(){
-        var responseDetails = new ResponseDetails<>("tags", HttpStatus.OK.toString(), datasetService.getAllLicences());
+        var responseDetails = new ResponseDetails<>("licenses", HttpStatus.OK.toString(), datasetService.getAllLicences());
         return ResponseEntity.ok(responseDetails);
     }
 
