@@ -15,9 +15,9 @@ import genum.shared.DTO.response.PageResponse;
 import genum.shared.DTO.response.Sort;
 import genum.shared.dataset.exception.DatasetNotFoundException;
 import genum.shared.genumUser.exception.BadRequestException;
-import genum.shared.genumUser.exception.UserAlreadyExistsException;
 import genum.shared.security.SecurityUtils;
 import genum.shared.security.exception.UserNotFoundException;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -27,11 +27,14 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -43,6 +46,8 @@ public class DatasetService {
     private final DatasetStorageService datasetStorageService;
     private final GenumUserRepository genumUserRepository;
     private final SecurityUtils securityUtils;
+    private final List<DatasetDTO> top100TrendingDatasets;
+
 
 
     @CacheEvict(value = "dataset_page", allEntries = true)
@@ -263,12 +268,9 @@ public class DatasetService {
 
     @Cacheable(value = "trending_dataset_page",keyGenerator = "customPageableKeyGenerator")
     public PageResponse<DatasetDTO> trending(Pageable pageable) {
-        List<DatasetDTO> datasets = datasetsRepository.findTop100ByOrderByDownloadsDesc().stream()
-                .map(Dataset::toDTO)
-                .collect(Collectors.toList());
-        int start = Math.min((int) pageable.getOffset(), datasets.size());
-        int end = Math.min((start + pageable.getPageSize()), datasets.size());
-        return PageResponse.from( new PageImpl<>(datasets.subList(start, end), pageable, datasets.size()));
+        int start = Math.min((int) pageable.getOffset(), top100TrendingDatasets.size());
+        int end = Math.min((start + pageable.getPageSize()), top100TrendingDatasets.size());
+        return PageResponse.from( new PageImpl<>(top100TrendingDatasets.subList(start, end), pageable, top100TrendingDatasets.size()));
 
     }
 
@@ -306,6 +308,16 @@ public class DatasetService {
         dataset.setDownloads(new AtomicInteger(dataset.getDownloads().incrementAndGet()));
         datasetsRepository.save(dataset);
         return dataset;
+    }
+
+    @Scheduled(fixedRate = 20, timeUnit = TimeUnit.MINUTES)
+    protected void updateTrendingDatasets() {
+        log.info("Updating trending datasets");
+        HashSet<DatasetDTO> datasets = (HashSet<DatasetDTO>) datasetsRepository.findTop100ByOrderByDownloadsDesc()
+                .map(Dataset::toDTO)
+                .collect(Collectors.toSet());
+        top100TrendingDatasets.clear();
+        top100TrendingDatasets.addAll(datasets);
     }
 
 }

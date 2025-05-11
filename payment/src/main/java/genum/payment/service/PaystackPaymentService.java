@@ -8,14 +8,14 @@ import genum.payment.event.EventType;
 import genum.payment.event.PaymentEvent;
 import genum.payment.model.CoursePayment;
 import genum.payment.repository.PaymentRepository;
-import genum.product.service.ProductService;
+import genum.course.service.CourseService;
 import genum.shared.payment.constants.PaymentStatus;
 import genum.shared.payment.domain.PaymentResponse;
 import genum.shared.payment.domain.PaymentResponseData;
 import genum.shared.payment.domain.ProductRequest;
 import genum.shared.payment.exception.PaymentNotFoundException;
 import genum.shared.payment.exception.PaymentUserAuthenticationFailed;
-import genum.shared.product.DTO.CourseDTO;
+import genum.shared.course.DTO.CourseDTO;
 import genum.shared.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +46,7 @@ public class PaystackPaymentService implements PaymentService {
     public static final String LIST_TRANSACTIONS_URL = PAYMENT_BASE_URL + "/transaction";
     public static final String FETCH_TRANSACTION_URL = PAYMENT_BASE_URL + "/transaction/";
     private final RestTemplate restTemplate;
-    private final ProductService productService;
+    private final CourseService courseService;
     private final PaymentRepository paymentRepository;
 
     private final PaymentProperties paymentProperties;
@@ -60,7 +60,7 @@ public class PaystackPaymentService implements PaymentService {
             throw new PaymentUserAuthenticationFailed();
         }
         var user = (CustomUserDetails) authentication.getPrincipal();
-        CourseDTO course = productService.findCourseByReference(productRequest.productId());
+        CourseDTO course = courseService.findCourseByReference(productRequest.productId());
         String transactionRef = UUID.randomUUID().toString();
         var amountInBaseUnits = course.price() * 100;
 
@@ -168,7 +168,7 @@ public class PaystackPaymentService implements PaymentService {
                 int amountPayed = paystackWebhook.data().amount();
                 String transactionRef = paystackWebhook.data().reference();
                 CoursePayment payment =  paymentRepository.findByTransactionReference(transactionRef).orElseThrow(PaymentNotFoundException::new);
-                CourseDTO courseDTO = productService.findCourseByReference(payment.getCourseId());
+                CourseDTO courseDTO = courseService.findCourseByReference(payment.getCourseId());
                 if (courseDTO.price() == amountPayed) {
                     payment.setPaymentStatus(PaymentStatus.COMPLETED);
                     paymentRepository.save(payment);

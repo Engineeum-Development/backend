@@ -112,6 +112,7 @@ public class GenumUserIT extends BaseDatabaseIntegration {
                         .content(jsonUserCreationRequest.write(existsUserCreationRequest).getJson())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isConflict());
+        mongoTemplate.remove(userThatExists, "users");
     }
 
     @Test
@@ -180,6 +181,7 @@ public class GenumUserIT extends BaseDatabaseIntegration {
                                                 "insideDb@gmail.com", "Inside","Db"
                                         )).getJson())
                 ).andExpect(status().isConflict());
+        mongoTemplate.remove(waitingListEmailInDb, "wait_list");
     }
 
     /* =============================================== ITest for OTT confirmation =================================== */
@@ -193,6 +195,8 @@ public class GenumUserIT extends BaseDatabaseIntegration {
                         get("/api/user/confirm-token")
                                 .param("token", "validOneTimeToken")
                 ).andExpect(status().isOk());
+        mongoTemplate.remove(userThatExists, "users");
+        mongoTemplate.remove(validOneTimeToken, "OTP");
     }
 
     @Test

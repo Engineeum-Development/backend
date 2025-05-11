@@ -18,7 +18,7 @@
         </dependency>
         <dependency>
             <groupId>genum</groupId>
-            <artifactId>product</artifactId>
+            <artifactId>course</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

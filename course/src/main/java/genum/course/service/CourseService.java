@@ -1,71 +1,72 @@
-package genum.product.service;
+package genum.course.service;
 
-import genum.product.model.Course;
-import genum.product.repository.ProductRepository;
-import genum.shared.product.DTO.CourseDTO;
-import genum.shared.product.exception.ProductNotFoundException;
+import genum.course.repository.CourseRepository;
+import genum.course.model.Course;
+import genum.shared.course.DTO.CourseDTO;
 import genum.shared.security.SecurityUtils;
+import genum.shared.course.exception.CourseNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 @Service
 @RequiredArgsConstructor
-public class ProductService {
+public class CourseService {
 
-    private final ProductRepository productRepository;
+    private final CourseRepository courseRepository;
     private final SecurityUtils securityUtils;
     @Transactional(readOnly = true)
     public CourseDTO findCourseById(String id) {
-        Course course = productRepository.findById(id).orElseThrow(ProductNotFoundException::new);
+        Course course = courseRepository.findById(id).orElseThrow(CourseNotFoundException::new);
         return course.toDTO();
     }
 
     @Transactional(readOnly = true)
    // @Cacheable(value = "courses_by_id_page", keyGenerator = "customPageableKeyGenerator")
     public Page<CourseDTO> findCourseWithUploaderId(String id, Pageable pageable) {
-        return productRepository.findAllByUploaderId(id, pageable).map(Course::toDTO);
+        return courseRepository.findAllByUploaderId(id, pageable).map(Course::toDTO);
     }
     @Transactional(readOnly = true)
     @Cacheable(value = "course_by_id", key = "#referenceId")
     public CourseDTO findCourseByReference(String referenceId) {
-        Course course = productRepository.findByReferenceId(referenceId).orElseThrow(ProductNotFoundException::new);
+        Course course = courseRepository.findByReferenceId(referenceId).orElseThrow(CourseNotFoundException::new);
         return course.toDTO();
     }
 
     @CachePut(value = "course_by_id", key = "#courseDTO.referenceId()", condition = "{T(java.util.Objects).nonNull(#courseDTO.referenceId())}")
     public CourseDTO createCourse(CourseDTO courseDTO) {
         Course course = new Course(courseDTO.name(),courseDTO.uploader(), courseDTO.description(), courseDTO.price());
-        return productRepository.save(course).toDTO();
+        return courseRepository.save(course).toDTO();
     }
     @Cacheable(value = "course_all_page", keyGenerator = "customPageableKeyGenerator")
     public Page<CourseDTO> findAllCourses(Pageable pageable) {
-        var courses = productRepository.findAll(pageable);
+        var courses = courseRepository.findAll(pageable);
         return courses.map(Course::toDTO);
     }
     @Cacheable(value = "user_enrolled", key = "#courseId+userId")
     public boolean userIdHasEnrolledForCourse(String courseId, String userId) {
-        return productRepository.existsByReferenceIdAndEnrolledUsersContaining(courseId, userId);
+        return courseRepository.existsByReferenceIdAndEnrolledUsersContaining(courseId, userId);
     }
 
     @CacheEvict(value = "user_enrolled",key = "(@securityUtils.getCurrentAuthenticatedUserId())+''+#courseReferenceId")
     public void enrollCurrentUser(String courseReferenceId) {
         var currentUserId = securityUtils.getCurrentAuthenticatedUserId();
-        var course = productRepository.findByReferenceId(courseReferenceId).orElseThrow(ProductNotFoundException::new);
+        var course = courseRepository.findByReferenceId(courseReferenceId).orElseThrow(CourseNotFoundException::new);
         course.addEnrolledUsers(currentUserId);
-        productRepository.save(course);
+        courseRepository.save(course);
     }
 
     @CachePut(value = "course_by_id", key = "#courseReferenceId")
     public CourseDTO updateProductPrice(String courseReferenceId, int newPrice) {
-        var course = productRepository.findByReferenceId(courseReferenceId).orElseThrow(ProductNotFoundException::new);
+        var course = courseRepository.findByReferenceId(courseReferenceId).orElseThrow(CourseNotFoundException::new);
         course.setPrice(newPrice);
-        course = productRepository.save(course);
+        course = courseRepository.save(course);
         return course.toDTO();
     }
 

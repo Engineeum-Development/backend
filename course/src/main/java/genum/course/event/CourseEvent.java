@@ -1,8 +1,7 @@
-package genum.product.event;
+package genum.course.event;
 
-import genum.product.model.Course;
 import genum.shared.events.DomainEvent;
-import genum.shared.product.DTO.CourseDTO;
+import genum.shared.course.DTO.CourseDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +12,7 @@ import java.util.Map;
 @Setter
 @Getter
 @AllArgsConstructor
-public class ProductEvent implements DomainEvent  {
+public class CourseEvent implements DomainEvent  {
 
     private CourseDTO course;
     private EventType eventType;

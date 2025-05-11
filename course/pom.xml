@@ -6,7 +6,7 @@
         <artifactId>backendNG</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <artifactId>product</artifactId>
+    <artifactId>course</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>

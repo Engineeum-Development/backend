@@ -1,6 +1,6 @@
 package genum.payment.event;
 
-import genum.product.service.ProductService;
+import genum.course.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -9,13 +9,13 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PaymentEventListener {
 
-    private final ProductService productService;
+    private final CourseService courseService;
 
     @EventListener
     public void onPaymentEvent(PaymentEvent paymentEvent) {
         switch (paymentEvent.getEventType()) {
             case PAYMENT_FAILED -> {}
-            case PAYMENT_SUCCESSFUL -> productService.enrollCurrentUser(paymentEvent.getPayment().courseId());
+            case PAYMENT_SUCCESSFUL -> courseService.enrollCurrentUser(paymentEvent.getPayment().courseId());
         }
     }
 

@@ -24,13 +24,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 @EnableCaching
 @EnableScheduling
 @EnableMongoRepositories(basePackages = {
-        "genum.product.repository",
+        "genum.course.repository",
         "genum.learn.repository",
         "genum.dataset.repository",
         "genum.genumUser.repository",
         "genum.payment.repository",
         "genum.email.repository"})
-@ComponentScan(basePackages = {"genum.product",
+@ComponentScan(basePackages = {"genum.course",
         "genum.shared",
         "genum.learn",
         "genum.dataset",

@@ -3,34 +3,20 @@ package genum.payment.service;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import genum.payment.config.PaymentProperties;
-import genum.payment.constant.PaymentPlatform;
 import genum.payment.domain.WebHook;
-import genum.payment.event.PaymentEvent;
-import genum.payment.model.CoursePayment;
 import genum.payment.repository.PaymentRepository;
-import genum.product.event.EventType;
-import genum.product.event.ProductEvent;
-import genum.product.service.ProductService;
-import genum.shared.payment.constants.PaymentStatus;
+import genum.course.event.EventType;
+import genum.course.event.CourseEvent;
+import genum.course.service.CourseService;
 import genum.shared.payment.domain.PaymentResponse;
 import genum.shared.payment.domain.ProductRequest;
-import genum.shared.payment.exception.PaymentUserAuthenticationFailed;
-import genum.shared.product.DTO.CourseDTO;
-import genum.shared.security.CustomUserDetails;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -41,7 +27,7 @@ public class FlutterWavePaymentService implements PaymentService {
     public static final String INITIALIZE_TRANSACTION_ENDPOINT = FLUTTERWAVE_BASE_API + "payments";
     public static final String VERIFY_TRANSACTION_ENDPOINT = FLUTTERWAVE_BASE_API + "transactions/" + "%s" + "/verify";
     private final PaymentProperties paymentProperties;
-    private final ProductService productService;
+    private final CourseService courseService;
     private final RestTemplate restTemplate;
     private final PaymentRepository paymentRepository;
     private final ApplicationEventPublisher applicationEventPublisher;

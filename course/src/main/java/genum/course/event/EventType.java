@@ -1,4 +1,4 @@
-package genum.product.event;
+package genum.course.event;
 
 public enum EventType {
 

@@ -1,8 +1,6 @@
 package genum.learn.service;
 
-import genum.learn.domain.ChunkedVideoUploadStatusMessage;
-import genum.learn.domain.VideoChunkMetadata;
-import genum.learn.domain.VideoUploadStatusMessage;
+import genum.course.service.CourseService;
 import genum.learn.dto.*;
 import genum.learn.enums.VideoDeleteStatus;
 import genum.learn.enums.VideoUploadStatus;
@@ -14,11 +12,10 @@ import genum.learn.repository.LessonRepository;
 import genum.learn.repository.VideoDeleteStatusRepository;
 import genum.learn.repository.VideoRepository;
 import genum.learn.repository.VideoUploadStatusRepository;
-import genum.product.service.ProductService;
 import genum.shared.Sse.service.SseEmitterService;
 import genum.shared.learn.exception.LessonNotFoundException;
 import genum.shared.learn.exception.VideoNotFoundException;
-import genum.shared.product.DTO.CourseDTO;
+import genum.shared.course.DTO.CourseDTO;
 import genum.shared.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +30,6 @@ import java.io.IOException;
 
 import java.time.LocalDateTime;
 
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -42,7 +38,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class LearningService {
 
-    private final ProductService productService;
+    private final CourseService courseService;
     private final VideoRepository videoRepository;
     private final LessonRepository lessonRepository;
     private final SecurityUtils securityUtils;
@@ -53,7 +49,7 @@ public class LearningService {
     private final VideoDeleteStatusRepository videoDeleteStatusRepository;
     private final SseEmitterService sseEmitterService;
     public Page<CourseResponse> getAllCourses(Pageable pageable) {
-        var courses = productService.findAllCourses(pageable);
+        var courses = courseService.findAllCourses(pageable);
         return courses.map(courseDTO -> new CourseResponse(courseDTO.referenceId(),
                 courseDTO.name(),
                 courseDTO.numberOfEnrolledUsers(),
@@ -62,7 +58,7 @@ public class LearningService {
 
     public Page<CourseResponse> getAllMyCourses(Pageable pageable) {
         var currentUserId = securityUtils.getCurrentAuthenticatedUserId();
-        var courses = productService.findCourseWithUploaderId(currentUserId, pageable);
+        var courses = courseService.findCourseWithUploaderId(currentUserId, pageable);
         return courses.map(courseDTO -> new CourseResponse(courseDTO.referenceId(),
                 courseDTO.name(),
                 courseDTO.numberOfEnrolledUsers(),
@@ -100,7 +96,7 @@ public class LearningService {
                 createCourseRequest.price(),
                 createCourseRequest.description(),
                 LocalDateTime.now().toString());
-        courseDTO = productService.createCourse(courseDTO);
+        courseDTO = courseService.createCourse(courseDTO);
         return new CourseResponse(courseDTO.referenceId(), courseDTO.name(), courseDTO.numberOfEnrolledUsers(), 0);
     }
 
@@ -150,7 +146,7 @@ public class LearningService {
     }
 
     public CourseDetailedResponse getCourse(String courseID) {
-        var course = productService.findCourseByReference(courseID);
+        var course = courseService.findCourseByReference(courseID);
         var reviewData = reviewService.findAllReviewsByCourseId(courseID, Pageable.ofSize(20)).stream()
                 .limit(20)
                 .map(review -> new ReviewData(review.comment(), String.valueOf(review.rating())))
@@ -188,7 +184,7 @@ public class LearningService {
 
     public boolean getIfCurrentUserIsAuthorizedToAccessCourse(String courseID) {
         String userId = securityUtils.getCurrentAuthenticatedUserId();
-        return productService.userIdHasEnrolledForCourse(courseID, userId);
+        return courseService.userIdHasEnrolledForCourse(courseID, userId);
 
     }
 

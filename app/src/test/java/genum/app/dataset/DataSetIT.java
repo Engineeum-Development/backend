@@ -16,6 +16,7 @@ import genum.shared.DTO.response.ResponseDetails;
 import genum.shared.constant.Gender;
 import genum.shared.security.CustomUserDetails;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,6 +92,10 @@ public class DataSetIT extends BaseDatabaseIntegration {
                         ))
                 )
         );
+    }
+    @AfterEach
+    void remove() {
+        datasetTemplate.remove(genumUser, "users");
     }
     @Test
     void givenValidFileAndRequestBodyShouldCreateADatabase() throws Exception {
@@ -320,6 +325,13 @@ public class DataSetIT extends BaseDatabaseIntegration {
         ).andExpect(status().isNoContent());
     }
 
-    /* ================= */
+    /* ===================================== Test for getting trending datasets ===================================== */
+
+    @Test
+    void shouldReturnTrendingDatasets() throws Exception {
+        mockMvc.perform(
+                get("/api/dataset/trending")
+        ).andExpect(status().isOk());
+    }
 
 }

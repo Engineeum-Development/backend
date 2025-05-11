@@ -1,6 +1,6 @@
-package genum.product.model;
+package genum.course.model;
 
-import genum.shared.product.DTO.CourseDTO;
+import genum.shared.course.DTO.CourseDTO;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.index.Indexed;

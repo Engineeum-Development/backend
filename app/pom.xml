@@ -9,10 +9,14 @@
     <artifactId>app</artifactId>
     <packaging>jar</packaging>
 
+    <properties>
+        <failsafe.version>3.5.2</failsafe.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>genum</groupId>
-            <artifactId>product</artifactId>
+            <artifactId>course</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -59,6 +63,30 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${failsafe.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <properties>
+                        <configurationParameters>
+                            junit.jupiter.execution.parallel.enabled = true
+                            junit.jupiter.execution.parallel.mode.default = same_thread
+                            junit.jupiter.execution.parallel.mode.classes.default = concurrent
+                        </configurationParameters>
+                    </properties>
+                    <includes>
+                        <include>**/*IT.java</include>
+                        <include>**/*ITCase.java</include>
+                    </includes>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <reportsDirectory>${project.build.directory}/test-reports</reportsDirectory>
+                </configuration>
             </plugin>
 
             <plugin>

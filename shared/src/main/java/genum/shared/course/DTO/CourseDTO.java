@@ -1,4 +1,4 @@
-package genum.shared.product.DTO;
+package genum.shared.course.DTO;
 
 import java.io.Serializable;
 

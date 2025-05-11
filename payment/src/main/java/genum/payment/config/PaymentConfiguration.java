@@ -1,10 +1,11 @@
 package genum.payment.config;
 
+import genum.course.model.Course;
 import genum.payment.repository.PaymentRepository;
 import genum.payment.service.PaymentService;
 import genum.payment.service.FlutterWavePaymentService;
 import genum.payment.service.PaystackPaymentService;
-import genum.product.service.ProductService;
+import genum.course.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
@@ -15,7 +16,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Configuration
 @RequiredArgsConstructor
-@ComponentScan(basePackages = {"genum.product", "genum.payment"})
+@ComponentScan(basePackages = {"genum.course", "genum.payment"})
 public class PaymentConfiguration {
 
 
@@ -23,10 +24,10 @@ public class PaymentConfiguration {
     @Bean(name = "flutter_wave")
     public PaymentService flutterWavePayment(RestTemplate restTemplate,
                                              PaymentProperties paymentProperties,
-                                             ProductService productService,
+                                             CourseService courseService,
                                              PaymentRepository paymentRepository, ApplicationEventPublisher applicationEventPublisher) {
         return new FlutterWavePaymentService(paymentProperties,
-                productService,
+                courseService,
                 restTemplate,
                 paymentRepository,
                 applicationEventPublisher);
@@ -36,12 +37,12 @@ public class PaymentConfiguration {
     @Bean(name = "paystack")
     @Primary
     public PaymentService paystack(RestTemplate restTemplate,
-                                   ProductService productService,
+                                   CourseService courseService,
                                    PaymentRepository paymentRepository,
                                    PaymentProperties paymentProperties,
                                    ApplicationEventPublisher applicationEventPublisher) {
         return new PaystackPaymentService(restTemplate,
-                productService,
+                courseService,
                 paymentRepository,
                 paymentProperties,
                 applicationEventPublisher);

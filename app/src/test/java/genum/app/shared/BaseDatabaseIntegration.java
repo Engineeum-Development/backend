@@ -12,7 +12,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Testcontainers
 public abstract class BaseDatabaseIntegration {
     @Container

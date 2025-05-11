@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Repository
 public interface DatasetRepository extends MongoRepository<Dataset, String> {
@@ -17,5 +18,5 @@ public interface DatasetRepository extends MongoRepository<Dataset, String> {
 
     boolean existsByDatasetID(String datasetID);
 
-    List<Dataset> findTop100ByOrderByDownloadsDesc();
+    Stream<Dataset> findTop100ByOrderByDownloadsDesc();
 }

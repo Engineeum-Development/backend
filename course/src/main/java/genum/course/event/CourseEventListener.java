@@ -1,18 +1,18 @@
-package genum.product.event;
+package genum.course.event;
 
-import genum.product.service.ProductService;
+import genum.course.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ProductEventListener {
+public class CourseEventListener {
 
-    private final ProductService productService;
+    private final CourseService courseService;
 
     @EventListener
-    public void onProductEvent(ProductEvent domainEvent) {
+    public void onProductEvent(CourseEvent domainEvent) {
         switch (domainEvent.getEventType()) {
             case COURSE_ENROLLED -> {
             }
