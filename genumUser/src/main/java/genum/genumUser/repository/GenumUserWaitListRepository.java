@@ -12,8 +12,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface GenumUserWaitListRepository extends MongoRepository<WaitListEmail, String> {
 
-    public boolean existsByEmail(String email);
+    boolean existsByEmail(String email);
 
     @Query(value = "{}", fields = "{ email:  1}")
-    public Page<WaitListEmailDTO> findPagedWaitingList(Pageable pageable);
+    Page<WaitListEmailDTO> findPagedWaitingList(Pageable pageable);
 }

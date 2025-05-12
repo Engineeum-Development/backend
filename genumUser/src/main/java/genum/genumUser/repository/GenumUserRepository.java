@@ -22,7 +22,7 @@ public interface GenumUserRepository extends MongoRepository<GenumUser, String> 
             fields = "{'customUserDetails.userReferenceId': 1,'firstName': 1,'lastName': 1}")
     List<GenumUserWithIDFirstNameLastName> findByCustomUserDetails_UserReferenceIdReturningIdFirstAndName(String referenceId);
 
-    @Query(value = " {customUserDetails.email: ?0}", fields = "{_id: 1}")
+    @Query(value = " {'customUserDetails.email': ?0}", fields = "{'customUserDetails.userReferenceId': 1}")
     String findUserIdByEmail(String email);
 
 }

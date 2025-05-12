@@ -1,5 +1,6 @@
 package genum.dataset.repository;
 
+import genum.dataset.DTO.DatasetDTO;
 import genum.dataset.model.Dataset;
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -11,7 +12,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 @Repository
-public interface DatasetRepository extends MongoRepository<Dataset, String> {
+public interface DatasetRepository extends MongoRepository<Dataset, String>, DatasetRepositoryCustom {
     Optional<Dataset> getDatasetByDatasetID(String id);
 
     void deleteByDatasetID(String datasetID);

@@ -13,7 +13,7 @@ public record DatasetDTO(
         String subtitle,
         String description,
         String thumbnailURL,
-        String fileDownloadUrl,
+        String fileDownloadURL,
         Set<Tag> tags,
         Set<PendingAction> pendingActions,
         String datasetFormat,

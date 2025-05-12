@@ -225,8 +225,7 @@ public class DatasetService {
 
     @Cacheable(value = "dataset", key = "#id")
     public DatasetDTO getDatasetDTOById(String id) {
-        Dataset dataset = datasetsRepository.getDatasetByDatasetID(id).orElseThrow(() -> new DatasetNotFoundException(id));
-        return dataset.toDTO();
+        return datasetsRepository.findDatasetDTObyDatasetID(id).orElseThrow(() -> new DatasetNotFoundException(id));
     }
 
 

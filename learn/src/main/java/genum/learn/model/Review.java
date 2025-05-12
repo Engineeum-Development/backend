@@ -23,6 +23,6 @@ public class Review {
     }
 
     public ReviewDTO toDTO() {
-        return new ReviewDTO(this.courseId,(int)this.rating,this.comment);
+        return new ReviewDTO(this.userId, this.courseId,(int)this.rating,this.comment);
     }
 }
