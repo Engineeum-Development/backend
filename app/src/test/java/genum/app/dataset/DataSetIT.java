@@ -15,6 +15,7 @@ import genum.genumUser.model.GenumUser;
 import genum.shared.DTO.response.ResponseDetails;
 import genum.shared.constant.Gender;
 import genum.shared.security.CustomUserDetails;
+import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,10 +39,8 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -50,6 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc(addFilters = false)
 @AutoConfigureJsonTesters
+@Slf4j
 public class DataSetIT extends BaseDatabaseIntegration {
 
     @Autowired
@@ -257,12 +257,14 @@ public class DataSetIT extends BaseDatabaseIntegration {
                 .datasetName("test dataset")
                 .datasetType(DatasetType.CSV)
                 .uploaderId(uploaderId)
-                .visibility(Visibility.PUBLIC)
+                .visibility(Visibility.PRIVATE)
+                .usersThatUpvote(new HashSet<>())
+                .downloads(new AtomicInteger(0))
                 .collaborators(Set.of(new Collaborator("divjazz",uploaderId, CollaboratorPermission.OWNER)))
                 .build();
 
-        datasetTemplate.save(existingDataset,"dataset");
-
+        existingDataset = datasetTemplate.save(existingDataset,"dataset");
+        log.info("existing dataset objectId: {} referenceId: {}", existingDataset.getId(), existingDataset.getDatasetID());
         var response = mockMvc.perform(
                 get("/api/dataset/all/%s".formatted(existingDataset.getDatasetID()))
         ).andExpect(status().isOk()).andReturn().getResponse();
@@ -273,7 +275,7 @@ public class DataSetIT extends BaseDatabaseIntegration {
             Assertions.assertThat(responseDetails.getData().datasetId()).isEqualTo(existingDataset.getDatasetID());
         }
 
-
+        datasetTemplate.remove(existingDataset, "dataset");
     }
 
     @Test

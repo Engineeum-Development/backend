@@ -57,6 +57,7 @@ public class Dataset implements Serializable {
         pendingActions = new HashSet<>();
         collaborators = new HashSet<>();
         usersThatUpvote = new HashSet<>();
+        downloads = new AtomicInteger(0);
 
     }
 

@@ -44,20 +44,5 @@ public class GenumApplication
         SpringApplication.run(GenumApplication.class, args);
     }
 
-    @Bean
-    @Primary
-    ObjectMapper objectMapper () {
-        ObjectMapper mapper = new ObjectMapper();
-
-        SimpleModule simpleModule = new SimpleModule();
-        simpleModule.addDeserializer(AtomicInteger.class, new AtomicIntegerDeserializer());
-        simpleModule.addSerializer(AtomicInteger.class, new AtomicIntegerSerializer());
-        mapper.registerModule(new JavaTimeModule());
-        mapper.registerModule(simpleModule);
-        mapper.findAndRegisterModules();
-        mapper.configure(SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS, false);
-        mapper.configure(JsonGenerator.Feature.IGNORE_UNKNOWN, true);
-        return mapper;
-    }
 
 }

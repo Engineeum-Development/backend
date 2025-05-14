@@ -26,8 +26,12 @@ public class LessonRepositoryImpl implements LessonRepositoryCustom {
         var size = pageable.getPageSize();
         var offset = pageable.getOffset();
         MatchOperation matchOperation = Aggregation.match(Criteria.where("courseId").is(courseId));
-        ProjectionOperation projectionOperation = Aggregation.project("title","description","content","courseId")
+        ProjectionOperation projectionOperation = Aggregation.project()
                 .and("referenceId").as("lessonId")
+                .and("courseId").as("courseId")
+                .and("title").as("title")
+                .and("description").as("description")
+                .and("content").as("content")
                 .and("readIds").size().as("reads");
         SkipOperation skipOperation = Aggregation.skip(offset);
         LimitOperation limitOperation = Aggregation.limit(size);
