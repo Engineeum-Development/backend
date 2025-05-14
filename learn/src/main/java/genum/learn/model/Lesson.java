@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -26,8 +27,6 @@ public class Lesson implements Serializable {
     private String content; //This is in markdown
     @Setter
     private String courseId;
-    private String exerciseId;
-    private String nextLessonId;
     @Setter
     private Set<String> readIds;
 
@@ -37,7 +36,7 @@ public class Lesson implements Serializable {
         this.courseId = courseId;
         this.description = description;
         this.content = content;
-        this.readIds = new TreeSet<>();
+        this.readIds = new HashSet<>();
     }
 
     public void addToReadIds(String userId) {
@@ -45,6 +44,6 @@ public class Lesson implements Serializable {
     }
 
     public LessonDTO toLessonDTO() {
-        return new LessonDTO(this.referenceId, this.title, this.description, this.content, String.valueOf(this.readIds.size()));
+        return new LessonDTO(this.referenceId,this.courseId, this.title, this.description, this.content, this.readIds.size());
     }
 }

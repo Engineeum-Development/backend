@@ -2,6 +2,7 @@ package genum.learn.controller;
 
 import genum.learn.dto.*;
 import genum.learn.service.LearningService;
+import genum.shared.DTO.response.PageResponse;
 import genum.shared.DTO.response.ResponseDetails;
 import genum.shared.exception.UploadSizeLimitExceededException;
 import genum.shared.learn.exception.LessonNotFoundException;
@@ -34,7 +35,7 @@ public class LearningController {
     private String maxUploadSize;
 
     @GetMapping("/course")
-    public ResponseEntity<ResponseDetails<Page<CourseResponse>>> getAllCourses(@PageableDefault Pageable pageable) {
+    public ResponseEntity<ResponseDetails<PageResponse<CourseResponse>>> getAllCourses(@PageableDefault Pageable pageable) {
         var responseDetails = new ResponseDetails<>("Successful",
                 HttpStatus.OK.toString(),
                 learningService.getAllCourses(pageable));
@@ -42,7 +43,7 @@ public class LearningController {
     }
 
     @GetMapping("/course/my-course")
-    public ResponseEntity<ResponseDetails<Page<CourseResponse>>> getAllMyCourses(@PageableDefault Pageable pageable) {
+    public ResponseEntity<ResponseDetails<PageResponse<CourseResponse>>> getAllMyCourses(@PageableDefault Pageable pageable) {
         var responseDetails = new ResponseDetails<>("Successful",
                 HttpStatus.OK.toString(),
                 learningService.getAllMyCourses(pageable));
@@ -76,10 +77,10 @@ public class LearningController {
     }
 
     @GetMapping("/lesson")
-    public ResponseEntity<ResponseDetails<Page<LessonResponse>>> getLessonsInCourse(@PageableDefault Pageable pageable,
+    public ResponseEntity<ResponseDetails<PageResponse<LessonResponse>>> getLessonsInCourse(@PageableDefault Pageable pageable,
                                                                                     @RequestParam(value = "course_id") String courseId) {
-        Page<LessonResponse> lessonResponses = learningService.getAllLessonsForCourse(courseId, pageable);
-        ResponseDetails<Page<LessonResponse>> responseDetails = new ResponseDetails<>("Successful",
+        PageResponse<LessonResponse> lessonResponses = learningService.getAllLessonsForCourse(courseId, pageable);
+        var responseDetails = new ResponseDetails<>("Successful",
                 HttpStatus.OK.toString(), lessonResponses);
         return ResponseEntity.ok(responseDetails);
 

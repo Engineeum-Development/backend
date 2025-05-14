@@ -7,6 +7,7 @@ import genum.shared.genumUser.exception.BadRequestException;
 import genum.shared.genumUser.exception.GenumUserNotFoundException;
 import genum.shared.genumUser.exception.OTTNotFoundException;
 import genum.shared.genumUser.exception.UserAlreadyExistsException;
+import genum.shared.learn.exception.LessonWithTitleAlreadyExists;
 import genum.shared.payment.exception.PaymentNotFoundException;
 import genum.shared.course.exception.CourseNotFoundException;
 import genum.shared.security.exception.InvalidTokenException;
@@ -34,6 +35,11 @@ public class GlobalExceptionHandler{
     public ResponseEntity<ResponseDetails<String>> handleTokenNotFoundException(TokenNotFoundException tokenNotFoundException) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(new ResponseDetails<>(tokenNotFoundException.getMessage(), HttpStatus.UNAUTHORIZED.toString()));
+    }
+    @ExceptionHandler(LessonWithTitleAlreadyExists.class)
+    public ResponseEntity<ResponseDetails<String>> handleTokenNotFoundException(LessonWithTitleAlreadyExists ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ResponseDetails<>(ex.getMessage(), HttpStatus.CONFLICT.toString()));
     }
     @ExceptionHandler(OTTNotFoundException.class)
     public ResponseEntity<ResponseDetails<String>> handleOTTNotFoundException(OTTNotFoundException ex) {

@@ -20,7 +20,8 @@ public class DatasetRepositoryImpl implements DatasetRepositoryCustom {
     @Override
     public Optional<DatasetDTO> findDatasetDTObyDatasetID(String id) {
         MatchOperation matchOperation = Aggregation
-                .match(Criteria.where("datasetID").is(id));
+                .match(Criteria.where("datasetID").is(id)
+                        .and("visibility").is("public"));
         ProjectionOperation projectionOperation = Aggregation
                 .project("description",
                         "tags",

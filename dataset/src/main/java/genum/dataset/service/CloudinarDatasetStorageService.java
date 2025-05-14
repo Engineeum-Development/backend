@@ -13,7 +13,7 @@ import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
-public class CloudinaryDatasetService implements DatasetStorageService {
+public class CloudinarDatasetStorageService implements DatasetStorageService {
 
     private final Cloudinary cloudinary;
     private final ObjectMapper objectMapper;
@@ -34,6 +34,7 @@ public class CloudinaryDatasetService implements DatasetStorageService {
 
     @Override
     public String deleteDataset(String id) throws IOException {
-        return (String) cloudinary.uploader().destroy(id, ObjectUtils.emptyMap()).get("result");
+        return (String) cloudinary.uploader()
+                .destroy(id, ObjectUtils.asMap("resource_type","raw")).get("result");
     }
 }

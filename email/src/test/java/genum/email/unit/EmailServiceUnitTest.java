@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -38,6 +39,9 @@ public class EmailServiceUnitTest {
     @Mock
     private MimeMessage mimeMessage;
 
+    @Mock
+    private TransactionTemplate transactionTemplate;
+
     private final String message = """
                 <html>
                     <head>
@@ -53,7 +57,7 @@ public class EmailServiceUnitTest {
     private final String subject = "engineeum@gmail.com";
     @BeforeEach
     void setup() {
-        emailService = new EmailService(emailRepository, javaMailSender, "divjazz9@gmail.com");
+        emailService = new EmailService(emailRepository, javaMailSender, "divjazz9@gmail.com",transactionTemplate);
     }
 
 

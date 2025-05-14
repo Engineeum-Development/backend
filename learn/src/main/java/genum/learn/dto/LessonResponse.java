@@ -5,6 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-public record LessonResponse(String lessonId, String title, String description) {
+public record LessonResponse(String lessonId, String title, String description, int reads) {
 
 }

@@ -10,6 +10,7 @@ import genum.genumUser.repository.GenumUserRepository;
 import genum.genumUser.repository.GenumUserWaitListRepository;
 import genum.genumUser.repository.OneTimeTokenRepository;
 import genum.genumUser.repository.projection.GenumUserWithIDFirstNameLastName;
+import genum.genumUser.repository.projection.IdOnly;
 import genum.shared.constant.Gender;
 import genum.shared.constant.Role;
 import genum.shared.genumUser.GenumUserDTO;
@@ -156,7 +157,7 @@ public class GenumUserService {
             var oneTimeTokenIDs = oneTimeTokenRepository
                     .findTop50ByExpiryBeforeOrderByExpiryDesc(LocalDateTime.now())
                     .stream()
-                    .map(OneTimeTokenRepository.IdOnly::getId)
+                    .map(IdOnly::id)
                     .toList();
             if (oneTimeTokenIDs.isEmpty()) {
                 break;

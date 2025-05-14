@@ -1,6 +1,7 @@
 package genum.genumUser.repository;
 
 import genum.genumUser.model.OneTimeToken;
+import genum.genumUser.repository.projection.IdOnly;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,7 +15,4 @@ public interface OneTimeTokenRepository extends MongoRepository<OneTimeToken, St
     Optional<OneTimeToken> findOneTimeTokenByToken(String token);
     List<IdOnly> findTop50ByExpiryBeforeOrderByExpiryDesc(LocalDateTime dateTime);
 
-    interface IdOnly {
-        String getId();
-    }
 }

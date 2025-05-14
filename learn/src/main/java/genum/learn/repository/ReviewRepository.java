@@ -11,20 +11,8 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface ReviewRepository extends MongoRepository<Review, String> {
+public interface ReviewRepository extends MongoRepository<Review, String>, ReviewRepositoryCustom{
 
     Page<Review> findAllByCourseId(String courseId, Pageable pageable);
 
-    @Aggregation(pipeline = {
-            "{ '$match': {'courseId': ?0}}",
-            """
-                { '$group': {
-                        '_id': null,
-                        'averageRating': {'$avg': '$rating'}
-                    }
-            
-                }
-            """
-    })
-    Optional<AverageRating> findRatingFromReviewsByCourseId(String courseId);
 }

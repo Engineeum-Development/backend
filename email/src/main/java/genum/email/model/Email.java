@@ -7,6 +7,8 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDateTime;
+
 @Document
 @Builder
 @Setter
@@ -19,4 +21,5 @@ public class Email {
     private String body;
     private EmailStatus status;
     private int emailTryAttempts;
+    private LocalDateTime timeStamp;
 }

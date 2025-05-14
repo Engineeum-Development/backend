@@ -1,12 +1,10 @@
 package genum.learn.dto;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.*;
 
 public record CreateCourseRequest(
-        @NotBlank String name,
-        @NotBlank String description,
-        @Min(5) int price
+        @NotBlank @NotEmpty String name,
+        @NotBlank @NotEmpty String description,
+        @Min(5) @Max(150000)int price
 ) {
 }

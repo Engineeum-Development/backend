@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 public enum Visibility {
 
-    PUBLIC ("Public"), PRIVATE("Private");
+    PUBLIC ("public"), PRIVATE("private");
 
     @JsonValue
     private final String value;

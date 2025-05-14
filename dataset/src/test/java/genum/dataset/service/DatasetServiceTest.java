@@ -188,7 +188,7 @@ public class DatasetServiceTest {
 
     @Test
     void shouldGetDatasetById() {
-        given(datasetsRepository.getDatasetByDatasetID(anyString())).willReturn(Optional.of(datasetReturned));
+        given(datasetsRepository.findDatasetDTObyDatasetID(anyString())).willReturn(Optional.of(datasetReturned.toDTO()));
 
         var datasetDto = datasetService.getDatasetDTOById(UUID.randomUUID().toString());
         assertThat(datasetDto.datasetId()).isEqualTo(datasetReturned.getDatasetID());
@@ -196,7 +196,7 @@ public class DatasetServiceTest {
 
     @Test
     void shouldThrowDatasetNotFound() {
-        given(datasetsRepository.getDatasetByDatasetID(anyString())).willReturn(Optional.empty());
+        given(datasetsRepository.findDatasetDTObyDatasetID(anyString())).willReturn(Optional.empty());
 
         assertThatExceptionOfType(DatasetNotFoundException.class)
                 .isThrownBy(() -> datasetService.getDatasetDTOById(UUID.randomUUID().toString()));

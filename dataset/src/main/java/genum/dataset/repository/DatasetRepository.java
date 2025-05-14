@@ -17,7 +17,5 @@ public interface DatasetRepository extends MongoRepository<Dataset, String>, Dat
 
     void deleteByDatasetID(String datasetID);
 
-    boolean existsByDatasetID(String datasetID);
-
     Stream<Dataset> findTop100ByOrderByDownloadsDesc();
 }

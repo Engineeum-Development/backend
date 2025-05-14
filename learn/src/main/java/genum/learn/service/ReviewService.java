@@ -18,8 +18,10 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final GenumUserService genumUserService;
+    private final RatingService ratingService;
 
     public ReviewData addReview(ReviewDTO reviewDTO) {
+        ratingService.evictRatingInCache();
         Review review = new Review(reviewDTO.comment(), reviewDTO.rating(), reviewDTO.reviewerId(), reviewDTO.courseId());
         review = reviewRepository.save(review);
         GenumUserWithIDFirstNameLastName firstNameLastName = genumUserService.getUserFirstNameAndLastNameWithId(reviewDTO.reviewerId());
