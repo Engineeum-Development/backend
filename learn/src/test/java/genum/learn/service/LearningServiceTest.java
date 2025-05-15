@@ -103,6 +103,7 @@ public class LearningServiceTest {
         given(securityUtils.getCurrentAuthenticatedUserId()).willReturn(currentUserId);
         given(courseService.findCourseWithUploaderId(anyString(),any(Pageable.class)))
                 .willReturn(new PageImpl<>(listOfCourseDTOtoBeReturned));
+        given(ratingService.getRatingForCourse(anyString())).willReturn(new AverageRating(0));
         var responsePageResponse = learningService
                 .getAllMyCourses(Pageable.ofSize(20));
         assertThat(responsePageResponse.content()).hasSize(listOfCourseDTOtoBeReturned.size());
@@ -261,12 +262,13 @@ public class LearningServiceTest {
         given(reviewService.findAllReviewsByCourseId(anyString(),any(Pageable.class))).willReturn(reviewsDTO);
         given(genumUserService.getUserFirstNameAndLastNameWithId(anyString()))
                 .willReturn(new GenumUserWithIDFirstNameLastName(currentUserId,"Divine", "Maduka"));
+        given(ratingService.getRatingForCourse(anyString())).willReturn(new AverageRating(2.0));
         var reviewData = learningService.getCourse(courseIdOne);
         assertThat(reviewData.reviews()).hasSize(6);
 
         then(courseService).should(times(1)).findCourseByReference(anyString());
         then(reviewService).should(times(1)).findAllReviewsByCourseId(anyString(),any(Pageable.class));
-        then(genumUserService).should(times(1)).getUserFirstNameAndLastNameWithId(anyString());
+        then(genumUserService).should(times(reviewData.reviews().size())).getUserFirstNameAndLastNameWithId(anyString());
 
     }
 

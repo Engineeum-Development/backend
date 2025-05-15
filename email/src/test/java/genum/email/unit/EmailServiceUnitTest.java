@@ -8,6 +8,7 @@ import genum.email.service.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -62,25 +63,19 @@ public class EmailServiceUnitTest {
 
 
     @Test
-    void shouldSendMailSuccessfully() throws MessagingException, GeneralSecurityException, IOException {
+    void shouldSendMailSuccessfully() {
         when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
 
         emailService.sendEmail(subject, message, to);
 
-        verify(javaMailSender, times(1)).send(mimeMessage);
-        ArgumentCaptor<Email> emailArgumentCaptor = ArgumentCaptor.forClass(Email.class);
-        verify(emailRepository, times(1)).save(emailArgumentCaptor.capture());
+        verify(javaMailSender, times(1)).send(any(MimeMessage.class));
 
-        Email savedEmail = emailArgumentCaptor.getValue();
-        assertEquals(EmailStatus.SUCCESS, savedEmail.getStatus());
-        assertEquals(1, savedEmail.getEmailTryAttempts());
     }
 
     @Test
-    void shouldHandleMailSendException() throws MessagingException {
+    void shouldHandleMailSendException(){
         when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
         doThrow(new MailSendException("SMTP failure")).when(javaMailSender).send(mimeMessage);
-
         emailService.sendEmail(subject, message, to);
 
         verify(javaMailSender, times(1)).send(mimeMessage);

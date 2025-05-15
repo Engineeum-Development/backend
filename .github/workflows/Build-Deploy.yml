@@ -39,6 +39,6 @@ jobs:
     - name: Run unit tests
       run: mvn test
     - name: Run integration tests
-      run: mvn failsafe:integration-test
+      run: mvn failsafe:integration-test failsafe:verify -pl app
 
 
