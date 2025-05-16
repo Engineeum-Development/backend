@@ -355,7 +355,7 @@ public enum TagsEnum {
     A3C("A3C", TagCategory.ARCHITECTURE),
     DQN("Deep Q-Network (DQN)", TagCategory.ARCHITECTURE),
     PPO("Proximal Policy Optimization (PPO)", TagCategory.ARCHITECTURE),
-    TRIPLETT_LOSS("Triplet Loss", TagCategory.ARCHITECTURE),
+    TRIPLET_LOSS("Triplet Loss", TagCategory.ARCHITECTURE),
     ;
     private final String value;
     private final TagCategory tagCategory;

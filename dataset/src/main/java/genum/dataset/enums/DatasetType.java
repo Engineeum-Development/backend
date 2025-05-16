@@ -1,5 +1,7 @@
 package genum.dataset.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 import java.util.Objects;
@@ -8,12 +10,14 @@ import java.util.Objects;
 public enum DatasetType {
     JSON ("JSON"), CSV("CSV");
 
+    @JsonValue
     private final String value;
 
     DatasetType(String value) {
         this.value = value;
     }
 
+    @JsonCreator
     public DatasetType fromValue(String value) {
         if (Objects.nonNull(value)) {
             for (DatasetType datasetType : DatasetType.values()) {
