@@ -246,6 +246,8 @@ public class LearningServiceTest {
 
         var result = learningService.updateLesson(lessonOneId, lessonUpdateRequest);
 
+        System.out.println(result.title()+" "+ result.description()+ " " + result.title());
+
         assertThat(result.title()).isEqualTo(updatedLesson.getTitle());
         assertThat(result.description()).isEqualTo(updatedLesson.getDescription());
 

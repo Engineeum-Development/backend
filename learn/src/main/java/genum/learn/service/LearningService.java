@@ -139,7 +139,7 @@ public class LearningService {
         Lesson lesson = lessonRepository.findByReferenceId(lessonId).orElseThrow(LessonNotFoundException::new);
 
         if (Objects.nonNull(lessonUpdateRequest.content())) {
-            if (lessonUpdateRequest.content().isEmpty() || lessonUpdateRequest.content().isBlank()) {
+            if (!lessonUpdateRequest.content().isEmpty() && !lessonUpdateRequest.content().isBlank()) {
                 var lessonContentHasChanged = !lesson.getContent().equals(lessonUpdateRequest.content());
                 if (lessonContentHasChanged) {
                     lesson.setContent(lessonUpdateRequest.content());
@@ -147,7 +147,7 @@ public class LearningService {
             }
         }
         if (Objects.nonNull(lessonUpdateRequest.description())) {
-            if (lessonUpdateRequest.description().isEmpty() || lessonUpdateRequest.description().isBlank()) {
+            if (!lessonUpdateRequest.description().isEmpty() && !lessonUpdateRequest.description().isBlank()) {
                 var lessonDescriptionHasChanged = !lesson.getDescription().equals(lessonUpdateRequest.description());
                 if (lessonDescriptionHasChanged) {
                     lesson.setDescription(lessonUpdateRequest.description());
@@ -155,7 +155,7 @@ public class LearningService {
             }
         }
         if (Objects.nonNull(lessonUpdateRequest.title())) {
-            if (lessonUpdateRequest.title().isEmpty() || lessonUpdateRequest.title().isBlank()) {
+            if (!lessonUpdateRequest.title().isEmpty() && !lessonUpdateRequest.title().isBlank()) {
                 var lessonTitleHasChanged = !lesson.getTitle().equals(lessonUpdateRequest.title());
                 if (lessonTitleHasChanged) {
                     lesson.setTitle(lessonUpdateRequest.title());
