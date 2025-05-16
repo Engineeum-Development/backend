@@ -33,9 +33,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
+
+import static org.awaitility.Awaitility.*;
 
 @ExtendWith(MockitoExtension.class)
 @Slf4j
@@ -303,8 +306,10 @@ public class LearningServiceTest {
         log.info("result videoId {} | saved videoId {}",result.videoId(), videoReturnedAfterSave.getVideoId());
         assertThat(result.videoId()).isEqualTo(videoReturnedAfterSave.getVideoId());
         assertThat(result.uploadId()).isEqualTo(videoUploadRequest.uploadId());
-        then(videoRepository).should(times(2)).save(any(Video.class));
-        then(sseEmitterService).should(times(4)).sendProgress(anyString(),anyInt());
+        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
+            then(videoRepository).should(times(2)).save(any(Video.class));
+            then(sseEmitterService).should(times(4)).sendProgress(anyString(),anyInt());
+        });
 
     }
 
@@ -318,33 +323,4 @@ public class LearningServiceTest {
         then(sseEmitterService).should(never()).sendProgress(anyString(),anyInt());
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
