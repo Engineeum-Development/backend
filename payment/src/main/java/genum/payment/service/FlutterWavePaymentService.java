@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import genum.payment.config.PaymentProperties;
 import genum.payment.domain.WebHook;
 import genum.payment.repository.PaymentRepository;
-import genum.course.event.EventType;
-import genum.course.event.CourseEvent;
 import genum.course.service.CourseService;
 import genum.shared.payment.domain.PaymentResponse;
 import genum.shared.payment.domain.ProductRequest;
@@ -37,7 +35,6 @@ public class FlutterWavePaymentService implements PaymentService {
      and the user email delimited by ":"
      */
     @Override
-    @Transactional
     public PaymentResponse initializePayment(ProductRequest productRequest) {
 //        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 //        if (authentication == null || !authentication.isAuthenticated()) {
@@ -106,7 +103,6 @@ public class FlutterWavePaymentService implements PaymentService {
 
 
     @Override
-    @Transactional
     public PaymentResponse verifyPayment(String reference) {
 //        HttpHeaders headers = new HttpHeaders();
 //        headers.set("Authorization", "Bearer" +  paymentProperties.getFlutterWave_SecretKey());

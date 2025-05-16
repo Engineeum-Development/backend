@@ -58,6 +58,7 @@ public class UserWebSecurityConfiguration implements WebMvcConfigurer {
             "/api/dataset/all/*", "/api/user/confirm-token", "/ws/**",
             "/api/dataset/trending", "/api/dataset/download/*",
             "/api/dataset/license", "/api/dataset/tag","/api/payment/*/webhook",
+            "/api/learn/course",
     };
     private final JwtUtils jwtUtils;
 

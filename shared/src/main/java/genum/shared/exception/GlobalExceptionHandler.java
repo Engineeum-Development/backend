@@ -7,6 +7,7 @@ import genum.shared.genumUser.exception.BadRequestException;
 import genum.shared.genumUser.exception.GenumUserNotFoundException;
 import genum.shared.genumUser.exception.OTTNotFoundException;
 import genum.shared.genumUser.exception.UserAlreadyExistsException;
+import genum.shared.learn.exception.LessonNotFoundException;
 import genum.shared.learn.exception.LessonWithTitleAlreadyExists;
 import genum.shared.payment.exception.PaymentNotFoundException;
 import genum.shared.course.exception.CourseNotFoundException;
@@ -133,6 +134,13 @@ public class GlobalExceptionHandler{
 
     @ExceptionHandler(PaymentNotFoundException.class)
     public ResponseEntity<ResponseDetails<String>> handleProductNotFoundException(PaymentNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ResponseDetails<>(ex.getMessage(), HttpStatus.NOT_FOUND.toString()));
+    }
+
+    @ExceptionHandler(LessonNotFoundException.class)
+    public ResponseEntity<ResponseDetails<String>> handleLessonNotFoundException(LessonNotFoundException ex) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(new ResponseDetails<>(ex.getMessage(), HttpStatus.NOT_FOUND.toString()));

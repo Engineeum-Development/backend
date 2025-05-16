@@ -16,6 +16,7 @@ import genum.shared.course.DTO.CourseDTO;
 import genum.shared.learn.exception.LessonNotFoundException;
 import genum.shared.learn.exception.LessonWithTitleAlreadyExists;
 import genum.shared.security.SecurityUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,8 +24,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.util.MimeTypeUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,6 +38,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@Slf4j
 public class LearningServiceTest {
 
     @Mock
@@ -180,7 +186,7 @@ public class LearningServiceTest {
             "Some test course",
             LocalDateTime.now().toString());
 
-    public static final CreateCourseRequest courseRequest = new CreateCourseRequest(courseOneName, lessonOneDesc, 20000);
+    public static final CourseUploadRequest courseRequest = new CourseUploadRequest(courseOneName, lessonOneDesc, 20000);
 
     @Test
     void givenValidCourseCreationRequest() {
@@ -195,7 +201,7 @@ public class LearningServiceTest {
         then(securityUtils).should(times(1)).getCurrentAuthenticatedUserId();
     }
 
-    public static final CreateLessonRequest createLesson = new CreateLessonRequest(courseIdOne,
+    public static final LessonUploadRequest createLesson = new LessonUploadRequest(courseIdOne,
             lessonReturned.getTitle(),
             lessonReturned.getDescription(),
             lessonReturned.getContent());
@@ -271,6 +277,69 @@ public class LearningServiceTest {
         then(genumUserService).should(times(reviewData.reviews().size())).getUserFirstNameAndLastNameWithId(anyString());
 
     }
+
+    public static final MultipartFile mockMultipartFile = new MockMultipartFile("test","test.mp4",
+            MimeTypeUtils.APPLICATION_OCTET_STREAM_VALUE, new byte[]{});
+
+    public static final VideoUploadRequest videoUploadRequest =
+            new VideoUploadRequest(UUID.randomUUID().toString(),
+                    lessonOneId,
+                    "This is a test video",
+                    "This is the video title",
+                    new HashSet<>() );
+    public static final Video videoReturnedAfterSave = new Video(
+            videoUploadRequest.description(),
+            videoUploadRequest.title()
+            ,lessonOneId
+    );
+    @Test
+    void shouldStartUploadProcess() {
+        given(videoRepository.save(any(Video.class))).willReturn(videoReturnedAfterSave);
+        given(lessonRepository.existsByReferenceId(anyString())).willReturn(true);
+        var result = learningService.addVideoToLesson(videoUploadRequest,mockMultipartFile);
+        log.info("result uploadId {} | request uploadId {}",result.uploadId(), videoUploadRequest.uploadId());
+        log.info("result videoId {} | saved videoId {}",result.videoId(), videoReturnedAfterSave.getVideoId());
+        assertThat(result.videoId()).isEqualTo(videoReturnedAfterSave.getVideoId());
+        assertThat(result.uploadId()).isEqualTo(videoUploadRequest.uploadId());
+        then(videoRepository).should(times(2)).save(any(Video.class));
+        then(sseEmitterService).should(times(4)).sendProgress(anyString(),anyInt());
+
+    }
+
+    @Test
+    void shouldThrowLessonNotFoundExceptionIfLessonNotExists() {
+        given(lessonRepository.existsByReferenceId(anyString())).willReturn(false);
+
+        assertThatExceptionOfType(LessonNotFoundException.class)
+                .isThrownBy(() -> learningService.addVideoToLesson(videoUploadRequest,mockMultipartFile));
+        then(videoRepository).should(never()).save(any(Video.class));
+        then(sseEmitterService).should(never()).sendProgress(anyString(),anyInt());
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

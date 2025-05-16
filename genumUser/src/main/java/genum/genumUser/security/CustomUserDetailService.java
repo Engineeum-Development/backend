@@ -17,7 +17,6 @@ public class CustomUserDetailService implements UserDetailsService {
 
 
     @Override
-    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         var genumUser = userRepository.findByCustomUserDetailsEmail(email).orElseThrow(GenumUserNotFoundException::new);
         return genumUser.getCustomUserDetails();

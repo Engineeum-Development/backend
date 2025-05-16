@@ -21,14 +21,8 @@ public class CourseService {
 
     private final CourseRepository courseRepository;
     private final SecurityUtils securityUtils;
-    @Transactional(readOnly = true)
-    public CourseDTO findCourseById(String id) {
-        Course course = courseRepository.findById(id).orElseThrow(CourseNotFoundException::new);
-        return course.toDTO();
-    }
 
-    @Transactional(readOnly = true)
-   // @Cacheable(value = "courses_by_id_page", keyGenerator = "customPageableKeyGenerator")
+
     public Page<CourseDTO> findCourseWithUploaderId(String id, Pageable pageable) {
         return courseRepository.findAllByUploaderId(id, pageable).map(Course::toDTO);
     }
@@ -44,13 +38,13 @@ public class CourseService {
         Course course = new Course(courseDTO.name(),courseDTO.uploader(), courseDTO.description(), courseDTO.price());
         return courseRepository.save(course).toDTO();
     }
-    @Cacheable(value = "course_all_page", keyGenerator = "customPageableKeyGenerator")
     public Page<CourseDTO> findAllCourses(Pageable pageable) {
         var courses = courseRepository.findAll(pageable);
         return courses.map(Course::toDTO);
     }
-    @Cacheable(value = "user_enrolled", key = "#courseId+userId")
-    public boolean userIdHasEnrolledForCourse(String courseId, String userId) {
+    @Cacheable(value = "current_user_enrolled", key = "#courseId")
+    public boolean userIdHasEnrolledForCourse(String courseId) {
+        var userId = securityUtils.getCurrentAuthenticatedUserId();
         return courseRepository.existsByReferenceIdAndEnrolledUsersContaining(courseId, userId);
     }
 

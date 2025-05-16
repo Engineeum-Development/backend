@@ -1,6 +1,5 @@
 package genum.payment.config;
 
-import genum.course.model.Course;
 import genum.payment.repository.PaymentRepository;
 import genum.payment.service.PaymentService;
 import genum.payment.service.FlutterWavePaymentService;

@@ -6,6 +6,7 @@ import genum.shared.payment.constants.PaymentStatus;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.MongoId;
@@ -15,7 +16,7 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 @Setter
 @Builder
 public class CoursePayment {
-    @MongoId
+    @Id
     private String id;
     @Field("user_id")
     private String userid;

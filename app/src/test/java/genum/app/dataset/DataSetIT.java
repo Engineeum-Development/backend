@@ -55,7 +55,7 @@ public class DataSetIT extends BaseDatabaseIntegration {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
-    private MongoTemplate datasetTemplate;
+    private MongoTemplate mongoTemplate;
     @Autowired
     private JacksonTester<CreateDatasetRequest> validJsonCreateDatasetRequest;
     @Autowired
@@ -85,7 +85,7 @@ public class DataSetIT extends BaseDatabaseIntegration {
                 .customUserDetails(userDetails)
                 .country("Nigeria")
                 .build();
-        datasetTemplate.save(genumUser, "users");
+        mongoTemplate.save(genumUser, "users");
         SecurityContextHolder.setContext(
                 new SecurityContextImpl(UsernamePasswordAuthenticationToken.authenticated(
                         userDetails,
@@ -97,7 +97,7 @@ public class DataSetIT extends BaseDatabaseIntegration {
     }
     @AfterEach
     void remove() {
-        datasetTemplate.remove(genumUser, "users");
+        mongoTemplate.remove(genumUser, "users");
     }
     @Test
     void givenValidFileAndRequestBodyShouldCreateADataset() throws Exception {
@@ -198,7 +198,7 @@ public class DataSetIT extends BaseDatabaseIntegration {
                 .visibility(Visibility.PUBLIC)
                 .collaborators(Set.of(new Collaborator("divjazz",uploaderId, CollaboratorPermission.OWNER)))
                 .build();
-        datasetTemplate.save(existingDataset,"dataset");
+        mongoTemplate.save(existingDataset,"dataset");
         mockMvc.perform(
                 put("/api/dataset/update/%s".formatted(existingDataset.getDatasetID()))
                         .with(user(genumUser.getCustomUserDetails()))
@@ -236,7 +236,7 @@ public class DataSetIT extends BaseDatabaseIntegration {
                 .visibility(Visibility.PUBLIC)
                 .collaborators(Set.of(new Collaborator("divjazz",uploaderId, CollaboratorPermission.OWNER)))
                 .build();
-        datasetTemplate.save(existingDataset,"dataset");
+        mongoTemplate.save(existingDataset,"dataset");
         mockMvc.perform(
                 put("/api/dataset/update/%s".formatted(existingDataset.getDatasetID()))
                         .with(user(genumUser.getCustomUserDetails()))
@@ -263,7 +263,7 @@ public class DataSetIT extends BaseDatabaseIntegration {
                 .collaborators(Set.of(new Collaborator("divjazz",uploaderId, CollaboratorPermission.OWNER)))
                 .build();
 
-        existingDataset = datasetTemplate.save(existingDataset,"dataset");
+        existingDataset = mongoTemplate.save(existingDataset,"dataset");
         log.info("existing dataset objectId: {} referenceId: {}", existingDataset.getId(), existingDataset.getDatasetID());
         var response = mockMvc.perform(
                 get("/api/dataset/all/%s".formatted(existingDataset.getDatasetID()))
@@ -275,7 +275,7 @@ public class DataSetIT extends BaseDatabaseIntegration {
             Assertions.assertThat(responseDetails.getData().datasetId()).isEqualTo(existingDataset.getDatasetID());
         }
 
-        datasetTemplate.remove(existingDataset, "dataset");
+        mongoTemplate.remove(existingDataset, "dataset");
     }
 
     @Test
@@ -310,13 +310,13 @@ public class DataSetIT extends BaseDatabaseIntegration {
                 .collaborators(Set.of(new Collaborator("divjazz",uploaderId, CollaboratorPermission.OWNER)))
                 .build();
 
-        var dataset = datasetTemplate.save(existingDataset,"dataset");
+        var dataset = mongoTemplate.save(existingDataset,"dataset");
         mockMvc.perform(
                 delete("/api/dataset/%s".formatted(existingDataset.getDatasetID()))
                         .with(user(userDetails))
         ).andExpect(status().isOk());
 
-        Assertions.assertThat(datasetTemplate.findById(dataset.getId(), Dataset.class, "dataset")).isNull();
+        Assertions.assertThat(mongoTemplate.findById(dataset.getId(), Dataset.class, "dataset")).isNull();
     }
 
     @Test
@@ -358,7 +358,7 @@ public class DataSetIT extends BaseDatabaseIntegration {
     /* ====================================== Test Dataset Download ================================================= */
     @Autowired
     private JacksonTester<ResponseDetails<Map<String, String>>> datasetCreationResponse;
-
+    @Test
     void givenADatasetThatExistsShouldBeAbleToDownload() throws Exception {
         MockMultipartFile metadataPart = new MockMultipartFile(
                 "metadata",

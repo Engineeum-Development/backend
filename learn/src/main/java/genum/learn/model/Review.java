@@ -2,8 +2,9 @@ package genum.learn.model;
 
 import genum.learn.dto.ReviewDTO;
 import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Document
 @Getter
@@ -12,7 +13,8 @@ public class Review {
     private final double rating;
     private final String userId;
     private final String courseId;
-    @MongoId
+    @Id
+    @Setter
     private String id;
 
     public Review(String comment, int rating, String userId, String courseId) {

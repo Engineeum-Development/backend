@@ -20,11 +20,6 @@ public abstract class BaseDatabaseIntegration {
     @Container
     static RedisContainer redisContainer = new RedisContainer(DockerImageName.parse("redis:8.0-M03-alpine"))
             .withExposedPorts(6379);
-    static {
-        mongoDBContainer.start();
-
-        redisContainer.start();
-    }
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
@@ -32,5 +27,11 @@ public abstract class BaseDatabaseIntegration {
         registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
         registry.add("spring.redis.host",redisContainer::getHost);
         registry.add("spring.redis.port", () -> redisContainer.getMappedPort(6379).toString());
+    }
+
+    static {
+        mongoDBContainer.start();
+
+        redisContainer.start();
     }
 }

@@ -51,8 +51,6 @@ public class GenumUserService {
     private final ApplicationEventPublisher eventPublisher;
     private final GenumUserWaitListRepository waitListRepository;
 
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public GenumUserDTO createNewUser(UserCreationRequest userCreationRequest) {
         if (genumUserRepository.existsByCustomUserDetailsEmail(userCreationRequest.email())) {
             throw new UserAlreadyExistsException();
@@ -91,7 +89,6 @@ public class GenumUserService {
         genumUserRepository.save(user);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public String confirmOTT(String token) throws GenumUserNotFoundException, OTTNotFoundException {
         // only returns otts that are not yet expired
         var oneTimeTokenOptional = oneTimeTokenRepository
@@ -130,8 +127,7 @@ public class GenumUserService {
         }
     }
 
-    @Cacheable(value = "waiting_lists", keyGenerator = "customPageableKeyGenerator")
-    @Transactional(readOnly = true)
+    @Cacheable(value = "waiting_lists", keyGenerator = "customKeyGenerator")
     public Page<WaitListEmailDTO> getWaitListEmails(Pageable pageable) {
         return waitListRepository.findPagedWaitingList(pageable);
     }

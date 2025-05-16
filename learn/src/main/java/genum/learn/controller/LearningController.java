@@ -12,7 +12,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -67,9 +66,9 @@ public class LearningController {
     }
 
     @PostMapping("/course")
-    public ResponseEntity<ResponseDetails<CourseResponse>> uploadCourse(@Valid @RequestBody CreateCourseRequest createCourseRequest,
+    public ResponseEntity<ResponseDetails<CourseResponse>> uploadCourse(@Valid @RequestBody CourseUploadRequest courseUploadRequest,
                                                                         HttpServletRequest httpServletRequest) {
-        CourseResponse courseResponse = learningService.uploadCourse(createCourseRequest);
+        CourseResponse courseResponse = learningService.uploadCourse(courseUploadRequest);
         var responseDetails = new ResponseDetails<>("Successful",
                 HttpStatus.CREATED.toString(),
                 courseResponse);
@@ -95,11 +94,11 @@ public class LearningController {
 
     @PostMapping("/lesson")
     public ResponseEntity<ResponseDetails<LessonResponse>> uploadLesson(
-            @RequestBody @Valid CreateLessonRequest createLessonRequest,
+            @RequestBody @Valid LessonUploadRequest lessonUploadRequest,
             HttpServletRequest httpServletRequest) {
         var responseDetails = new ResponseDetails<>("Successful",
                 HttpStatus.CREATED.toString(),
-                learningService.uploadLesson(createLessonRequest));
+                learningService.uploadLesson(lessonUploadRequest));
         return ResponseEntity.created(URI.create(httpServletRequest.getRequestURI())).body(responseDetails);
     }
 
@@ -155,7 +154,7 @@ public class LearningController {
         }
     }
 
-    @PostMapping("/lesson/review/")
+    @PostMapping("/lesson/review")
     public ResponseEntity<ReviewData> reviewLesson(@RequestBody ReviewRequest reviewRequest) {
         var reviewData = learningService.reviewLesson(reviewRequest);
         return ResponseEntity

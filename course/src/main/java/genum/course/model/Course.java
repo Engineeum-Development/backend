@@ -8,11 +8,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 
-@Document
+@Document("course")
 @Getter
 @Setter
 public class Course {
@@ -30,7 +31,7 @@ public class Course {
     public Course(String name,String uploaderId, String description, int price) {
         this.referenceId = UUID.randomUUID().toString();
         this.name = name;
-        this.enrolledUsers = new TreeSet<>();
+        this.enrolledUsers = new HashSet<>();
         this.uploaderId = uploaderId;
         this.description = description;
         this.price = price;
@@ -42,7 +43,7 @@ public class Course {
     }
 
     public void addEnrolledUsers(String userId) {
-        this.enrolledUsers.add(userId);
+        enrolledUsers.add(userId);
     }
 
 

@@ -9,9 +9,9 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface CourseRepository extends MongoRepository<Course, String> {
+public interface CourseRepository extends MongoRepository<Course, String>, CourseRepositoryCustom {
 
     Optional<Course> findByReferenceId(String referenceId);
     Page<Course> findAllByUploaderId(String uploaderId, Pageable pageable);
-    boolean existsByReferenceIdAndEnrolledUsersContaining(String courseId, String userId);
+
 }

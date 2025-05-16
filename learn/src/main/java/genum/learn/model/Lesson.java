@@ -3,6 +3,7 @@ package genum.learn.model;
 import genum.learn.dto.LessonDTO;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
@@ -12,22 +13,17 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 
-@Document
+@Document("lesson")
 @Getter
+@Setter
 public class Lesson implements Serializable {
-    @MongoId
+    @Id
     private String id;
-    @Setter
     private String referenceId;
-    @Setter
     private String title;
-    @Setter
     private String description;
-    @Setter
     private String content; //This is in markdown
-    @Setter
     private String courseId;
-    @Setter
     private Set<String> readIds;
 
     public Lesson(String title, String description, String content, String courseId) {

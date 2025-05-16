@@ -53,7 +53,6 @@ public class PaystackPaymentService implements PaymentService {
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
-    @Transactional
     public PaymentResponse initializePayment(ProductRequest productRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -113,7 +112,6 @@ public class PaystackPaymentService implements PaymentService {
     }
 
     @Override
-    @Transactional
     public PaymentResponse verifyPayment(String transactionReference) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {

@@ -4,6 +4,7 @@ import genum.learn.dto.LessonDTO;
 import genum.learn.model.Lesson;
 import genum.learn.repository.LessonRepositoryCustom;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -17,11 +18,12 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class LessonRepositoryImpl implements LessonRepositoryCustom {
 
     private final MongoTemplate mongoTemplate;
     @Override
-    @Cacheable(value = "paged_lesson_by_courseId", key = "@customPageableKeyGenerator")
+    @Cacheable(value = "paged_lesson_by_courseId", keyGenerator = "customKeyGenerator")
     public Page<LessonDTO> findAllByCourseId(String courseId, Pageable pageable) {
         var size = pageable.getPageSize();
         var offset = pageable.getOffset();
@@ -43,7 +45,7 @@ public class LessonRepositoryImpl implements LessonRepositoryCustom {
         return new PageImpl<>(results.getMappedResults(),pageable,results.getMappedResults().size());
     }
     @Override
-    @Cacheable(value = "lesson_by_id", key = "#lessonId")
+
     public Optional<LessonDTO> findDTOByReferenceId(String lessonId){
         MatchOperation matchOperation = Aggregation.match(Criteria.where("referenceId").is(lessonId));
         ProjectionOperation projectionOperation = Aggregation.project("title","description","content","courseId")

@@ -22,9 +22,9 @@ import genum.shared.course.DTO.CourseDTO;
 import genum.shared.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 
@@ -53,6 +53,7 @@ public class LearningService {
     private final SseEmitterService sseEmitterService;
     private final GenumUserService genumUserService;
 
+    @Cacheable(value = "course_all_page", keyGenerator = "customKeyGenerator")
     public PageResponse<CourseResponse> getAllCourses(Pageable pageable) {
         var courses = courseService.findAllCourses(pageable);
         return PageResponse.from(courses.map(courseDTO -> new CourseResponse(courseDTO.referenceId(),
@@ -61,6 +62,7 @@ public class LearningService {
                 (int) ratingService.getRatingForCourse(courseDTO.referenceId()).averageRating())));
     }
 
+    @Cacheable(value = "courses_by_id_page", keyGenerator = "customKeyGenerator")
     public PageResponse<CourseResponse> getAllMyCourses(Pageable pageable) {
         var currentUserId = securityUtils.getCurrentAuthenticatedUserId();
         var courses = courseService.findCourseWithUploaderId(currentUserId, pageable);
@@ -78,6 +80,7 @@ public class LearningService {
                 lesson.description(), lesson.reads())));
     }
 
+    @Cacheable(value = "lesson_by_id", key = "#lessonId", unless = "#result == null")
     public LessonResponseFull getFullLessonResponseByLessonId(String lessonId) {
         var fullLesson = lessonRepository.findDTOByReferenceId(lessonId).orElseThrow(LessonNotFoundException::new);
 
@@ -105,14 +108,14 @@ public class LearningService {
         lessonRepository.save(lesson);
     }
 
-    public CourseResponse uploadCourse(CreateCourseRequest createCourseRequest) {
+    public CourseResponse uploadCourse(CourseUploadRequest courseUploadRequest) {
         var userId = securityUtils.getCurrentAuthenticatedUserId();
 
         var courseDTO = new CourseDTO(null,
-                createCourseRequest.name(),
+                courseUploadRequest.name(),
                 userId,
-                createCourseRequest.price(),
-                createCourseRequest.description(),
+                courseUploadRequest.price(),
+                courseUploadRequest.description(),
                 LocalDateTime.now().toString());
         courseDTO = courseService.createCourse(courseDTO);
         return new CourseResponse(courseDTO.referenceId(),
@@ -121,13 +124,13 @@ public class LearningService {
                 0);
     }
 
-    public LessonResponse uploadLesson(CreateLessonRequest createLessonRequest) {
-        if (lessonRepository.existsByTitle(createLessonRequest.title())){
-            throw new LessonWithTitleAlreadyExists(createLessonRequest.title());
+    public LessonResponse uploadLesson(LessonUploadRequest lessonUploadRequest) {
+        if (lessonRepository.existsByTitle(lessonUploadRequest.title())){
+            throw new LessonWithTitleAlreadyExists(lessonUploadRequest.title());
         }
-        var lesson = new Lesson(createLessonRequest.title(),
-                createLessonRequest.description(), createLessonRequest.content(),
-                createLessonRequest.courseId());
+        var lesson = new Lesson(lessonUploadRequest.title(),
+                lessonUploadRequest.description(), lessonUploadRequest.content(),
+                lessonUploadRequest.courseId());
         lesson = lessonRepository.save(lesson);
         return new LessonResponse(lesson.getReferenceId(), lesson.getTitle(), lesson.getDescription(),lesson.getReadIds().size());
     }
@@ -136,45 +139,49 @@ public class LearningService {
         Lesson lesson = lessonRepository.findByReferenceId(lessonId).orElseThrow(LessonNotFoundException::new);
 
         if (Objects.nonNull(lessonUpdateRequest.content())) {
-            if (!lesson.getContent().equalsIgnoreCase(lessonUpdateRequest.content())) {
-                lesson.setContent(lessonUpdateRequest.content());
+            if (lessonUpdateRequest.content().isEmpty() || lessonUpdateRequest.content().isBlank()) {
+                var lessonContentHasChanged = !lesson.getContent().equals(lessonUpdateRequest.content());
+                if (lessonContentHasChanged) {
+                    lesson.setContent(lessonUpdateRequest.content());
+                }
             }
         }
         if (Objects.nonNull(lessonUpdateRequest.description())) {
-            if (!lesson.getDescription().equalsIgnoreCase(lessonUpdateRequest.description())) {
-                lesson.setDescription(lessonUpdateRequest.description());
+            if (lessonUpdateRequest.description().isEmpty() || lessonUpdateRequest.description().isBlank()) {
+                var lessonDescriptionHasChanged = !lesson.getDescription().equals(lessonUpdateRequest.description());
+                if (lessonDescriptionHasChanged) {
+                    lesson.setDescription(lessonUpdateRequest.description());
+                }
             }
         }
         if (Objects.nonNull(lessonUpdateRequest.title())) {
-            if (!lesson.getTitle().equalsIgnoreCase(lessonUpdateRequest.title())) {
-                lesson.setTitle(lessonUpdateRequest.title());
+            if (lessonUpdateRequest.title().isEmpty() || lessonUpdateRequest.title().isBlank()) {
+                var lessonTitleHasChanged = !lesson.getTitle().equals(lessonUpdateRequest.title());
+                if (lessonTitleHasChanged) {
+                    lesson.setTitle(lessonUpdateRequest.title());
+                }
             }
         }
         lessonRepository.save(lesson);
         return new LessonResponse(lesson.getReferenceId(),lesson.getTitle(),lesson.getDescription(),lesson.getReadIds().size());
     }
-    @Transactional
     public NonChunkedVideoUploadResponse addVideoToLesson(VideoUploadRequest uploadRequest, MultipartFile file) {
         if (!lessonRepository.existsByReferenceId(uploadRequest.lessonId())) throw new LessonNotFoundException();
+
         var video = new Video(uploadRequest.description(), uploadRequest.title(), uploadRequest.lessonId());
         sseEmitterService.sendProgress(uploadRequest.uploadId(),0);
-        return getVideoUploadResponse(file, video, uploadRequest.uploadId());
-    }
-
-    private NonChunkedVideoUploadResponse getVideoUploadResponse(MultipartFile file, Video video, String uploadId) {
         var videoSaved = videoRepository.save(video);
-        CompletableFuture.runAsync(() -> uploadVideo(file, videoSaved, uploadId));
-        sseEmitterService.sendProgress(uploadId, 20);
-        return new NonChunkedVideoUploadResponse(video.getVideoId(), uploadId);
+        CompletableFuture.runAsync(() -> uploadVideo(file, videoSaved, uploadRequest.uploadId()));
+        sseEmitterService.sendProgress(uploadRequest.uploadId(), 20);
+        return new NonChunkedVideoUploadResponse(videoSaved.getVideoId(), uploadRequest.uploadId());
     }
 
-
-    public void uploadVideo(MultipartFile multipartFile, Video video, String uploadId) {
+    private void uploadVideo(MultipartFile multipartFile, Video video, String uploadId) {
         var videoUpload = videoUploadStatusRepository
                 .getVideoUploadStatusModelByVideoId(video.getVideoId())
                 .orElse(new VideoUploadStatusModel(video.getVideoId(), VideoUploadStatus.PENDING));
         try {
-            log.info("Started sending video {}", video.getId());
+            log.info("Started sending video {}", video.getVideoId());
             sseEmitterService.sendProgress(uploadId, 50);
             var uploadUrl = videoStorageService.uploadVideo(multipartFile,video);
             video.setUploadVideoFileUrl(uploadUrl);
@@ -233,9 +240,7 @@ public class LearningService {
     }
 
     public boolean getIfCurrentUserIsAuthorizedToAccessCourse(String courseID) {
-        String userId = securityUtils.getCurrentAuthenticatedUserId();
-        return courseService.userIdHasEnrolledForCourse(courseID, userId);
-
+        return courseService.userIdHasEnrolledForCourse(courseID);
     }
 
     public ReviewData reviewLesson(ReviewRequest reviewRequest) {

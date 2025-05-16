@@ -17,7 +17,6 @@ import genum.shared.dataset.exception.DatasetNotFoundException;
 import genum.shared.genumUser.exception.BadRequestException;
 import genum.shared.security.SecurityUtils;
 import genum.shared.security.exception.UserNotFoundException;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -27,7 +26,6 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -137,7 +135,7 @@ public class DatasetService {
 
             if (Objects.nonNull(updateRequest.tags())) {
                 var tagComparator = new EqualsComparator<Tag>();
-                boolean changeInTags = !Arrays.equals(
+                boolean tagsHaveChanged = !Arrays.equals(
                         existingDataset.getTags().toArray(Tag[]::new),
                         updateRequest.tags().toArray(Tag[]::new),
                         tagComparator);
@@ -145,7 +143,7 @@ public class DatasetService {
                 if (existingDataset.getTags().isEmpty()) {
                     existingDataset.setTags(Set.of());
                     existingDataset.addPendingAction(PendingActionEnum.ADD_TAGS);
-                } else if (changeInTags) {
+                } else if (tagsHaveChanged) {
                     // if the update tags does not contain tags from the existing tags,
                     // override existing tags to update tags
                     // else just append them unto the existing tags
@@ -162,23 +160,23 @@ public class DatasetService {
 
             if (Objects.nonNull(updateRequest.collaborators())) {
                 var collaboratorComparator = new EqualsComparator<Collaborator>();
-                boolean changeInCollaborators = !Arrays.equals(
+                boolean collaboratorsHaveChanged = !Arrays.equals(
                         existingDataset.getCollaborators().toArray(Collaborator[]::new),
                         updateRequest.collaborators().toArray(Collaborator[]::new),
                         collaboratorComparator);
 
-                if (changeInCollaborators) {
+                if (collaboratorsHaveChanged) {
                     existingDataset.addCollaborators(updateRequest.collaborators());
                 }
             }
             if (Objects.nonNull(updateRequest.authors())) {
                 var authorComparator = new EqualsComparator<Author>();
-                boolean changeInAuthors = !Arrays.equals(
+                boolean authorsHaveChanged = !Arrays.equals(
                         existingDataset.getAuthors().toArray(Author[]::new),
                         updateRequest.authors().toArray(Author[]::new),
                         authorComparator);
 
-                if (changeInAuthors) {
+                if (authorsHaveChanged) {
 
                     if (!updateRequest.authors().containsAll(existingDataset.getAuthors())) {
                         existingDataset.setAuthors(updateRequest.authors());
@@ -229,7 +227,7 @@ public class DatasetService {
     }
 
 
-    @Cacheable(value = "dataset_page", keyGenerator = "customPageableKeyGenerator")
+    @Cacheable(value = "dataset_page", keyGenerator = "customKeyGenerator")
     public PageResponse<DatasetDTO> getAllDatasets(Pageable pageable) {
         Page<Dataset> page = datasetsRepository.findAll(pageable);
         List<DatasetDTO> datasetDTOS = page
@@ -265,7 +263,7 @@ public class DatasetService {
     }
 
 
-    @Cacheable(value = "trending_dataset_page",keyGenerator = "customPageableKeyGenerator")
+    @Cacheable(value = "trending_dataset_page",keyGenerator = "customKeyGenerator")
     public PageResponse<DatasetDTO> trending(Pageable pageable) {
         int start = Math.min((int) pageable.getOffset(), top100TrendingDatasets.size());
         int end = Math.min((start + pageable.getPageSize()), top100TrendingDatasets.size());
