@@ -93,7 +93,6 @@ public class GenumUserIT extends BaseDatabaseIntegration {
     /* ========================================= ITest for user creation =============================================*/
 
     @Test
-    @Order(0)
     void shouldCreateUser() throws Exception {
 
         this.mockMvc
@@ -104,8 +103,8 @@ public class GenumUserIT extends BaseDatabaseIntegration {
     }
 
     @Test
-    @Order(1)
     void shouldReturn409IfUserAlreadyExists() throws Exception {
+
         mongoTemplate.save(userThatExists,"users");
         this.mockMvc
                 .perform(post("/api/user/create")
@@ -127,7 +126,6 @@ public class GenumUserIT extends BaseDatabaseIntegration {
     /* ========================================= ITest for getting waitingList =======================================*/
 
     @Test
-    @Order(0)
     void shouldReturnUnAuthorizedForUnAuthenticatedAndUnAuthorizedAttemptToGetWaitingLists() throws Exception {
         this.mockMvc
                 .perform(get("/api/user/waiting-list"))
@@ -135,7 +133,6 @@ public class GenumUserIT extends BaseDatabaseIntegration {
     }
 
     @Test
-    @Order(1)
     void shouldReturnOkOnAttemptToGetWaitingLists() throws Exception {
         this.mockMvc
                 .perform(
@@ -148,7 +145,6 @@ public class GenumUserIT extends BaseDatabaseIntegration {
     /* ========================================== ITest adding waiting list ==========================================*/
 
     @Test
-    @Order(2)
     void shouldAddToWaitListWithValidEmail() throws Exception {
         this.mockMvc
                 .perform(
@@ -159,7 +155,6 @@ public class GenumUserIT extends BaseDatabaseIntegration {
     }
 
     @Test
-    @Order(3)
     void shouldReturn400IfInvalidWaitingList() throws Exception {
         this.mockMvc
                 .perform(post("/api/user/waiting-list")
@@ -168,7 +163,6 @@ public class GenumUserIT extends BaseDatabaseIntegration {
                 ).andExpect(status().isBadRequest());
     }
     @Test
-    @Order(4)
     void shouldReturnConflictIfEmailAlreadyExists() throws Exception {
         mongoTemplate.save(waitingListEmailInDb, "wait_list");
         this.mockMvc

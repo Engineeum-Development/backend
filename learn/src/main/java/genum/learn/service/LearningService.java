@@ -15,6 +15,7 @@ import genum.learn.repository.VideoRepository;
 import genum.learn.repository.VideoUploadStatusRepository;
 import genum.shared.DTO.response.PageResponse;
 import genum.shared.Sse.service.SseEmitterService;
+import genum.shared.course.exception.CourseNotFoundException;
 import genum.shared.learn.exception.LessonNotFoundException;
 import genum.shared.learn.exception.LessonWithTitleAlreadyExists;
 import genum.shared.learn.exception.VideoNotFoundException;
@@ -66,6 +67,7 @@ public class LearningService {
     public PageResponse<CourseResponse> getAllMyCourses(Pageable pageable) {
         var currentUserId = securityUtils.getCurrentAuthenticatedUserId();
         var courses = courseService.findCourseWithUploaderId(currentUserId, pageable);
+
         return PageResponse.from(courses.map(courseDTO -> new CourseResponse(courseDTO.referenceId(),
                 courseDTO.name(),
                 courseDTO.numberOfEnrolledUsers(),
@@ -127,6 +129,9 @@ public class LearningService {
     public LessonResponse uploadLesson(LessonUploadRequest lessonUploadRequest) {
         if (lessonRepository.existsByTitle(lessonUploadRequest.title())){
             throw new LessonWithTitleAlreadyExists(lessonUploadRequest.title());
+        }
+        if (!courseService.existsByCourseId(lessonUploadRequest.courseId())){
+            throw new CourseNotFoundException();
         }
         var lesson = new Lesson(lessonUploadRequest.title(),
                 lessonUploadRequest.description(), lessonUploadRequest.content(),

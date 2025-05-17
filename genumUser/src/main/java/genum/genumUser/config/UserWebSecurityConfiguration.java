@@ -8,6 +8,7 @@ import genum.genumUser.security.interceptor.PaystackWebHookInterceptor;
 import genum.genumUser.security.jwt.JWTAuthorizationFilter;
 import genum.genumUser.security.jwt.JwtUtils;
 import genum.genumUser.security.jwt.LogoutHandlingFilter;
+import genum.shared.util.CacheService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -133,8 +134,8 @@ public class UserWebSecurityConfiguration implements WebMvcConfigurer {
 
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder, RedisTemplate<String, Object> redisTemplate, UserDetailsService userDetailsService) {
-        var genumAuthProvider = new GenumAuthenticationProvider(passwordEncoder, redisTemplate);
+    public DaoAuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder,UserDetailsService userDetailsService, CacheService<String, Object> cacheService) {
+        var genumAuthProvider = new GenumAuthenticationProvider(passwordEncoder, cacheService);
         genumAuthProvider.setUserDetailsService(userDetailsService);
         return genumAuthProvider;
     }

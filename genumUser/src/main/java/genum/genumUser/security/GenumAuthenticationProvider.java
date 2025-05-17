@@ -1,6 +1,8 @@
 package genum.genumUser.security;
 
+import genum.shared.security.CustomUserDetails;
 import genum.shared.security.exception.LoginFailedException;
+import genum.shared.util.CacheService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -11,7 +13,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 
 public class GenumAuthenticationProvider extends DaoAuthenticationProvider {
@@ -20,11 +25,12 @@ public class GenumAuthenticationProvider extends DaoAuthenticationProvider {
     private int MAX_ATTEMPTS;
     @Value("${auth.lockoutDuration_minutes}")
     private int LOCKOUT_DURATION_MINUTES;
-    private final RedisTemplate<String, Object> redisTemplate;
 
-    public GenumAuthenticationProvider(PasswordEncoder passwordEncoder, RedisTemplate<String, Object> redisTemplate) {
+    private final CacheService<String, Object> cacheService;
+
+    public GenumAuthenticationProvider(PasswordEncoder passwordEncoder, CacheService<String, Object> cacheService) {
         super(passwordEncoder);
-        this.redisTemplate = redisTemplate;
+        this.cacheService = cacheService;
     }
 
     @Override
@@ -34,6 +40,7 @@ public class GenumAuthenticationProvider extends DaoAuthenticationProvider {
         UsernamePasswordAuthenticationToken authenticationToken = (UsernamePasswordAuthenticationToken) authentication;
         try {
             authenticationToken = (UsernamePasswordAuthenticationToken) super.authenticate(authentication);
+            resetFailedAttempts(((CustomUserDetails) authenticationToken.getPrincipal()).getEmail());
             return authenticationToken;
         } catch (BadCredentialsException exception) {
             handleFailedAttempts(authenticationToken);
@@ -58,36 +65,31 @@ public class GenumAuthenticationProvider extends DaoAuthenticationProvider {
 
     private void resetFailedAttempts(String email) {
         String attemptKey = getAttemptKey(email);
-        redisTemplate.delete(attemptKey);
+        cacheService.evict(attemptKey);
     }
-    private int incrementFailedAttempt(String email) {
+    private long incrementFailedAttempt(String email) {
         String attemptKey = getAttemptKey(email);
-        Long currentAttempts = redisTemplate.opsForValue().increment(attemptKey);
-
-        if (currentAttempts != null && currentAttempts == 1L) {
-            redisTemplate.expire(attemptKey, 24, TimeUnit.HOURS);
-        }
-        return currentAttempts != null ? currentAttempts.intValue() : 1;
+        AtomicInteger currentAttempts = new AtomicInteger(cacheService.get(attemptKey) != null?(Integer) cacheService.get(attemptKey): 0);
+        cacheService.put(attemptKey, currentAttempts.incrementAndGet());
+        return currentAttempts.intValue();
     }
     private int getFailedAttempts(String email) {
         String attemptKeys = getAttemptKey(email);
-        Object attempts = redisTemplate.opsForValue().get(attemptKeys);
-        return attempts != null ? (int) attempts : 0;
+        return (int) cacheService.get(attemptKeys);
     }
     private long getRemainingLockTime(String email) {
         String lockKey = getLockKey(email);
-        Long expiry = redisTemplate.getExpire(lockKey, TimeUnit.MINUTES);
+        Long expiry = cacheService.getRemainingLockTime(lockKey, TimeUnit.MINUTES);
         return expiry != null ? expiry : 0L;
     }
     private boolean isAccountLocked(String email) {
         String lockKey = getLockKey(email);
-        return Boolean.TRUE.equals(redisTemplate.hasKey(lockKey));
+        return cacheService.hasKey(lockKey);
     }
 
     private void lockAccount(String email) {
         String lockKey = getLockKey(email);
-        redisTemplate.opsForValue().set(lockKey, Instant.now().toString());
-        redisTemplate.expire(lockKey, LOCKOUT_DURATION_MINUTES, TimeUnit.MINUTES);
+        cacheService.put(lockKey, Instant.now().toString());
     }
 
     private String getAttemptKey(String email) {

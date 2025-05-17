@@ -13,5 +13,6 @@ public interface CourseRepository extends MongoRepository<Course, String>, Cours
 
     Optional<Course> findByReferenceId(String referenceId);
     Page<Course> findAllByUploaderId(String uploaderId, Pageable pageable);
+    boolean existsByReferenceId(String courseId);
 
 }

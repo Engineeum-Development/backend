@@ -9,6 +9,7 @@ import genum.shared.DTO.response.PageResponse;
 import genum.shared.DTO.response.ResponseDetails;
 import genum.shared.constant.Gender;
 import genum.shared.security.CustomUserDetails;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,6 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
 @AutoConfigureJsonTesters
+@Slf4j
 public class LearningIT extends BaseDatabaseIntegration {
 
     @Autowired
@@ -97,20 +98,22 @@ public class LearningIT extends BaseDatabaseIntegration {
                 userDetails.getUserReferenceId(),
                 "Course Description",
                 23000);
+        existingCourse.setUploaderId(userDetails.getUserReferenceId());
 
         existingCourse = mongoTemplate.save(existingCourse, "course");
 
         mockMvc.perform(
-                get("/api/learn/my-course")
+                get("/api/learn/course/my-course")
                         .with(user(userDetails))
         ).andExpect(status().isOk());
 
-        mongoTemplate.remove(existingCourse, "course");
+        var deleteResult = mongoTemplate.remove(existingCourse, "course");
+        assertThat(deleteResult.wasAcknowledged()).isTrue();
     }
     @Test
     void shouldReturnUnauthorizedIfNotAuthorized() throws Exception {
         mockMvc.perform(
-                get("/api/learn/my-course")
+                get("/api/learn/course/my-course")
         ).andExpect(status().isUnauthorized());
     }
 
@@ -129,7 +132,8 @@ public class LearningIT extends BaseDatabaseIntegration {
                     get("/api/learn/course/%s".formatted(existingCourse.getReferenceId()))
                 )
                 .andExpect(status().isOk());
-        mongoTemplate.remove(existingCourse);
+        var deleteResult = mongoTemplate.remove(existingCourse, "course");
+        assertThat(deleteResult.wasAcknowledged()).isTrue();
     }
     @Test
     void givenNonExistentCourse_ShouldReturnNotFound() throws Exception {
@@ -160,7 +164,8 @@ public class LearningIT extends BaseDatabaseIntegration {
         boolean isAuthorized = jacksonTesterForEnrolled.parseObject(result.getContentAsString(StandardCharsets.UTF_8)).getData();
 
         assertThat(isAuthorized).isTrue();
-        mongoTemplate.remove(existingCourse, "course");
+        var deleteResult = mongoTemplate.remove(existingCourse, "course");
+        assertThat(deleteResult.wasAcknowledged()).isTrue();
     }
     @Test
     void givenExistingCourseAndUserNotEnrolled_ShouldReturnFalse() throws Exception {
@@ -180,7 +185,8 @@ public class LearningIT extends BaseDatabaseIntegration {
         boolean isAuthorized = jacksonTesterForEnrolled.parseObject(result.getContentAsString(StandardCharsets.UTF_8)).getData();
         assertThat(isAuthorized).isFalse();
 
-        mongoTemplate.remove(existingCourse, "course");
+        var deleteResult = mongoTemplate.remove(existingCourse, "course");
+        assertThat(deleteResult.wasAcknowledged()).isTrue();
     }
 
     /* ===================================== Tests for creating course ============================================== */
@@ -257,8 +263,11 @@ public class LearningIT extends BaseDatabaseIntegration {
         assertThat(jsonResult.getData().content().isEmpty()).isFalse();
         assertThat(jsonResult.getData().content().size()).isEqualTo(3);
 
-        mongoTemplate.remove(Query.query(Criteria.where("courseId").is(existingCourse.getReferenceId())),"lesson");
-        mongoTemplate.remove(existingCourse,"course");
+        var deleteResultForLesson = mongoTemplate.remove(Query.query(Criteria.where("courseId").is(existingCourse.getReferenceId())),"lesson");
+        var deleteResult = mongoTemplate.remove(existingCourse, "course");
+        assertThat(deleteResult.wasAcknowledged()).isTrue();
+        assertThat(deleteResultForLesson.wasAcknowledged()).isTrue();
+
     }
 
     /* =========================================== Test for getting lesson by lessonId ============================== */
@@ -286,7 +295,8 @@ public class LearningIT extends BaseDatabaseIntegration {
         assertThat(existingLesson.getTitle()).isEqualTo(responseData.title());
         assertThat(existingLesson.getReferenceId()).isEqualTo(responseData.lessonId());
 
-        mongoTemplate.remove(existingLesson, "lesson");
+        var deleteResult = mongoTemplate.remove(existingLesson, "lesson");
+        assertThat(deleteResult.wasAcknowledged()).isTrue();
 
     }
 
@@ -334,7 +344,8 @@ public class LearningIT extends BaseDatabaseIntegration {
         assertThat(response.title()).isEqualTo(lessonUploadRequest.title());
 
 
-        mongoTemplate.remove(existingCourse,"course");
+        var deleteResult = mongoTemplate.remove(existingCourse, "course");
+        assertThat(deleteResult.wasAcknowledged()).isTrue();
 
     }
 
@@ -359,9 +370,10 @@ public class LearningIT extends BaseDatabaseIntegration {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(jsonLessonUploadRequest.write(lessonUploadRequest).getJson())
                 )
-                .andExpect(status().isCreated());
+                .andExpect(status().isBadRequest());
 
-        mongoTemplate.remove(existingCourse,"course");
+        var deleteResult = mongoTemplate.remove(existingCourse, "course");
+        assertThat(deleteResult.wasAcknowledged()).isTrue();
 
     }
 
@@ -424,8 +436,11 @@ public class LearningIT extends BaseDatabaseIntegration {
         assertThat(existingLesson.getReferenceId()).isEqualTo(response.lessonId());
 
 
-        mongoTemplate.remove(existingCourse, "course");
-        mongoTemplate.remove(existingLesson, "lesson");
+        var deleteCourseResult = mongoTemplate.remove(existingCourse, "course");
+        assertThat(deleteCourseResult.wasAcknowledged()).isTrue();
+
+        var deleteLessonResult = mongoTemplate.remove(existingLesson, "lesson");
+        assertThat(deleteLessonResult.wasAcknowledged()).isTrue();
 
 
     }
@@ -465,8 +480,10 @@ public class LearningIT extends BaseDatabaseIntegration {
         assertThat(existingLesson.getReferenceId()).isEqualTo(response.lessonId());
 
 
-        mongoTemplate.remove(existingCourse, "course");
-        mongoTemplate.remove(existingLesson, "lesson");
+        var deleteCourseResult = mongoTemplate.remove(existingCourse, "course");
+        assertThat(deleteCourseResult.wasAcknowledged()).isTrue();
+        var deleteLessonResult = mongoTemplate.remove(existingLesson, "lesson");
+        assertThat(deleteLessonResult.wasAcknowledged()).isTrue();
 
 
     }
@@ -519,8 +536,10 @@ public class LearningIT extends BaseDatabaseIntegration {
         ).andExpect(status().isCreated());
 
 
-        mongoTemplate.remove(existingCourse, "course");
-        mongoTemplate.remove(existingLesson, "lesson");
+        var deleteCourseResult = mongoTemplate.remove(existingCourse, "course");
+        assertThat(deleteCourseResult.wasAcknowledged()).isTrue();
+        var deleteLessonResult =  mongoTemplate.remove(existingLesson, "lesson");
+        assertThat(deleteLessonResult.wasAcknowledged()).isTrue();
 
     }
 

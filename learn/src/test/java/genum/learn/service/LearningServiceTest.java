@@ -213,6 +213,7 @@ public class LearningServiceTest {
     void shouldUploadLessonGivenValidRequest() {
         given(lessonRepository.existsByTitle(anyString())).willReturn(false);
         given(lessonRepository.save(any(Lesson.class))).willReturn(lessonReturned);
+        given(courseService.existsByCourseId(anyString())).willReturn(true);
 
         var result = learningService.uploadLesson(createLesson);
         assertThat(result.description()).isEqualTo(createLesson.description());

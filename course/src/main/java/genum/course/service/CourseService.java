@@ -64,6 +64,10 @@ public class CourseService {
         return course.toDTO();
     }
 
+    public boolean existsByCourseId(String courseId) {
+        return courseRepository.existsByReferenceId(courseId);
+    }
+
 
 
 }
