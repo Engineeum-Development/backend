@@ -27,11 +27,15 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 
+import java.util.List;
 import java.util.Map;
 
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler{
+    private record FieldError(String field, String error){}
+    public record ValidationErrorResponse(String message, List<FieldError> fieldErrors){}
+
     @ExceptionHandler(TokenNotFoundException.class)
     public ResponseEntity<ResponseDetails<String>> handleTokenNotFoundException(TokenNotFoundException tokenNotFoundException) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -101,9 +105,14 @@ public class GlobalExceptionHandler{
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ResponseDetails<Map<?,?>>> handleValidationException(MethodArgumentNotValidException validationException) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ResponseDetails<>(validationException.getBody().getDetail(), HttpStatus.BAD_REQUEST.toString(), validationException.getBody().getProperties()));
+    public ResponseEntity<ResponseDetails<ValidationErrorResponse>> handleMethodValidationException(MethodArgumentNotValidException validationException) {
+        var bindingResult = validationException.getBindingResult();
+        List<FieldError> fieldErrors = bindingResult.getFieldErrors().stream()
+                .map(fieldError -> new FieldError(fieldError.getField(), fieldError.getDefaultMessage()))
+                .toList();
+        return ResponseEntity.badRequest().body(
+                new ResponseDetails<>("Invalid fields", HttpStatus.BAD_REQUEST.toString(), new ValidationErrorResponse("Validation failed for one or more fields", fieldErrors))
+        );
     }
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<ResponseDetails<String>> handleUserAlreadyExistsException(UserAlreadyExistsException ex) {
