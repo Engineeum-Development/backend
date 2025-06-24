@@ -40,7 +40,7 @@ public class CustomUserDetails implements UserDetails {
         this.accountExpired = false;
         this.accountCredentialsExpired = false;
         this.accountLocked = false;
-        this.accountEnabled = false;
+        this.accountEnabled = true;
         this.userStatus = UserStatus.ACTIVE;
         this.role = Role.USER;
     }
@@ -51,7 +51,7 @@ public class CustomUserDetails implements UserDetails {
         this.accountExpired = false;
         this.accountCredentialsExpired = false;
         this.accountLocked = false;
-        this.accountEnabled = false;
+        this.accountEnabled = true;
         this.userStatus = UserStatus.ACTIVE;
         this.role = admin ? Role.ADMIN : Role.USER;
     }

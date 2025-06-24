@@ -63,6 +63,7 @@ public class GenumUserService {
                     .lastName(userCreationRequest.lastName())
                     .createdDate(LocalDateTime.now())
                     .country(userCreationRequest.country())
+                    .isVerified(true)
                     .gender(Gender.valueOf(userCreationRequest.gender().toUpperCase()))
                     .customUserDetails(userDetails)
                     .build();
